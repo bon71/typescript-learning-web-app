@@ -2,6 +2,10 @@
 
 Vue.js 3 + TypeScriptで構築された、20日間のTypeScript学習プログラムを管理するWebアプリケーションです。
 
+## 🌐 デモ
+
+**GitHub Pages で公開中**: https://bon71.github.io/typescript-learning-web-app/
+
 ## 📁 ファイル構成
 
 ```
@@ -12,6 +16,7 @@ typescript-learning-web-app/
 ├── tsconfig.node.json
 ├── index.html
 ├── README.md
+├── .github/workflows/deploy.yml
 └── src/
     ├── main.ts
     ├── App.vue
@@ -53,12 +58,20 @@ typescript-learning-web-app/
    npm run build
    ```
 
+## 🔄 自動デプロイ
+
+このプロジェクトはGitHub Actionsを使用して、`main`ブランチへのプッシュ時に自動的にGitHub Pagesにデプロイされます。
+
+- **ワークフローファイル**: `.github/workflows/deploy.yml`
+- **デプロイURL**: https://bon71.github.io/typescript-learning-web-app/
+
 ## ✨ 主な特徴
 
 ### 🔧 技術スタック
 - **Vue.js 3**: 最新のComposition API + `<script setup>`構文
 - **TypeScript**: 完全な型安全性
 - **Vite**: 高速なビルドツール
+- **GitHub Pages**: 自動デプロイ
 - **リアクティブ設計**: Vue.jsの強力なリアクティビティ
 
 ### 🏗️ アーキテクチャ
