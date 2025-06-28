@@ -31,10 +31,6 @@ class Container<T> {
     this.items.push(item);
   }
 
-  get(index: number): T | undefined {
-    return this.items[index];
-  }
-
   getAll(): T[] {
     return [...this.items];
   }
@@ -46,28 +42,14 @@ numberContainer.add(10);
 numberContainer.add(20);
 console.log(numberContainer.getAll()); // [10, 20]
 
-// 型制約（extends）
-interface HasLength {
-  length: number;
-}
-
-function logLength<T extends HasLength>(item: T): T {
-  console.log(\`長さ: \${item.length}\`);
-  return item;
-}
-
-logLength("hello"); // 文字列は length プロパティがある
-logLength([1, 2, 3]); // 配列は length プロパティがある
-
 // keyof を使った高度なジェネリクス
 function getProperty<T, K extends keyof T>(obj: T, key: K): T[K] {
   return obj[key];
 }
 
 const person = { name: "太郎", age: 30 };
-const name = getProperty(person, "name"); // string型
-const age = getProperty(person, "age"); // number型`,
-    explanation: "ジェネリクスにより、型安全性を保ちながら再利用可能なコンポーネントを作成できます。型制約やkeyofと組み合わせてより高度な型操作も可能です。"
+const name = getProperty(person, "name"); // string型`,
+    explanation: "ジェネリクスにより、型安全性を保ちながら再利用可能なコンポーネントを作成できます。"
   },
   {
     day: 16,
@@ -113,31 +95,6 @@ function handlePet(pet: Dog | Cat): void {
   }
 }
 
-// instanceof を使った型ガード
-class Circle {
-  constructor(public radius: number) {}
-  getArea(): number {
-    return Math.PI * this.radius * this.radius;
-  }
-}
-
-class Rectangle {
-  constructor(public width: number, public height: number) {}
-  getArea(): number {
-    return this.width * this.height;
-  }
-}
-
-function calculateArea(shape: Circle | Rectangle): number {
-  if (shape instanceof Circle) {
-    console.log(\`円の半径: \${shape.radius}\`);
-    return shape.getArea();
-  } else {
-    console.log(\`長方形: \${shape.width} x \${shape.height}\`);
-    return shape.getArea();
-  }
-}
-
 // カスタム型ガード関数
 function isString(value: unknown): value is string {
   return typeof value === "string";
@@ -150,7 +107,7 @@ function processValue(value: unknown): string {
     return "不明な型";
   }
 }`,
-    explanation: "型ガードを使うことで、Union型の値を安全に処理できます。TypeScriptが各分岐で正しい型を推論してくれるため、型安全なコードが書けます。"
+    explanation: "型ガードを使うことで、Union型の値を安全に処理できます。TypeScriptが各分岐で正しい型を推論してくれます。"
   },
   {
     day: 17,
@@ -201,16 +158,6 @@ async function fetchUser(id: number): Promise<User> {
   return apiResponse.data;
 }
 
-// エラーハンドリングを含む使用例
-async function displayUserInfo(userId: number): Promise<void> {
-  try {
-    const user = await fetchUser(userId);
-    console.log(\`ユーザー情報: \${user.name} (\${user.email})\`);
-  } catch (error) {
-    console.error("ユーザー情報の表示に失敗:", error);
-  }
-}
-
 // ジェネリクスを使った汎用API関数
 async function apiCall<T>(url: string): Promise<T> {
   const response = await fetch(url);
@@ -220,24 +167,8 @@ async function apiCall<T>(url: string): Promise<T> {
   }
   
   return response.json();
-}
-
-// 型安全なAPI呼び出し
-// const userData = await apiCall<User>('/api/user/1');
-// const userList = await apiCall<User[]>('/api/users');
-
-// カスタムエラー型
-class ApiError extends Error {
-  constructor(
-    message: string,
-    public statusCode: number,
-    public response?: any
-  ) {
-    super(message);
-    this.name = 'ApiError';
-  }
 }`,
-    explanation: "Promise<T>型により非同期処理でも型安全性を保てます。async/awaitと組み合わせて、エラーハンドリングも含めた堅牢なAPI呼び出し処理を実装しましょう。"
+    explanation: "Promise<T>型により非同期処理でも型安全性を保てます。async/awaitと組み合わせて堅牢な処理を実装しましょう。"
   },
   {
     day: 18,
@@ -253,19 +184,16 @@ interface User {
   email: string;
   age: number;
   isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 // Partial<T> - すべてのプロパティをオプショナルにする
 type PartialUser = Partial<User>;
 
 function updateUser(id: number, updates: PartialUser): void {
-  console.log(\`ユーザー \${id} を更新:`, updates);
+  console.log(\`ユーザー \${id} を更新:\`, updates);
 }
 
 updateUser(1, { name: "新しい名前" }); // nameだけ更新
-updateUser(2, { age: 30, isActive: false }); // 複数更新
 
 // Pick<T, K> - 特定のプロパティのみを選択
 type UserProfile = Pick<User, 'id' | 'name' | 'email'>;
@@ -282,9 +210,6 @@ const profile: UserProfile = {
 
 displayProfile(profile);
 
-// Omit<T, K> - 特定のプロパティを除外
-type UserWithoutTimestamps = Omit<User, 'createdAt' | 'updatedAt'>;
-
 // Record<K, T> - キーと値の型を指定したオブジェクト型
 type UserRoles = Record<string, 'admin' | 'user' | 'guest'>;
 
@@ -294,48 +219,17 @@ const roles: UserRoles = {
   "user3": "guest"
 };
 
-// より実用的なRecord例
-type HttpStatus = Record<number, string>;
-
-const statusMessages: HttpStatus = {
-  200: "OK",
-  404: "Not Found",
-  500: "Internal Server Error"
-};
-
-// Required<T> - すべてのプロパティを必須にする
-interface OptionalUser {
-  id?: number;
-  name?: string;
-  email?: string;
-}
-
-type RequiredUser = Required<OptionalUser>;
-
 // 実践的な組み合わせ例
-type CreateUserRequest = Omit<User, 'id' | 'createdAt' | 'updatedAt'>;
-type UpdateUserRequest = Partial<Pick<User, 'name' | 'email' | 'age' | 'isActive'>>;
+type CreateUserRequest = Omit<User, 'id'>;
+type UpdateUserRequest = Partial<Pick<User, 'name' | 'email' | 'age'>>;
 
 function createUser(userData: CreateUserRequest): User {
-  const now = new Date();
   return {
     id: Math.floor(Math.random() * 1000),
-    ...userData,
-    createdAt: now,
-    updatedAt: now
+    ...userData
   };
-}
-
-// ReturnType<T> - 関数の戻り値の型を取得
-function getUser(): User {
-  return {
-    id: 1, name: "太郎", email: "taro@example.com", age: 30,
-    isActive: true, createdAt: new Date(), updatedAt: new Date()
-  };
-}
-
-type GetUserReturnType = ReturnType<typeof getUser>; // User型`,
-    explanation: "Utility Typesは既存の型から新しい型を生成する強力なツールです。APIの型定義やフォームデータの処理など、実践的な場面で大活躍します。"
+}`,
+    explanation: "Utility Typesは既存の型から新しい型を生成する強力なツールです。実践的な場面で大活躍します。"
   },
   {
     day: 19,
@@ -349,7 +243,6 @@ interface ApiResponse<T = any> {
   success: boolean;
   data: T;
   message?: string;
-  errors?: string[];
 }
 
 // ドメイン型の定義
@@ -382,11 +275,8 @@ class HttpClient {
     return response.json();
   }
   
-  async get<T>(url: string, params?: Record<string, any>): Promise<T> {
-    const queryString = params 
-      ? '?' + new URLSearchParams(params).toString() 
-      : '';
-    return this.request<T>(\`\${url}\${queryString}\`);
+  async get<T>(url: string): Promise<T> {
+    return this.request<T>(url);
   }
   
   async post<T>(url: string, body: any): Promise<T> {
@@ -425,9 +315,6 @@ async function handleUserOperations(): Promise<void> {
     const users = await userService.getUsers();
     console.log('ユーザーリスト:', users);
     
-    const user = await userService.getUserById(1);
-    console.log('ユーザー詳細:', user);
-    
     const newUser = await userService.createUser({
       name: "新しいユーザー",
       email: "new@example.com",
@@ -440,7 +327,7 @@ async function handleUserOperations(): Promise<void> {
     console.error('API エラー:', error);
   }
 }`,
-    explanation: "型安全なAPI設計により、フロントエンドとバックエンド間の通信エラーを大幅に削減できます。HttpClientクラスとサービスクラスの分離で、保守性も向上します。"
+    explanation: "型安全なAPI設計により、フロントエンドとバックエンド間の通信エラーを大幅に削減できます。"
   },
   {
     day: 20,
@@ -490,14 +377,6 @@ const validationRules = {
   range: (min: number, max: number): ValidationRule<number> => ({
     validate: (value: number): boolean => value >= min && value <= max,
     message: \`\${min}から\${max}の間で入力してください\`
-  }),
-
-  email: (): ValidationRule<string> => ({
-    validate: (value: string): boolean => {
-      const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
-      return emailRegex.test(value);
-    },
-    message: "有効なメールアドレスを入力してください"
   })
 };
 
@@ -518,7 +397,7 @@ class UserFormManager {
     },
     email: {
       value: "",
-      rules: [validationRules.required(), validationRules.email()],
+      rules: [validationRules.required()],
       errors: [] as string[],
       touched: false
     }
@@ -559,10 +438,6 @@ class UserFormManager {
       age: this.fields.age.value,
       email: this.fields.email.value
     };
-  }
-
-  getFieldErrors(fieldName: keyof typeof this.fields): string[] {
-    return this.fields[fieldName].errors;
   }
 
   hasErrors(): boolean {
