@@ -1,7 +1,9 @@
 import type { LearningDay, PhaseInfo } from '@/types/learning'
+import { phase2Data } from './phase2Data'
+import { phase3Data } from './phase3Data'
 
-export const learningData: LearningDay[] = [
-  // Phase 1: JavaScript復習
+// Phase 1: JavaScript復習（既存データ）
+const phase1Data: LearningDay[] = [
   {
     day: 1,
     title: "変数の宣言と基本型の理解",
@@ -296,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
     explanation: "クラスを使ってコードを整理し、イベント処理やDOM操作を組み合わせて実用的なアプリを作成できます。"
   },
 
-  // Phase 2: TypeScript入門（Day 8-14 を続ける）
+  // Phase 2: TypeScript入門（基本のみ）
   {
     day: 8,
     title: "TypeScriptとは",
@@ -407,6 +409,13 @@ function calculateDiscount(
 console.log(calculateDiscount(1000, true)); // 800`,
     explanation: "基本型の組み合わせで、型安全なプログラムを作成できます。型推論も活用しましょう。"
   }
+]
+
+// 全データを結合
+export const learningData: LearningDay[] = [
+  ...phase1Data,
+  ...phase2Data,
+  ...phase3Data
 ]
 
 export const phaseInfo: PhaseInfo[] = [
