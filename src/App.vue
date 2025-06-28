@@ -18,8 +18,9 @@
           <h2 class="phase-title">{{ phaseData.title }}</h2>
           <p class="phase-description">{{ phaseData.description }}</p>
           
-          <div class="cards-grid">
-            <LearningCard
+          <!-- 新しいトグルスタイルUI -->
+          <div class="learning-list">
+            <LearningToggleItem
               v-for="day in getPhaseData(phaseData.id).value"
               :key="day.day"
               :learning-day="day"
@@ -46,7 +47,7 @@ import { learningData, phaseInfo } from '@/data/learningData'
 import { useLearningProgress } from '@/composables/useLearningProgress'
 import ProgressHeader from '@/components/ProgressHeader.vue'
 import PhaseTabs from '@/components/PhaseTabs.vue'
-import LearningCard from '@/components/LearningCard.vue'
+import LearningToggleItem from '@/components/LearningToggleItem.vue'
 import StatsFooter from '@/components/StatsFooter.vue'
 
 const {
@@ -87,5 +88,56 @@ onMounted(() => {
 
 main {
   flex: 1;
+}
+
+.phase {
+  padding: 30px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.phase-title {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+  color: #333;
+  text-align: center;
+}
+
+.phase-description {
+  color: #666;
+  margin-bottom: 40px;
+  font-size: 1.1rem;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.learning-list {
+  width: 100%;
+}
+
+/* フェードアニメーション */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+@media (max-width: 768px) {
+  .phase {
+    padding: 20px 15px;
+  }
+  
+  .phase-title {
+    font-size: 1.5rem;
+  }
+  
+  .phase-description {
+    font-size: 1rem;
+    margin-bottom: 30px;
+  }
 }
 </style>
