@@ -25,6 +25,7 @@
       <div class="task-content">{{ learningDay.task }}</div>
     </div>
     
+    <!-- 完了チェックボックス -->
     <div 
       :class="['completion-checkbox', { 'completed': isCompleted }]" 
       @click="$emit('toggle-completion', learningDay.day)"
@@ -32,6 +33,35 @@
       <div :class="['checkbox', { 'checked': isCompleted }]"></div>
       <span class="checkbox-label">完了</span>
     </div>
+    
+    <!-- サンプルコード表示チェックボックス -->
+    <div 
+      v-if="learningDay.sampleCode"
+      :class="['sample-code-checkbox', { 'active': isSampleCodeShown }]" 
+      @click="$emit('toggle-sample-code', learningDay.day)"
+    >
+      <div :class="['checkbox', { 'checked': isSampleCodeShown }]"></div>
+      <span class="checkbox-label">サンプルコード・解説を表示</span>
+    </div>
+    
+    <!-- サンプルコード表示エリア -->
+    <Transition name="slide-down">
+      <div v-if="isSampleCodeShown && learningDay.sampleCode" class="sample-code-section">
+        <div class="sample-code-header">
+          <span class="code-icon">💻</span>
+          <span class="sample-title">サンプルコード</span>
+        </div>
+        <pre class="sample-code"><code>{{ learningDay.sampleCode }}</code></pre>
+        
+        <div v-if="learningDay.explanation" class="explanation">
+          <div class="explanation-header">
+            <span class="explanation-icon">💡</span>
+            <span class="explanation-title">解説</span>
+          </div>
+          <p class="explanation-content">{{ learningDay.explanation }}</p>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -41,10 +71,12 @@ import type { LearningDay } from '@/types/learning'
 interface Props {
   learningDay: LearningDay
   isCompleted: boolean
+  isSampleCodeShown: boolean
 }
 
 interface Emits {
   (e: 'toggle-completion', day: number): void
+  (e: 'toggle-sample-code', day: number): void
 }
 
 defineProps<Props>()
@@ -145,10 +177,10 @@ defineEmits<Emits>()
   border-left: 3px solid #2196F3;
 }
 
-.completion-checkbox {
+.completion-checkbox, .sample-code-checkbox {
   display: flex;
   align-items: center;
-  margin-top: 20px;
+  margin-top: 15px;
   padding: 15px;
   background: #f8f9fa;
   border-radius: 10px;
@@ -156,12 +188,16 @@ defineEmits<Emits>()
   transition: all 0.3s ease;
 }
 
-.completion-checkbox:hover {
+.completion-checkbox:hover, .sample-code-checkbox:hover {
   background: #e9ecef;
 }
 
 .completion-checkbox.completed {
   background: #e8f5e8;
+}
+
+.sample-code-checkbox.active {
+  background: #e3f2fd;
 }
 
 .checkbox {
@@ -177,6 +213,11 @@ defineEmits<Emits>()
 .checkbox.checked {
   background: #4CAF50;
   border-color: #4CAF50;
+}
+
+.sample-code-checkbox .checkbox.checked {
+  background: #2196F3;
+  border-color: #2196F3;
 }
 
 .checkbox.checked::after {
@@ -195,6 +236,83 @@ defineEmits<Emits>()
   color: #333;
 }
 
+.sample-code-section {
+  margin-top: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e9ecef;
+}
+
+.sample-code-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: #2196F3;
+  color: white;
+  font-weight: 600;
+}
+
+.code-icon {
+  margin-right: 8px;
+  font-size: 1.1rem;
+}
+
+.sample-code {
+  margin: 0;
+  padding: 20px;
+  background: #2d3748;
+  color: #e2e8f0;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+
+.explanation {
+  padding: 16px;
+  background: white;
+}
+
+.explanation-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: #333;
+}
+
+.explanation-icon {
+  margin-right: 8px;
+  font-size: 1.1rem;
+}
+
+.explanation-content {
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* アニメーション */
+.slide-down-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-down-leave-active {
+  transition: all 0.3s ease-in;
+}
+
+.slide-down-enter-from {
+  transform: translateY(-20px);
+  opacity: 0;
+}
+
+.slide-down-leave-to {
+  transform: translateY(-20px);
+  opacity: 0;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -203,6 +321,13 @@ defineEmits<Emits>()
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .sample-code {
+    font-size: 0.8rem;
+    padding: 15px;
   }
 }
 </style>
