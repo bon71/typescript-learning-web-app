@@ -24,7 +24,9 @@
               :key="day.day"
               :learning-day="day"
               :is-completed="isCompleted(day.day).value"
+              :is-sample-code-shown="isSampleCodeShown(day.day).value"
               @toggle-completion="toggleCompletion"
+              @toggle-sample-code="toggleSampleCode"
             />
           </div>
         </div>
@@ -52,9 +54,11 @@ const {
   progressStats,
   getPhaseData,
   toggleCompletion,
+  toggleSampleCode,
   resetProgress,
   setPhase,
-  isCompleted
+  isCompleted,
+  isSampleCodeShown
 } = useLearningProgress(learningData)
 
 // キーボードショートカット
