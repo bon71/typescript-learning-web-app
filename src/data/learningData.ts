@@ -1,6 +1,7 @@
 import type { LearningDay, PhaseInfo } from '@/types/learning'
-import { phase2Data } from './phase2Data'
-import { phase3Data } from './phase3Data'
+// TODO: Phase 2とPhase 3のファイルを追加後にインポートを有効化
+// import { phase2Data } from './phase2Data'
+// import { phase3Data } from './phase3Data'
 
 // Phase 1: JavaScript復習（既存データ）
 const phase1Data: LearningDay[] = [
@@ -299,11 +300,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 ]
 
-// 全データを結合
+// TODO: Phase 2とPhase 3のデータファイル追加後に有効化
+// const phase2Data: LearningDay[] = []
+// const phase3Data: LearningDay[] = []
+
+// 暫定的にPhase 1のみ使用
 export const learningData: LearningDay[] = [
-  ...phase1Data,
-  ...phase2Data,
-  ...phase3Data
+  ...phase1Data
+  // TODO: Phase 2とPhase 3追加後に有効化
+  // ...phase2Data,
+  // ...phase3Data
 ]
 
 export const phaseInfo: PhaseInfo[] = [
@@ -316,13 +322,13 @@ export const phaseInfo: PhaseInfo[] = [
   {
     id: 2,
     title: "Phase 2: TypeScript入門",
-    description: "いよいよTypeScriptの世界へ！型システムの基礎から、実践的な使い方まで7日間で学習します。",
+    description: "いよいよTypeScriptの世界へ！型システムの基礎から、実践的な使い方まで7日間で学習します。（準備中）",
     color: "#FF9800"
   },
   {
     id: 3,
     title: "Phase 3: TypeScript実践応用",
-    description: "高度なTypeScript機能を学び、実際のプロジェクトで使える実践的なスキルを身につけます。",
+    description: "高度なTypeScript機能を学び、実際のプロジェクトで使える実践的なスキルを身につけます。（準備中）",
     color: "#9C27B0"
   }
 ]
