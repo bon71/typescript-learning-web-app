@@ -10,6 +10,11 @@ export function useLearningProgress(learningData: LearningDay[]) {
     parseInt(localStorage.getItem('studyStreak') || '0')
   )
   const currentPhase = ref<number>(1)
+  
+  // サンプルコード表示状態
+  const showSampleCode = ref<number[]>(
+    JSON.parse(localStorage.getItem('showSampleCode') || '[]')
+  )
 
   // 進捗の計算
   const progressStats = computed<ProgressStats>(() => {
@@ -53,6 +58,17 @@ export function useLearningProgress(learningData: LearningDay[]) {
     }
   }
 
+  // サンプルコード表示の切り替え
+  const toggleSampleCode = (day: number) => {
+    const index = showSampleCode.value.indexOf(day)
+    
+    if (index > -1) {
+      showSampleCode.value.splice(index, 1)
+    } else {
+      showSampleCode.value.push(day)
+    }
+  }
+
   // 学習継続日数の更新
   const updateStudyStreak = () => {
     const today = new Date().toDateString()
@@ -69,10 +85,12 @@ export function useLearningProgress(learningData: LearningDay[]) {
     if (confirm('本当に進捗をリセットしますか？この操作は取り消せません。')) {
       completedDays.value = []
       studyStreak.value = 0
+      showSampleCode.value = []
       
       localStorage.removeItem('completedDays')
       localStorage.removeItem('studyStreak')
       localStorage.removeItem('lastStudyDate')
+      localStorage.removeItem('showSampleCode')
     }
   }
 
@@ -84,6 +102,10 @@ export function useLearningProgress(learningData: LearningDay[]) {
   // 完了状態チェック
   const isCompleted = (day: number) => 
     computed(() => completedDays.value.includes(day))
+    
+  // サンプルコード表示状態チェック
+  const isSampleCodeShown = (day: number) => 
+    computed(() => showSampleCode.value.includes(day))
 
   // ローカルストレージへの保存
   watch(completedDays, (newValue) => {
@@ -93,16 +115,23 @@ export function useLearningProgress(learningData: LearningDay[]) {
   watch(studyStreak, (newValue) => {
     localStorage.setItem('studyStreak', newValue.toString())
   })
+  
+  watch(showSampleCode, (newValue) => {
+    localStorage.setItem('showSampleCode', JSON.stringify(newValue))
+  }, { deep: true })
 
   return {
     completedDays,
     studyStreak,
     currentPhase,
+    showSampleCode,
     progressStats,
     getPhaseData,
     toggleCompletion,
+    toggleSampleCode,
     resetProgress,
     setPhase,
-    isCompleted
+    isCompleted,
+    isSampleCodeShown
   }
 }
