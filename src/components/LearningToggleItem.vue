@@ -76,8 +76,17 @@
         <Transition name="fade">
           <div v-if="isSampleCodeShown && learningDay.sampleCode" class="sample-code-section">
             <div class="sample-code-header">
-              <span class="code-icon">💻</span>
-              <span class="sample-title">サンプルコード</span>
+              <div class="header-left">
+                <span class="code-icon">💻</span>
+                <span class="sample-title">サンプルコード</span>
+              </div>
+              <button 
+                class="copy-button"
+                @click="copyToClipboard"
+                :class="{ 'copied': isCopied }"
+              >
+                {{ isCopied ? '✓ コピー完了' : '📋 コピー' }}
+              </button>
             </div>
             <pre class="sample-code"><code>{{ learningDay.sampleCode }}</code></pre>
             
@@ -110,13 +119,50 @@ interface Emits {
   (e: 'toggle-sample-code', day: number): void
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 defineEmits<Emits>()
 
 const isExpanded = ref(false)
+const isCopied = ref(false)
 
 const toggleExpand = () => {
   isExpanded.value = !isExpanded.value
+}
+
+const copyToClipboard = async () => {
+  const codeText = props.learningDay.sampleCode
+  
+  if (!codeText) return
+  
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      // モダンブラウザでの実装
+      await navigator.clipboard.writeText(codeText)
+    } else {
+      // フォールバック実装
+      const textArea = document.createElement('textarea')
+      textArea.value = codeText
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      document.execCommand('copy')
+      textArea.remove()
+    }
+    
+    // 成功フィードバック
+    isCopied.value = true
+    setTimeout(() => {
+      isCopied.value = false
+    }, 2000)
+    
+  } catch (err) {
+    console.error('コピーに失敗しました:', err)
+    // エラー時はプロンプトでコードを表示
+    prompt('コードをコピーしてください:', codeText)
+  }
 }
 </script>
 
@@ -360,10 +406,40 @@ const toggleExpand = () => {
 .sample-code-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 12px 16px;
   background: #2196F3;
   color: white;
   font-weight: 600;
+}
+
+.sample-code-header .header-left {
+  display: flex;
+  align-items: center;
+}
+
+.copy-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.copy-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.copy-button.copied {
+  background: #4CAF50;
+  border-color: #4CAF50;
 }
 
 .code-icon {
