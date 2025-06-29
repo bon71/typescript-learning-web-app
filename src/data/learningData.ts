@@ -177,17 +177,17 @@ const user = {
   name: "田中太郎",
   age: 30,
   email: "tanaka@example.com",
-  
+
   // メソッドの定義
   sayHello: function() {
     console.log(\`こんにちは、\${this.name}です！\`);
   },
-  
+
   // ES6の短縮記法
   introduce() {
     console.log(\`私は\${this.name}、\${this.age}歳です。\`);
   },
-  
+
   // 計算されたプロパティ
   getInfo() {
     return \`\${this.name} (\${this.email})\`;
@@ -217,7 +217,7 @@ console.log(\`\${name}さんは\${age}歳です\`);
 const myUser = {
   name: "山田花子",
   age: 25,
-  
+
   sayHello() {
     console.log(\`こんにちは、\${this.name}です！よろしくお願いします。\`);
   }
@@ -328,10 +328,10 @@ class GreetingApp {
     this.output = document.getElementById('output');
     this.greetings = ['こんにちは', 'おはよう', 'こんばんは'];
     this.visitCount = 0;
-    
+
     this.init();
   }
-  
+
   init() {
     // イベントリスナーの登録
     this.greetButton.addEventListener('click', () => this.greet());
@@ -340,33 +340,33 @@ class GreetingApp {
       if (e.key === 'Enter') this.greet();
     });
   }
-  
+
   greet() {
     const name = this.nameInput.value.trim();
-    
+
     if (!name) {
       this.showMessage('名前を入力してください', 'error');
       return;
     }
-    
+
     this.visitCount++;
     const randomGreeting = this.getRandomGreeting();
     const message = \`\${randomGreeting}、\${name}さん！（\${this.visitCount}回目の挨拶）\`;
-    
+
     this.showMessage(message, 'success');
     this.nameInput.value = '';
   }
-  
+
   getRandomGreeting() {
     const index = Math.floor(Math.random() * this.greetings.length);
     return this.greetings[index];
   }
-  
+
   showMessage(message, type) {
     this.output.textContent = message;
     this.output.className = \`output \${type}\`;
   }
-  
+
   clear() {
     this.nameInput.value = '';
     this.output.textContent = '';
@@ -393,17 +393,17 @@ const simpleGreeting = () => {
 // 関数・オブジェクト・DOM操作・イベントを組み合わせた例
 const userManager = {
   users: [],
-  
+
   addUser(name, age) {
     if (name && age) {
       this.users.push({ name, age, id: Date.now() });
       this.displayUsers();
     }
   },
-  
+
   displayUsers() {
     const userList = document.getElementById('userList');
-    userList.innerHTML = this.users.map(user => 
+    userList.innerHTML = this.users.map(user =>
       \`<li>\${user.name} (\${user.age}歳)</li>\`
     ).join('');
   }
@@ -638,6 +638,750 @@ console.log(\`会社名: \${myCompany.name}\`);
 console.log(\`所在地: \${myCompany.address.prefecture}\${myCompany.address.city}\`);
 console.log(\`従業員数: \${myCompany.employees.length}人\`);`,
     explanation: "配列とオブジェクトに型をつけることで、プロパティへの安全なアクセスや配列操作が可能になります。複雑なデータ構造も型安全に扱えます。"
+  },
+// Phase 2: TypeScript入門（続き）
+  {
+    day: 11,
+    title: "関数に型をつける",
+    goal: "関数の引数と戻り値に型をつける",
+    completion: "シグネチャを定義できる",
+    task: "2つの数を受け取り加算する関数を作成",
+    phase: 2,
+    sampleCode: `// 基本的な関数の型定義
+// 1. 関数宣言での型注釈
+function add(a: number, b: number): number {
+  return a + b;
+}
+
+// 2. アロー関数での型注釈
+const multiply = (x: number, y: number): number => {
+  return x * y;
+};
+
+// 3. アロー関数（短縮形）
+const divide = (x: number, y: number): number => x / y;
+
+// 実際のタスク：2つの数を受け取り加算
+function addNumbers(num1: number, num2: number): number {
+  return num1 + num2;
+}
+
+console.log(addNumbers(5, 3)); // 8
+// console.log(addNumbers("5", 3)); // エラー！
+
+// オプション引数（?をつける）
+function greetUser(name: string, age?: number): string {
+  if (age !== undefined) {
+    return \`こんにちは、\${name}さん（\${age}歳）！\`;
+  }
+  return \`こんにちは、\${name}さん！\`;
+}
+
+console.log(greetUser("太郎")); // "こんにちは、太郎さん！"
+console.log(greetUser("花子", 25)); // "こんにちは、花子さん（25歳）！"
+
+// デフォルト引数
+function calculateArea(width: number, height: number = width): number {
+  return width * height;
+}
+
+console.log(calculateArea(5)); // 25（正方形）
+console.log(calculateArea(4, 6)); // 24（長方形）
+
+// 関数型の定義
+type MathOperation = (a: number, b: number) => number;
+
+const subtract: MathOperation = (x, y) => x - y;
+const modulo: MathOperation = (x, y) => x % y;
+
+// 関数を引数に取る高階関数
+function calculate(a: number, b: number, operation: MathOperation): number {
+  return operation(a, b);
+}
+
+console.log(calculate(10, 3, add)); // 13
+console.log(calculate(10, 3, subtract)); // 7
+console.log(calculate(10, 3, modulo)); // 1
+
+// void型（戻り値がない関数）
+function logMessage(message: string): void {
+  console.log(\`[ログ] \${message}\`);
+}
+
+// never型（決して戻らない関数）
+function throwError(message: string): never {
+  throw new Error(message);
+}
+
+// 複数の戻り値型（Union型）
+function formatValue(value: number | string): string {
+  if (typeof value === "number") {
+    return value.toFixed(2);
+  }
+  return value.toUpperCase();
+}
+
+console.log(formatValue(123.456)); // "123.46"
+console.log(formatValue("hello")); // "HELLO"
+
+// 実用的な例：ユーザー認証関数
+type User = {
+  id: number;
+  name: string;
+  email: string;
+};
+
+function authenticateUser(email: string, password: string): User | null {
+  // 実際の認証ロジック（簡略化）
+  if (email === "user@example.com" && password === "password123") {
+    return {
+      id: 1,
+      name: "テストユーザー",
+      email: email
+    };
+  }
+  return null; // 認証失敗
+}
+
+const result = authenticateUser("user@example.com", "password123");
+if (result) {
+  console.log(\`ログイン成功: \${result.name}\`);
+} else {
+  console.log("ログイン失敗");
+}`,
+    explanation: "関数に型をつけることで、引数の型ミスや戻り値の取り扱いミスを防げます。オプション引数やデフォルト引数も型安全に使えます。"
+  },
+  {
+    day: 12,
+    title: "Union型とLiteral型",
+    goal: "複数の型や文字列限定型を理解する",
+    completion: "Union/Literal型の使い分けができる",
+    task: '"admin" | "user" を受け取る関数を定義',
+    phase: 2,
+    sampleCode: `// Union型（複数の型を許可）
+// 1. 基本的なUnion型
+let value: string | number;
+value = "文字列"; // OK
+value = 123; // OK
+// value = true; // エラー！boolean型は許可されていない
+
+// 2. null・undefinedを含むUnion型
+let nullable: string | null = null;
+let optional: number | undefined = undefined;
+
+// 3. 配列のUnion型
+let mixedArray: (string | number)[] = ["hello", 123, "world", 456];
+
+// Literal型（特定の値のみを許可）
+// 1. 文字列リテラル型
+type UserRole = "admin" | "user" | "guest";
+type Status = "pending" | "approved" | "rejected";
+
+// 2. 数値リテラル型
+type DiceRoll = 1 | 2 | 3 | 4 | 5 | 6;
+type HttpStatus = 200 | 404 | 500;
+
+// 実際のタスク："admin" | "user" を受け取る関数
+function checkPermission(role: "admin" | "user"): string {
+  if (role === "admin") {
+    return "全ての操作が可能です";
+  } else {
+    return "制限された操作のみ可能です";
+  }
+}
+
+console.log(checkPermission("admin")); // "全ての操作が可能です"
+console.log(checkPermission("user")); // "制限された操作のみ可能です"
+// console.log(checkPermission("guest")); // エラー！
+
+// 実用的な例：API応答の型定義
+type ApiResponse<T> = {
+  data: T;
+  status: "success" | "error";
+  message?: string;
+};
+
+type User = {
+  id: number;
+  name: string;
+  role: UserRole;
+};
+
+function fetchUser(id: number): ApiResponse<User> {
+  // 簡略化されたAPI呼び出し
+  if (id > 0) {
+    return {
+      data: {
+        id: id,
+        name: "田中太郎",
+        role: "user"
+      },
+      status: "success"
+    };
+  } else {
+    return {
+      data: { id: 0, name: "", role: "guest" },
+      status: "error",
+      message: "ユーザーが見つかりません"
+    };
+  }
+}
+
+// 型ガード関数
+function isAdmin(role: UserRole): role is "admin" {
+  return role === "admin";
+}
+
+function handleUserAction(user: User, action: string): void {
+  if (isAdmin(user.role)) {
+    console.log(\`管理者\${user.name}が\${action}を実行しました\`);
+  } else {
+    console.log(\`一般ユーザー\${user.name}が\${action}を実行しました\`);
+  }
+}
+
+// Union型の絞り込み
+function processInput(input: string | number): string {
+  if (typeof input === "string") {
+    // この分岐内では input は string型として扱われる
+    return input.toUpperCase();
+  } else {
+    // この分岐内では input は number型として扱われる
+    return input.toString();
+  }
+}
+
+console.log(processInput("hello")); // "HELLO"
+console.log(processInput(123)); // "123"
+
+// 判別可能なUnion型
+type LoadingState = {
+  status: "loading";
+};
+
+type SuccessState = {
+  status: "success";
+  data: string;
+};
+
+type ErrorState = {
+  status: "error";
+  error: string;
+};
+
+type AppState = LoadingState | SuccessState | ErrorState;
+
+function renderState(state: AppState): string {
+  switch (state.status) {
+    case "loading":
+      return "読み込み中...";
+    case "success":
+      return \`データ: \${state.data}\`;
+    case "error":
+      return \`エラー: \${state.error}\`;
+    default:
+      // TypeScriptが全てのケースが処理されていることを確認
+      const _exhaustive: never = state;
+      return _exhaustive;
+  }
+}
+
+// 使用例
+const loadingState: AppState = { status: "loading" };
+const successState: AppState = { status: "success", data: "成功データ" };
+const errorState: AppState = { status: "error", error: "何かが間違っています" };
+
+console.log(renderState(loadingState)); // "読み込み中..."
+console.log(renderState(successState)); // "データ: 成功データ"
+console.log(renderState(errorState)); // "エラー: 何かが間違っています"`,
+    explanation: "Union型で複数の型を許可し、Literal型で特定の値のみを許可できます。型ガードを使って安全に型を絞り込めます。"
+  },
+  {
+    day: 13,
+    title: "Interfaceと継承",
+    goal: "Interfaceの定義と拡張を理解する",
+    completion: "複数の型構造を再利用できる",
+    task: "Person → Employee を継承してオブジェクト作成",
+    phase: 2,
+    sampleCode: `// 基本的なInterface定義
+interface Person {
+  name: string;
+  age: number;
+  email?: string; // オプショナルプロパティ
+}
+
+// Interfaceの使用
+const person: Person = {
+  name: "田中太郎",
+  age: 30,
+  email: "tanaka@example.com"
+};
+
+// Interfaceの継承（extends）
+interface Employee extends Person {
+  employeeId: string;
+  department: string;
+  salary: number;
+}
+
+// 実際のタスク：Person → Employee継承
+const employee: Employee = {
+  name: "山田花子", // Personから継承
+  age: 28,         // Personから継承
+  email: "yamada@company.com", // Personから継承（オプショナル）
+  employeeId: "EMP001", // Employee固有
+  department: "開発部",  // Employee固有
+  salary: 500000        // Employee固有
+};
+
+console.log(\`従業員: \${employee.name} (\${employee.employeeId})\`);
+console.log(\`部署: \${employee.department}, 年齢: \${employee.age}歳\`);
+
+// メソッドを含むInterface
+interface Greetable {
+  greet(): string;
+  greetWithMessage(message: string): string;
+}
+
+interface Student extends Person, Greetable {
+  studentId: string;
+  grade: number;
+  subjects: string[];
+}
+
+// Interfaceの実装
+const student: Student = {
+  name: "佐藤次郎",
+  age: 20,
+  studentId: "STU001",
+  grade: 2,
+  subjects: ["数学", "物理", "化学"],
+
+  greet(): string {
+    return \`こんにちは、\${this.name}です。\`;
+  },
+
+  greetWithMessage(message: string): string {
+    return \`\${message} 私は\${this.grade}年生の\${this.name}です。\`;
+  }
+};
+
+console.log(student.greet());
+console.log(student.greetWithMessage("おはようございます！"));
+
+// 関数パラメータとしてのInterface
+function displayPersonInfo(person: Person): void {
+  console.log(\`名前: \${person.name}\`);
+  console.log(\`年齢: \${person.age}歳\`);
+  if (person.email) {
+    console.log(\`メール: \${person.email}\`);
+  }
+}
+
+displayPersonInfo(person);
+displayPersonInfo(employee); // Employeeも Personを継承しているので使える
+displayPersonInfo(student);  // Studentも Personを継承しているので使える
+
+// Interfaceの結合（Declaration Merging）
+interface Product {
+  id: string;
+  name: string;
+}
+
+interface Product {
+  price: number;
+  category: string;
+}
+
+// 上記2つのInterfaceが自動的に結合される
+const product: Product = {
+  id: "PROD001",
+  name: "TypeScript学習本",
+  price: 2980,
+  category: "技術書"
+};
+
+// 読み取り専用プロパティ
+interface ReadonlyConfig {
+  readonly apiUrl: string;
+  readonly version: string;
+  settings: {
+    readonly maxRetries: number;
+    timeout: number; // 変更可能
+  };
+}
+
+const config: ReadonlyConfig = {
+  apiUrl: "https://api.example.com",
+  version: "1.0.0",
+  settings: {
+    maxRetries: 3,
+    timeout: 5000
+  }
+};
+
+// config.apiUrl = "変更不可"; // エラー！
+config.settings.timeout = 10000; // OK（readonlyではない）
+
+// インデックスシグネチャ
+interface Dictionary {
+  [key: string]: string;
+}
+
+const dictionary: Dictionary = {
+  "hello": "こんにちは",
+  "goodbye": "さようなら",
+  "thank you": "ありがとう"
+};
+
+// 関数型のInterface
+interface MathOperation {
+  (a: number, b: number): number;
+}
+
+const add: MathOperation = (x, y) => x + y;
+const multiply: MathOperation = (x, y) => x * y;
+
+// 複雑な例：会社管理システム
+interface Company {
+  name: string;
+  address: string;
+  employees: Employee[];
+
+  addEmployee(employee: Employee): void;
+  getEmployeeById(id: string): Employee | undefined;
+  getEmployeesByDepartment(department: string): Employee[];
+}
+
+const company: Company = {
+  name: "株式会社TypeScript",
+  address: "東京都渋谷区",
+  employees: [employee],
+
+  addEmployee(newEmployee: Employee): void {
+    this.employees.push(newEmployee);
+    console.log(\`従業員\${newEmployee.name}を追加しました\`);
+  },
+
+  getEmployeeById(id: string): Employee | undefined {
+    return this.employees.find(emp => emp.employeeId === id);
+  },
+
+  getEmployeesByDepartment(department: string): Employee[] {
+    return this.employees.filter(emp => emp.department === department);
+  }
+};
+
+// 新しい従業員を追加
+const newEmployee: Employee = {
+  name: "鈴木一郎",
+  age: 35,
+  employeeId: "EMP002",
+  department: "営業部",
+  salary: 450000
+};
+
+company.addEmployee(newEmployee);
+
+// 部署別の従業員検索
+const devEmployees = company.getEmployeesByDepartment("開発部");
+console.log(\`開発部の従業員数: \${devEmployees.length}人\`);`,
+    explanation: "Interfaceを使って型の構造を定義し、継承で型を拡張できます。複数のInterfaceを組み合わせて複雑な型システムを構築できます。"
+  },
+{
+    day: 14,
+    title: "クラスとTypeScript",
+    goal: "クラスの定義と型注釈を理解する",
+    completion: "メソッドを含むクラスを作れる",
+    task: "User クラスを作り、名前とログインメソッドを実装",
+    phase: 2,
+    sampleCode: `// 基本的なクラス定義
+class Person {
+  // プロパティの型定義
+  name: string;
+  age: number;
+  private email: string; // privateアクセス修飾子
+
+  // コンストラクタ
+  constructor(name: string, age: number, email: string) {
+    this.name = name;
+    this.age = age;
+    this.email = email;
+  }
+
+  // メソッドの定義
+  introduce(): string {
+    return \`こんにちは、\${this.name}です。\${this.age}歳です。\`;
+  }
+
+  // privateメソッド
+  private getEmail(): string {
+    return this.email;
+  }
+
+  // publicメソッド（privateメソッドを使用）
+  getContactInfo(): string {
+    return \`連絡先: \${this.getEmail()}\`;
+  }
+}
+
+// 実際のタスク：Userクラスの実装
+class User {
+  // プロパティ
+  public name: string;
+  private isLoggedIn: boolean;
+  protected createdAt: Date;
+
+  constructor(name: string) {
+    this.name = name;
+    this.isLoggedIn = false;
+    this.createdAt = new Date();
+  }
+
+  // ログインメソッド
+  login(): void {
+    this.isLoggedIn = true;
+    console.log(\`\${this.name}さんがログインしました。\`);
+  }
+
+  // ログアウトメソッド
+  logout(): void {
+    this.isLoggedIn = false;
+    console.log(\`\${this.name}さんがログアウトしました。\`);
+  }
+
+  // ログイン状態確認
+  getLoginStatus(): boolean {
+    return this.isLoggedIn;
+  }
+
+  // ユーザー情報表示
+  getUserInfo(): string {
+    const status = this.isLoggedIn ? "ログイン中" : "ログアウト中";
+    return \`ユーザー: \${this.name} (\${status})\`;
+  }
+}
+
+// クラスの使用例
+const user = new User("田中太郎");
+console.log(user.getUserInfo()); // "ユーザー: 田中太郎 (ログアウト中)"
+
+user.login(); // "田中太郎さんがログインしました。"
+console.log(user.getUserInfo()); // "ユーザー: 田中太郎 (ログイン中)"
+
+user.logout(); // "田中太郎さんがログアウトしました。"
+
+// 継承（extends）
+class Employee extends Person {
+  private department: string;
+  private salary: number;
+
+  constructor(name: string, age: number, email: string, department: string, salary: number) {
+    super(name, age, email); // 親クラスのコンストラクタ呼び出し
+    this.department = department;
+    this.salary = salary;
+  }
+
+  // メソッドのオーバーライド
+  introduce(): string {
+    return \`\${super.introduce()} \${this.department}部で働いています。\`;
+  }
+
+  // 新しいメソッド
+  getWorkInfo(): string {
+    return \`部署: \${this.department}, 給与: \${this.salary}円\`;
+  }
+}
+
+const employee = new Employee("山田花子", 28, "yamada@company.com", "開発", 500000);
+console.log(employee.introduce()); // "こんにちは、山田花子です。28歳です。 開発部で働いています。"
+console.log(employee.getWorkInfo()); // "部署: 開発, 給与: 500000円"
+
+// 抽象クラス（abstract）
+abstract class Animal {
+  protected name: string;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+
+  // 具象メソッド
+  sleep(): void {
+    console.log(\`\${this.name}が眠っています。\`);
+  }
+
+  // 抽象メソッド（継承先で必ず実装が必要）
+  abstract makeSound(): void;
+}
+
+class Dog extends Animal {
+  constructor(name: string) {
+    super(name);
+  }
+
+  // 抽象メソッドの実装
+  makeSound(): void {
+    console.log(\`\${this.name}が「ワンワン」と鳴いています。\`);
+  }
+
+  // 犬特有のメソッド
+  fetch(): void {
+    console.log(\`\${this.name}がボールを取ってきました。\`);
+  }
+}
+
+const dog = new Dog("ポチ");
+dog.makeSound(); // "ポチが「ワンワン」と鳴いています。"
+dog.sleep(); // "ポチが眠っています。"
+dog.fetch(); // "ポチがボールを取ってきました。"
+
+// インターフェースの実装（implements）
+interface Flyable {
+  fly(): void;
+}
+
+interface Swimmable {
+  swim(): void;
+}
+
+class Duck extends Animal implements Flyable, Swimmable {
+  constructor(name: string) {
+    super(name);
+  }
+
+  makeSound(): void {
+    console.log(\`\${this.name}が「クワクワ」と鳴いています。\`);
+  }
+
+  fly(): void {
+    console.log(\`\${this.name}が空を飛んでいます。\`);
+  }
+
+  swim(): void {
+    console.log(\`\${this.name}が水面を泳いでいます。\`);
+  }
+}
+
+const duck = new Duck("アヒル");
+duck.makeSound(); // "アヒルが「クワクワ」と鳴いています。"
+duck.fly(); // "アヒルが空を飛んでいます。"
+duck.swim(); // "アヒルが水面を泳いでいます。"
+
+// ゲッター・セッター
+class Product {
+  private _price: number;
+  private _name: string;
+
+  constructor(name: string, price: number) {
+    this._name = name;
+    this._price = price;
+  }
+
+  // ゲッター
+  get price(): number {
+    return this._price;
+  }
+
+  get name(): string {
+    return this._name;
+  }
+
+  // セッター
+  set price(newPrice: number) {
+    if (newPrice < 0) {
+      throw new Error("価格は0以上である必要があります");
+    }
+    this._price = newPrice;
+  }
+
+  // 割引メソッド
+  applyDiscount(percentage: number): void {
+    const discountAmount = this._price * (percentage / 100);
+    this.price = this._price - discountAmount; // セッターを使用
+  }
+
+  getInfo(): string {
+    return \`商品: \${this.name}, 価格: \${this.price}円\`;
+  }
+}
+
+const product = new Product("TypeScript本", 3000);
+console.log(product.getInfo()); // "商品: TypeScript本, 価格: 3000円"
+
+product.applyDiscount(10); // 10%割引
+console.log(product.getInfo()); // "商品: TypeScript本, 価格: 2700円"
+
+// 静的メソッドとプロパティ
+class MathUtils {
+  static readonly PI = 3.14159;
+
+  static add(a: number, b: number): number {
+    return a + b;
+  }
+
+  static calculateCircleArea(radius: number): number {
+    return MathUtils.PI * radius * radius;
+  }
+}
+
+console.log(MathUtils.add(5, 3)); // 8
+console.log(MathUtils.calculateCircleArea(5)); // 78.53975
+console.log(MathUtils.PI); // 3.14159
+
+// 実用的な例：ショッピングカート
+class ShoppingCart {
+  private items: { product: Product; quantity: number }[] = [];
+
+  addItem(product: Product, quantity: number = 1): void {
+    const existingItem = this.items.find(item => item.product.name === product.name);
+
+    if (existingItem) {
+      existingItem.quantity += quantity;
+    } else {
+      this.items.push({ product, quantity });
+    }
+
+    console.log(\`\${product.name} x \${quantity} をカートに追加しました。\`);
+  }
+
+  removeItem(productName: string): void {
+    this.items = this.items.filter(item => item.product.name !== productName);
+    console.log(\`\${productName} をカートから削除しました。\`);
+  }
+
+  getTotalPrice(): number {
+    return this.items.reduce((total, item) => {
+      return total + (item.product.price * item.quantity);
+    }, 0);
+  }
+
+  getItemCount(): number {
+    return this.items.reduce((count, item) => count + item.quantity, 0);
+  }
+
+  displayCart(): void {
+    console.log("=== ショッピングカート ===");
+    this.items.forEach(item => {
+      const subtotal = item.product.price * item.quantity;
+      console.log(\`\${item.product.name} x \${item.quantity} = \${subtotal}円\`);
+    });
+    console.log(\`合計: \${this.getTotalPrice()}円 (\${this.getItemCount()}点)\`);
+  }
+}
+
+// ショッピングカートの使用例
+const cart = new ShoppingCart();
+const book1 = new Product("JavaScript本", 2500);
+const book2 = new Product("TypeScript本", 3000);
+
+cart.addItem(book1, 2);
+cart.addItem(book2, 1);
+cart.displayCart();
+// "=== ショッピングカート ==="
+// "JavaScript本 x 2 = 5000円"
+// "TypeScript本 x 1 = 3000円"
+// "合計: 8000円 (3点)"`,
+    explanation: "TypeScriptのクラスでは、アクセス修飾子、継承、抽象クラス、インターフェース実装などのOOP機能を型安全に使えます。"
   }
 ]
 
