@@ -29,3 +29,9 @@ dist-ssr
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Build output
+Dockerfile
+docker-compose.yml
+docker-compose.override.yml
+.dockerignore
