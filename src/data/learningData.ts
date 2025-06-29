@@ -1382,6 +1382,2121 @@ cart.displayCart();
 // "TypeScript本 x 1 = 3000円"
 // "合計: 8000円 (3点)"`,
     explanation: "TypeScriptのクラスでは、アクセス修飾子、継承、抽象クラス、インターフェース実装などのOOP機能を型安全に使えます。"
+  },
+// Phase 3: TypeScript実践応用
+  {
+    day: 15,
+    title: "Generics",
+    goal: "ジェネリクスの定義と利用方法を理解する",
+    completion: "<T>を使った関数が書ける",
+    task: "任意の配列の先頭要素を返すgetFirst<T>()を作成",
+    phase: 3,
+    sampleCode: `// 基本的なジェネリクス関数
+function getFirst<T>(array: T[]): T | undefined {
+  return array.length > 0 ? array[0] : undefined;
+}
+
+// 実際のタスク：任意の配列の先頭要素を返す関数
+const numbers = [1, 2, 3, 4, 5];
+const firstNumber = getFirst(numbers); // number | undefined型
+
+const fruits = ["apple", "banana", "orange"];
+const firstFruit = getFirst(fruits); // string | undefined型
+
+const users = [
+  { name: "太郎", age: 30 },
+  { name: "花子", age: 25 }
+];
+const firstUser = getFirst(users); // { name: string; age: number } | undefined型
+
+console.log(firstNumber); // 1
+console.log(firstFruit); // "apple"
+console.log(firstUser?.name); // "太郎"
+
+// 複数の型パラメータ
+function pair<T, U>(first: T, second: U): [T, U] {
+  return [first, second];
+}
+
+const stringNumberPair = pair("hello", 42); // [string, number]型
+const booleanDatePair = pair(true, new Date()); // [boolean, Date]型
+
+console.log(stringNumberPair); // ["hello", 42]
+console.log(booleanDatePair[1].getFullYear()); // 現在の年
+
+// ジェネリクス制約（extends）
+interface Lengthwise {
+  length: number;
+}
+
+function logLength<T extends Lengthwise>(item: T): T {
+  console.log(\`Length: \${item.length}\`);
+  return item;
+}
+
+logLength("Hello World"); // OK: string has length
+logLength([1, 2, 3, 4]); // OK: array has length
+logLength({ length: 10, value: "test" }); // OK: object has length property
+// logLength(42); // エラー: number doesn't have length property
+
+// keyof演算子との組み合わせ
+function getProperty<T, K extends keyof T>(obj: T, key: K): T[K] {
+  return obj[key];
+}
+
+const person = {
+  name: "田中太郎",
+  age: 30,
+  email: "tanaka@example.com"
+};
+
+const personName = getProperty(person, "name"); // string型
+const personAge = getProperty(person, "age"); // number型
+// const invalid = getProperty(person, "invalid"); // エラー: プロパティが存在しない
+
+console.log(personName); // "田中太郎"
+console.log(personAge); // 30
+
+// ジェネリクスクラス
+class DataStore<T> {
+  private items: T[] = [];
+
+  add(item: T): void {
+    this.items.push(item);
+  }
+
+  get(index: number): T | undefined {
+    return this.items[index];
+  }
+
+  getAll(): T[] {
+    return [...this.items]; // 配列のコピーを返す
+  }
+
+  find(predicate: (item: T) => boolean): T | undefined {
+    return this.items.find(predicate);
+  }
+
+  filter(predicate: (item: T) => boolean): T[] {
+    return this.items.filter(predicate);
+  }
+
+  count(): number {
+    return this.items.length;
+  }
+}
+
+// 数値ストア
+const numberStore = new DataStore<number>();
+numberStore.add(10);
+numberStore.add(20);
+numberStore.add(30);
+
+console.log(numberStore.getAll()); // [10, 20, 30]
+console.log(numberStore.find(n => n > 15)); // 20
+
+// ユーザーストア
+type User = {
+  id: number;
+  name: string;
+  email: string;
+};
+
+const userStore = new DataStore<User>();
+userStore.add({ id: 1, name: "太郎", email: "taro@example.com" });
+userStore.add({ id: 2, name: "花子", email: "hanako@example.com" });
+
+const adminUser = userStore.find(user => user.name === "太郎");
+console.log(adminUser); // { id: 1, name: "太郎", email: "taro@example.com" }
+
+// ジェネリクスインターフェース
+interface Repository<T> {
+  create(item: T): T;
+  findById(id: string | number): T | null;
+  update(id: string | number, item: Partial<T>): T | null;
+  delete(id: string | number): boolean;
+  findAll(): T[];
+}
+
+// ユーザーリポジトリの実装
+class UserRepository implements Repository<User> {
+  private users: User[] = [];
+  private nextId = 1;
+
+  create(user: Omit<User, 'id'>): User {
+    const newUser: User = {
+      id: this.nextId++,
+      ...user
+    };
+    this.users.push(newUser);
+    return newUser;
+  }
+
+  findById(id: number): User | null {
+    return this.users.find(user => user.id === id) || null;
+  }
+
+  update(id: number, userData: Partial<User>): User | null {
+    const userIndex = this.users.findIndex(user => user.id === id);
+    if (userIndex === -1) return null;
+
+    this.users[userIndex] = { ...this.users[userIndex], ...userData };
+    return this.users[userIndex];
+  }
+
+  delete(id: number): boolean {
+    const initialLength = this.users.length;
+    this.users = this.users.filter(user => user.id !== id);
+    return this.users.length < initialLength;
+  }
+
+  findAll(): User[] {
+    return [...this.users];
+  }
+}
+
+// リポジトリの使用例
+const userRepo = new UserRepository();
+
+const user1 = userRepo.create({
+  name: "山田太郎",
+  email: "yamada@example.com"
+});
+
+const user2 = userRepo.create({
+  name: "佐藤花子",
+  email: "sato@example.com"
+});
+
+console.log("全ユーザー:", userRepo.findAll());
+
+// ユーザー更新
+userRepo.update(1, { email: "newemail@example.com" });
+console.log("更新後のユーザー1:", userRepo.findById(1));
+
+// 条件付き型の基本
+type ApiResponse<T> = T extends string
+  ? { message: T }
+  : T extends number
+  ? { count: T }
+  : { data: T };
+
+type StringResponse = ApiResponse<string>; // { message: string }
+type NumberResponse = ApiResponse<number>; // { count: number }
+type ObjectResponse = ApiResponse<User>; // { data: User }
+
+// 実用的なヘルパー関数
+function createApiResponse<T>(data: T): ApiResponse<T> {
+  if (typeof data === 'string') {
+    return { message: data } as ApiResponse<T>;
+  } else if (typeof data === 'number') {
+    return { count: data } as ApiResponse<T>;
+  } else {
+    return { data } as ApiResponse<T>;
+  }
+}
+
+const messageResponse = createApiResponse("Success");
+const countResponse = createApiResponse(42);
+const userResponse = createApiResponse(user1);
+
+console.log(messageResponse); // { message: "Success" }
+console.log(countResponse); // { count: 42 }
+console.log(userResponse); // { data: User }`,
+    explanation: "ジェネリクスを使うことで、型安全性を保ちながら再利用可能で柔軟なコードを書けます。制約や条件付き型で更に強力な型システムを構築できます。"
+  },
+  {
+    day: 16,
+    title: "型ガード",
+    goal: "型による分岐（型ガード）を理解する",
+    completion: "typeof, in, instanceof を使える",
+    task: "型に応じて処理が変わる関数を定義",
+    phase: 3,
+    sampleCode: `// typeof型ガード
+function processValue(value: string | number): string {
+  if (typeof value === "string") {
+    // この分岐内では value は string型として扱われる
+    return value.toUpperCase();
+  } else {
+    // この分岐内では value は number型として扱われる
+    return value.toFixed(2);
+  }
+}
+
+console.log(processValue("hello")); // "HELLO"
+console.log(processValue(123.456)); // "123.46"
+
+// in演算子による型ガード
+interface Bird {
+  fly(): void;
+  layEggs(): void;
+}
+
+interface Fish {
+  swim(): void;
+  layEggs(): void;
+}
+
+function isBird(animal: Bird | Fish): animal is Bird {
+  return 'fly' in animal;
+}
+
+function moveAnimal(animal: Bird | Fish): void {
+  if (isBird(animal)) {
+    // この分岐内では animal は Bird型
+    animal.fly();
+  } else {
+    // この分岐内では animal は Fish型
+    animal.swim();
+  }
+
+  // 共通メソッドはどちらでも使える
+  animal.layEggs();
+}
+
+// 実際のタスク：型に応じて処理が変わる関数
+type StringInput = {
+  type: "string";
+  value: string;
+};
+
+type NumberInput = {
+  type: "number";
+  value: number;
+};
+
+type BooleanInput = {
+  type: "boolean";
+  value: boolean;
+};
+
+type InputData = StringInput | NumberInput | BooleanInput;
+
+function processInput(input: InputData): string {
+  switch (input.type) {
+    case "string":
+      // input.value は string型として扱われる
+      return \`文字列: "\${input.value}" (長さ: \${input.value.length})\`;
+
+    case "number":
+      // input.value は number型として扱われる
+      return \`数値: \${input.value} (2倍: \${input.value * 2})\`;
+
+    case "boolean":
+      // input.value は boolean型として扱われる
+      return \`真偽値: \${input.value} (逆: \${!input.value})\`;
+
+    default:
+      // 型の網羅性チェック
+      const _exhaustive: never = input;
+      return _exhaustive;
+  }
+}
+
+// テストデータ
+const stringInput: StringInput = { type: "string", value: "TypeScript" };
+const numberInput: NumberInput = { type: "number", value: 42 };
+const booleanInput: BooleanInput = { type: "boolean", value: true };
+
+console.log(processInput(stringInput)); // "文字列: "TypeScript" (長さ: 10)"
+console.log(processInput(numberInput)); // "数値: 42 (2倍: 84)"
+console.log(processInput(booleanInput)); // "真偽値: true (逆: false)"
+
+// instanceof型ガード
+class Dog {
+  name: string;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+
+  bark(): void {
+    console.log(\`\${this.name}がワンワンと吠えています。\`);
+  }
+}
+
+class Cat {
+  name: string;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+
+  meow(): void {
+    console.log(\`\${this.name}がニャーニャー鳴いています。\`);
+  }
+}
+
+function petAnimal(animal: Dog | Cat): void {
+  if (animal instanceof Dog) {
+    // animal は Dog型として扱われる
+    animal.bark();
+  } else {
+    // animal は Cat型として扱われる
+    animal.meow();
+  }
+}
+
+const dog = new Dog("ポチ");
+const cat = new Cat("タマ");
+
+petAnimal(dog); // "ポチがワンワンと吠えています。"
+petAnimal(cat); // "タマがニャーニャー鳴いています。"
+
+// カスタム型ガード関数
+function isString(value: unknown): value is string {
+  return typeof value === "string";
+}
+
+function isNumber(value: unknown): value is number {
+  return typeof value === "number" && !isNaN(value);
+}
+
+function isArrayOfStrings(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every(item => typeof item === "string");
+}
+
+function safeProcess(input: unknown): string {
+  if (isString(input)) {
+    return \`文字列処理: \${input.toUpperCase()}\`;
+  } else if (isNumber(input)) {
+    return \`数値処理: \${input * 2}\`;
+  } else if (isArrayOfStrings(input)) {
+    return \`配列処理: [\${input.join(", ")}]\`;
+  } else {
+    return "未知の型です";
+  }
+}
+
+console.log(safeProcess("hello")); // "文字列処理: HELLO"
+console.log(safeProcess(42)); // "数値処理: 84"
+console.log(safeProcess(["a", "b", "c"])); // "配列処理: [a, b, c]"
+console.log(safeProcess({})); // "未知の型です"
+
+// 複雑な型ガードの例：APIレスポンス
+interface SuccessResponse {
+  success: true;
+  data: any;
+  message?: string;
+}
+
+interface ErrorResponse {
+  success: false;
+  error: string;
+  code: number;
+}
+
+type ApiResponse = SuccessResponse | ErrorResponse;
+
+function isSuccessResponse(response: ApiResponse): response is SuccessResponse {
+  return response.success === true;
+}
+
+function isErrorResponse(response: ApiResponse): response is ErrorResponse {
+  return response.success === false;
+}
+
+function handleApiResponse(response: ApiResponse): void {
+  if (isSuccessResponse(response)) {
+    console.log("成功:", response.data);
+    if (response.message) {
+      console.log("メッセージ:", response.message);
+    }
+  } else if (isErrorResponse(response)) {
+    console.log(\`エラー (\${response.code}): \${response.error}\`);
+  }
+}
+
+// テスト
+const successResponse: ApiResponse = {
+  success: true,
+  data: { users: ["太郎", "花子"] },
+  message: "ユーザー一覧を取得しました"
+};
+
+const errorResponse: ApiResponse = {
+  success: false,
+  error: "ユーザーが見つかりません",
+  code: 404
+};
+
+handleApiResponse(successResponse); // "成功: { users: ['太郎', '花子'] }" "メッセージ: ユーザー一覧を取得しました"
+handleApiResponse(errorResponse); // "エラー (404): ユーザーが見つかりません"
+
+// nullish coalescing と optional chaining
+type User = {
+  id: number;
+  name: string;
+  profile?: {
+    bio?: string;
+    avatar?: string;
+  };
+};
+
+function getUserBio(user: User | null | undefined): string {
+  // optional chaining と nullish coalescing の組み合わせ
+  return user?.profile?.bio ?? "プロフィールがありません";
+}
+
+const userWithProfile: User = {
+  id: 1,
+  name: "太郎",
+  profile: {
+    bio: "TypeScript開発者です",
+    avatar: "avatar.png"
+  }
+};
+
+const userWithoutProfile: User = {
+  id: 2,
+  name: "花子"
+};
+
+console.log(getUserBio(userWithProfile)); // "TypeScript開発者です"
+console.log(getUserBio(userWithoutProfile)); // "プロフィールがありません"
+console.log(getUserBio(null)); // "プロフィールがありません"
+
+// 型の絞り込みを使った実用的な例
+function formatUserDisplay(user: User): string {
+  const bio = getUserBio(user);
+  const avatar = user.profile?.avatar;
+
+  if (avatar) {
+    return \`\${user.name} [画像: \${avatar}] - \${bio}\`;
+  } else {
+    return \`\${user.name} - \${bio}\`;
+  }
+}
+
+console.log(formatUserDisplay(userWithProfile));
+// "太郎 [画像: avatar.png] - TypeScript開発者です"
+console.log(formatUserDisplay(userWithoutProfile));
+// "花子 - プロフィールがありません"`,
+    explanation: "型ガードを使って実行時に型を安全に判定し、TypeScriptの型システムが正しい型を推論できるようにします。typeof、in、instanceof、カスタム型ガードを適切に使い分けることが重要です。"
+  },
+{
+    day: 17,
+    title: "Promiseと非同期処理",
+    goal: "非同期関数に型を付ける方法を理解する",
+    completion: "Promise<T>を返す関数が書ける",
+    task: "APIから取得したデータの型を定義して取得関数を実装",
+    phase: 3,
+    sampleCode: `// 基本的なPromise型定義
+// Promise<T>は非同期処理の結果の型を表す
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+// 数値を返すPromise
+function asyncNumber(): Promise<number> {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(42), 1000);
+  });
+}
+
+// 文字列を返すPromise
+function asyncString(): Promise<string> {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve("Hello TypeScript"), 500);
+  });
+}
+
+// 実際のタスク：APIデータ型定義と取得関数
+// 1. APIレスポンスの型定義
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  createdAt: string;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+  error?: string;
+}
+
+// 2. ユーザーAPI取得関数
+async function fetchUser(userId: number): Promise<ApiResponse<User>> {
+  try {
+    // 実際のAPI呼び出しをシミュレート
+    await delay(1000);
+
+    if (userId > 0) {
+      const user: User = {
+        id: userId,
+        name: \`ユーザー\${userId}\`,
+        email: \`user\${userId}@example.com\`,
+        createdAt: new Date().toISOString()
+      };
+
+      return {
+        success: true,
+        data: user,
+        message: "ユーザー情報を取得しました"
+      };
+    } else {
+      return {
+        success: false,
+        data: {} as User,
+        error: "無効なユーザーIDです"
+      };
+    }
+  } catch (error) {
+    return {
+      success: false,
+      data: {} as User,
+      error: "API呼び出しに失敗しました"
+    };
+  }
+}
+
+// 3. ユーザーリスト取得関数
+async function fetchUsers(): Promise<ApiResponse<User[]>> {
+  try {
+    await delay(1500);
+
+    const users: User[] = [
+      { id: 1, name: "田中太郎", email: "tanaka@example.com", createdAt: "2024-01-01T00:00:00Z" },
+      { id: 2, name: "山田花子", email: "yamada@example.com", createdAt: "2024-01-02T00:00:00Z" },
+      { id: 3, name: "佐藤次郎", email: "sato@example.com", createdAt: "2024-01-03T00:00:00Z" }
+    ];
+
+    return {
+      success: true,
+      data: users,
+      message: \`\${users.length}人のユーザーを取得しました\`
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: [],
+      error: "ユーザー一覧の取得に失敗しました"
+    };
+  }
+}
+
+// async/awaitの使用例
+async function displayUserInfo(): Promise<void> {
+  console.log("ユーザー情報を取得中...");
+
+  const response = await fetchUser(1);
+
+  if (response.success) {
+    const user = response.data;
+    console.log(\`ID: \${user.id}\`);
+    console.log(\`名前: \${user.name}\`);
+    console.log(\`メール: \${user.email}\`);
+    console.log(\`作成日: \${user.createdAt}\`);
+  } else {
+    console.error("エラー:", response.error);
+  }
+}
+
+// Promise.all()の型安全な使用
+async function fetchMultipleData(): Promise<void> {
+  try {
+    console.log("複数のデータを並行取得中...");
+
+    const [userResponse, usersResponse, delayResult] = await Promise.all([
+      fetchUser(1),
+      fetchUsers(),
+      asyncNumber()
+    ]);
+
+    console.log("ユーザー:", userResponse.data.name);
+    console.log("ユーザー数:", usersResponse.data.length);
+    console.log("非同期番号:", delayResult);
+  } catch (error) {
+    console.error("並行処理でエラーが発生しました:", error);
+  }
+}
+
+// エラーハンドリングとカスタムエラー型
+class ApiError extends Error {
+  constructor(
+    public code: number,
+    public message: string,
+    public details?: any
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+async function fetchUserWithErrorHandling(userId: number): Promise<User> {
+  if (userId <= 0) {
+    throw new ApiError(400, "無効なユーザーIDです", { userId });
+  }
+
+  try {
+    const response = await fetchUser(userId);
+
+    if (!response.success) {
+      throw new ApiError(404, response.error || "ユーザーが見つかりません");
+    }
+
+    return response.data;
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error; // カスタムエラーはそのまま再スロー
+    }
+    throw new ApiError(500, "予期しないエラーが発生しました", error);
+  }
+}
+
+// ジェネリクスとPromiseの組み合わせ
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+  ttl: number; // Time to Live (milliseconds)
+}
+
+class AsyncCache<T> {
+  private cache = new Map<string, CacheEntry<T>>();
+
+  async get(
+    key: string,
+    fetcher: () => Promise<T>,
+    ttl: number = 60000 // デフォルト1分
+  ): Promise<T> {
+    const cached = this.cache.get(key);
+    const now = Date.now();
+
+    if (cached && (now - cached.timestamp) < cached.ttl) {
+      console.log(\`キャッシュヒット: \${key}\`);
+      return cached.data;
+    }
+
+    console.log(\`データ取得: \${key}\`);
+    const data = await fetcher();
+
+    this.cache.set(key, {
+      data,
+      timestamp: now,
+      ttl
+    });
+
+    return data;
+  }
+
+  clear(): void {
+    this.cache.clear();
+  }
+
+  delete(key: string): boolean {
+    return this.cache.delete(key);
+  }
+}
+
+// キャッシュの使用例
+const userCache = new AsyncCache<User>();
+
+async function getCachedUser(userId: number): Promise<User> {
+  return userCache.get(
+    \`user_\${userId}\`,
+    () => fetchUserWithErrorHandling(userId),
+    30000 // 30秒キャッシュ
+  );
+}
+
+// Promise型の高度な使用例
+type DataLoader<T> = {
+  load(): Promise<T>;
+  isLoading(): boolean;
+  reset(): void;
+};
+
+function createDataLoader<T>(fetcher: () => Promise<T>): DataLoader<T> {
+  let loading = false;
+  let promise: Promise<T> | null = null;
+
+  return {
+    async load(): Promise<T> {
+      if (promise) {
+        return promise;
+      }
+
+      loading = true;
+      promise = fetcher().finally(() => {
+        loading = false;
+      });
+
+      return promise;
+    },
+
+    isLoading(): boolean {
+      return loading;
+    },
+
+    reset(): void {
+      loading = false;
+      promise = null;
+    }
+  };
+}
+
+// データローダーの使用例
+const userLoader = createDataLoader(() => fetchUsers());
+
+async function useDataLoader(): Promise<void> {
+  console.log("ローディング状態:", userLoader.isLoading()); // false
+
+  const users1 = await userLoader.load(); // 実際のAPI呼び出し
+  console.log("最初の呼び出し:", users1.data.length);
+
+  const users2 = await userLoader.load(); // キャッシュされた結果
+  console.log("2回目の呼び出し:", users2.data.length);
+
+  userLoader.reset(); // キャッシュをクリア
+}
+
+// 実際の使用例
+async function runExamples(): Promise<void> {
+  try {
+    // 基本的な使用例
+    await displayUserInfo();
+
+    // 並行処理
+    await fetchMultipleData();
+
+    // エラーハンドリング
+    try {
+      const user = await fetchUserWithErrorHandling(-1);
+      console.log(user);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        console.error(\`API エラー (\${error.code}): \${error.message}\`);
+      }
+    }
+
+    // キャッシュ使用例
+    const cachedUser1 = await getCachedUser(1); // API呼び出し
+    const cachedUser2 = await getCachedUser(1); // キャッシュヒット
+
+    // データローダー使用例
+    await useDataLoader();
+
+  } catch (error) {
+    console.error("予期しないエラー:", error);
+  }
+}
+
+// 型安全なPromise型定義の例
+type AsyncResult<T, E = Error> = Promise<
+  | { success: true; data: T }
+  | { success: false; error: E }
+>;
+
+async function safeAsyncOperation<T>(
+  operation: () => Promise<T>
+): AsyncResult<T, string> {
+  try {
+    const data = await operation();
+    return { success: true, data };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    return { success: false, error: errorMessage };
+  }
+}
+
+// 使用例
+async function safeFetchExample(): Promise<void> {
+  const result = await safeAsyncOperation(() => fetchUserWithErrorHandling(1));
+
+  if (result.success) {
+    console.log("ユーザー:", result.data.name);
+  } else {
+    console.error("エラー:", result.error);
+  }
+}
+
+console.log("非同期処理の例を実行中...");
+// runExamples(); // 実際に実行する場合はコメントアウトを外す`,
+    explanation: "TypeScriptでPromiseを使う際は、Promise<T>で非同期処理の結果型を明確にします。async/awaitと組み合わせることで、型安全な非同期プログラミングが可能になります。"
+  },
+  {
+    day: 18,
+    title: "Utility Types",
+    goal: "Partial, Pick, Record の使い方を理解",
+    completion: "Utility Typesを使って型を柔軟に変更できる",
+    task: "User から一部のプロパティだけを抽出して使う",
+    phase: 3,
+    sampleCode: `// ベースとなる型定義
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  age: number;
+  address: {
+    prefecture: string;
+    city: string;
+    zipCode: string;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// 1. Partial<T> - 全てのプロパティをオプショナルにする
+type PartialUser = Partial<User>;
+// 結果: { id?: number; name?: string; email?: string; ... }
+
+function updateUser(id: number, updates: Partial<User>): User {
+  // 既存のユーザーデータ（簡略化）
+  const existingUser: User = {
+    id: 1,
+    name: "田中太郎",
+    email: "tanaka@example.com",
+    age: 30,
+    address: { prefecture: "東京都", city: "渋谷区", zipCode: "150-0001" },
+    createdAt: new Date("2024-01-01"),
+    updatedAt: new Date()
+  };
+
+  // 部分的な更新
+  return { ...existingUser, ...updates, updatedAt: new Date() };
+}
+
+// 使用例
+const updatedUser = updateUser(1, {
+  name: "田中花子",
+  age: 31
+}); // emailやaddressは変更しない
+
+console.log(updatedUser.name); // "田中花子"
+console.log(updatedUser.age); // 31
+
+// 2. Pick<T, K> - 指定したプロパティのみを抽出
+type UserSummary = Pick<User, 'id' | 'name' | 'email'>;
+// 結果: { id: number; name: string; email: string; }
+
+// 実際のタスク：一部プロパティを抽出
+type UserProfile = Pick<User, 'name' | 'email' | 'age'>;
+
+function createUserProfile(user: User): UserProfile {
+  return {
+    name: user.name,
+    email: user.email,
+    age: user.age
+  };
+}
+
+function displayUserProfile(profile: UserProfile): void {
+  console.log(\`名前: \${profile.name}\`);
+  console.log(\`メール: \${profile.email}\`);
+  console.log(\`年齢: \${profile.age}歳\`);
+}
+
+const user: User = {
+  id: 1,
+  name: "山田太郎",
+  email: "yamada@example.com",
+  age: 28,
+  address: { prefecture: "大阪府", city: "大阪市", zipCode: "530-0001" },
+  createdAt: new Date("2024-01-15"),
+  updatedAt: new Date()
+};
+
+const profile = createUserProfile(user);
+displayUserProfile(profile);
+
+// 3. Omit<T, K> - 指定したプロパティを除外
+type UserWithoutTimestamps = Omit<User, 'createdAt' | 'updatedAt'>;
+// 結果: id, name, email, age, address のみ
+
+type CreateUserRequest = Omit<User, 'id' | 'createdAt' | 'updatedAt'>;
+
+function createUser(userData: CreateUserRequest): User {
+  return {
+    id: Math.floor(Math.random() * 1000) + 1,
+    ...userData,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  };
+}
+
+const newUserData: CreateUserRequest = {
+  name: "佐藤花子",
+  email: "sato@example.com",
+  age: 25,
+  address: { prefecture: "愛知県", city: "名古屋市", zipCode: "460-0001" }
+};
+
+const newUser = createUser(newUserData);
+console.log(\`新規ユーザー: \${newUser.name} (ID: \${newUser.id})\`);
+
+// 4. Record<K, T> - キーと値の型を指定してオブジェクト型を作成
+type UserRole = 'admin' | 'user' | 'guest';
+type RolePermissions = Record<UserRole, string[]>;
+
+const permissions: RolePermissions = {
+  admin: ['read', 'write', 'delete', 'manage'],
+  user: ['read', 'write'],
+  guest: ['read']
+};
+
+function checkPermission(role: UserRole, action: string): boolean {
+  return permissions[role].includes(action);
+}
+
+console.log(checkPermission('admin', 'delete')); // true
+console.log(checkPermission('user', 'delete')); // false
+
+// 5. Required<T> - 全てのプロパティを必須にする
+interface OptionalConfig {
+  host?: string;
+  port?: number;
+  database?: string;
+  ssl?: boolean;
+}
+
+type RequiredConfig = Required<OptionalConfig>;
+// 結果: { host: string; port: number; database: string; ssl: boolean; }
+
+function validateConfig(config: RequiredConfig): boolean {
+  return config.host.length > 0 &&
+         config.port > 0 &&
+         config.database.length > 0;
+}
+
+// 6. Readonly<T> - 全てのプロパティを読み取り専用にする
+type ReadonlyUser = Readonly<User>;
+
+const readonlyUser: ReadonlyUser = user;
+// readonlyUser.name = "変更不可"; // エラー！
+
+// 7. ReturnType<T> - 関数の戻り値の型を抽出
+function getUsers(): User[] {
+  return [user];
+}
+
+type GetUsersReturnType = ReturnType<typeof getUsers>;
+// 結果: User[]
+
+// 8. Parameters<T> - 関数のパラメータの型をタプルとして抽出
+function createUserProfile2(name: string, email: string, age: number): UserProfile {
+  return { name, email, age };
+}
+
+type CreateUserProfileParams = Parameters<typeof createUserProfile2>;
+// 結果: [string, string, number]
+
+// 9. NonNullable<T> - nullとundefinedを除外
+type MaybeString = string | null | undefined;
+type DefinitelyString = NonNullable<MaybeString>;
+// 結果: string
+
+// 10. Extract<T, U> - Tの中からUに代入可能な型を抽出
+type StatusCode = 200 | 400 | 404 | 500;
+type SuccessCode = Extract<StatusCode, 200>;
+// 結果: 200
+
+type ErrorCode = Extract<StatusCode, 400 | 404 | 500>;
+// 結果: 400 | 404 | 500
+
+// 11. Exclude<T, U> - Tの中からUに代入可能な型を除外
+type NonErrorCode = Exclude<StatusCode, 400 | 404 | 500>;
+// 結果: 200
+
+// 実用的な組み合わせ例
+interface ApiEndpoint {
+  path: string;
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  requiresAuth: boolean;
+  params?: Record<string, string>;
+  body?: any;
+}
+
+// POST/PUTエンドポイントのみ抽出
+type MutationEndpoint = Pick<ApiEndpoint, 'path' | 'body'> & {
+  method: Extract<ApiEndpoint['method'], 'POST' | 'PUT'>;
+};
+
+// 認証不要なエンドポイント
+type PublicEndpoint = Omit<ApiEndpoint, 'requiresAuth'> & {
+  requiresAuth: false;
+};
+
+// エンドポイント設定
+const endpoints: Record<string, ApiEndpoint> = {
+  getUsers: {
+    path: '/api/users',
+    method: 'GET',
+    requiresAuth: true
+  },
+  createUser: {
+    path: '/api/users',
+    method: 'POST',
+    requiresAuth: true,
+    body: {} as CreateUserRequest
+  },
+  getPublicInfo: {
+    path: '/api/public/info',
+    method: 'GET',
+    requiresAuth: false
+  }
+};
+
+// 複雑なUtility Types組み合わせ
+type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
+
+type DeepPartialUser = DeepPartial<User>;
+// addressの中身も全てオプショナルになる
+
+const partialUserWithAddress: DeepPartialUser = {
+  name: "一部更新ユーザー",
+  address: {
+    city: "新宿区" // prefecture や zipCode は省略可能
+  }
+};
+
+// 型安全なオブジェクト操作関数
+function pickFields<T, K extends keyof T>(obj: T, fields: K[]): Pick<T, K> {
+  const result = {} as Pick<T, K>;
+
+  for (const field of fields) {
+    result[field] = obj[field];
+  }
+
+  return result;
+}
+
+// 使用例
+const pickedData = pickFields(user, ['name', 'email', 'age']);
+console.log(pickedData); // { name: "山田太郎", email: "yamada@example.com", age: 28 }
+
+// 型の変換関数
+function mapUser<T>(user: User, mapper: (user: User) => T): T {
+  return mapper(user);
+}
+
+const userDto = mapUser(user, (u) => ({
+  displayName: u.name,
+  contactEmail: u.email,
+  years: u.age
+}));
+
+console.log(userDto); // { displayName: "山田太郎", contactEmail: "yamada@example.com", years: 28 }`,
+    explanation: "Utility Typesを使うことで、既存の型から新しい型を効率的に作成できます。Partial、Pick、Omit、Recordなどを適切に使い分けることで、型の再利用性と保守性が向上します。"
+  },
+{
+    day: 7,
+    title: "総復習とミニアプリ",
+    goal: "一連の構文を組み合わせて使える",
+    completion: "JSでUI操作ができる",
+    task: "入力された名前を使って挨拶を表示するHTML+JSアプリ",
+    phase: 1,
+    sampleCode: `// HTML構造例:
+/*
+<!DOCTYPE html>
+<html>
+<head>
+  <title>挨拶アプリ</title>
+</head>
+<body>
+  <h1>挨拶アプリ</h1>
+  <input id="nameInput" placeholder="お名前を入力">
+  <button id="greetButton">挨拶する</button>
+  <div id="output"></div>
+  <script src="script.js"></script>
+</body>
+</html>
+*/
+
+// JavaScript (script.js)
+class GreetingApp {
+  constructor() {
+    this.nameInput = document.getElementById('nameInput');
+    this.greetButton = document.getElementById('greetButton');
+    this.output = document.getElementById('output');
+    this.greetings = ['こんにちは', 'おはよう', 'こんばんは'];
+
+    this.init();
+  }
+
+  init() {
+    this.greetButton.addEventListener('click', () => this.greet());
+    this.nameInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') this.greet();
+    });
+  }
+
+  greet() {
+    const name = this.nameInput.value.trim();
+
+    if (!name) {
+      this.showMessage('名前を入力してください', 'error');
+      return;
+    }
+
+    const randomGreeting = this.getRandomGreeting();
+    this.showMessage(\`\${randomGreeting}、\${name}さん！\`, 'success');
+    this.nameInput.value = '';
+  }
+
+  getRandomGreeting() {
+    const index = Math.floor(Math.random() * this.greetings.length);
+    return this.greetings[index];
+  }
+
+  showMessage(message, type) {
+    this.output.textContent = message;
+    this.output.className = type;
+  }
+}
+
+// アプリの初期化
+document.addEventListener('DOMContentLoaded', () => {
+  new GreetingApp();
+});`,
+    explanation: "クラスを使ってコードを整理し、イベント処理やDOM操作を組み合わせて実用的なアプリを作成できます。"
+  },
+
+  // Phase 2: TypeScript入門
+  {
+    day: 8,
+    title: "TypeScriptとは",
+    goal: "型があることの利点を理解する",
+    completion: "JSとの違いを説明できる",
+    task: "型あり/なし変数の比較コードを書く",
+    phase: 2,
+    sampleCode: `// JavaScript（型なし）の例
+let userName = "田中太郎";
+let userAge = 30;
+let isLoggedIn = true;
+
+// 実行時エラーが起こりやすい例
+userName = 123; // 文字列のつもりが数値に
+userAge = "不明"; // 数値のつもりが文字列に
+console.log(userName.toUpperCase()); // エラー！数値にはtoUpperCaseメソッドはない
+
+// TypeScript（型あり）の例
+let userName: string = "田中太郎";
+let userAge: number = 30;
+let isLoggedIn: boolean = true;
+
+// コンパイル時エラーで事前に防げる
+// userName = 123; // ⛔ エラー: Type 'number' is not assignable to type 'string'
+// userAge = "不明"; // ⛔ エラー: Type 'string' is not assignable to type 'number'
+
+// TypeScriptの利点デモ
+interface User {
+  name: string;
+  age: number;
+  email: string;
+}
+
+function createUser(name: string, age: number, email: string): User {
+  return {
+    name,
+    age,
+    email
+  };
+}
+
+// 型安全な関数呼び出し
+const user = createUser("田中太郎", 30, "tanaka@example.com");
+console.log(\`ユーザー: \${user.name}（\${user.age}歳）\`);
+
+// createUser("田中太郎", "30", "tanaka@example.com"); // ⛔ エラー: 年齢は数値である必要があります
+
+// 型推論の例
+const autoTypedName = "佐藤花子"; // TypeScriptが自動的にstring型と推論
+const autoTypedAge = 25; // TypeScriptが自動的にnumber型と推論
+
+// 実際のタスク：型あり/なし変数の比較
+console.log("=== JavaScript vs TypeScript 比較 ===");
+
+// JavaScript風（型注釈なし、でもTypeScriptでは型推論される）
+let jsStyleName = "JavaScript太郎";
+let jsStyleAge = 30;
+
+// TypeScript風（明示的な型注釈）
+let tsStyleName: string = "TypeScript花子";
+let tsStyleAge: number = 25;
+
+console.log(\`JS風: \${jsStyleName}（\${jsStyleAge}歳）\`);
+console.log(\`TS風: \${tsStyleName}（\${tsStyleAge}歳）\`);
+
+// TypeScriptの型チェックの強力さを示す例
+function calculateTax(price: number, rate: number): number {
+  return price * (1 + rate);
+}
+
+const price = 1000;
+const taxRate = 0.1;
+const totalPrice = calculateTax(price, taxRate);
+console.log(\`税込価格: \${totalPrice}円\`);
+
+// calculateTax("1000", "0.1"); // ⛔ エラー: 文字列は受け取れません`,
+    explanation: "TypeScriptは型システムによって、実行前にエラーを発見でき、コードの安全性と保守性が大幅に向上します。"
+  },
+  {
+    day: 9,
+    title: "基本の型",
+    goal: "number, string, boolean を使いこなす",
+    completion: "それぞれの変数が定義・使用できる",
+    task: "氏名、年齢、ログイン中かどうかのフラグを定義",
+    phase: 2,
+    sampleCode: `// TypeScriptの基本型：number, string, boolean
+
+// string型（文字列）
+let userName: string = "田中太郎";
+let userEmail: string = "tanaka@example.com";
+let message: string = \`こんにちは、\${userName}さん！\`;
+
+console.log("=== string型の例 ===");
+console.log(\`名前: \${userName}\`);
+console.log(\`メール: \${userEmail}\`);
+console.log(message);
+
+// number型（数値）
+let userAge: number = 30;
+let height: number = 175.5;
+let score: number = 85;
+let temperature: number = -5;
+
+console.log("\\n=== number型の例 ===");
+console.log(\`年齢: \${userAge}歳\`);
+console.log(\`身長: \${height}cm\`);
+console.log(\`スコア: \${score}点\`);
+console.log(\`気温: \${temperature}℃\`);
+
+// boolean型（真偽値）
+let isLoggedIn: boolean = true;
+let isAdult: boolean = userAge >= 18;
+let hasPermission: boolean = false;
+
+console.log("\\n=== boolean型の例 ===");
+console.log(\`ログイン中: \${isLoggedIn}\`);
+console.log(\`成人: \${isAdult}\`);
+console.log(\`権限あり: \${hasPermission}\`);
+
+// 実際のタスク：氏名、年齢、ログイン中かどうかのフラグを定義
+console.log("\\n=== 課題：ユーザー情報の定義 ===");
+
+// 課題の変数定義
+let fullName: string = "佐藤花子";
+let currentAge: number = 28;
+let isCurrentlyLoggedIn: boolean = true;
+
+// 定義した変数の使用例
+console.log(\`氏名: \${fullName}\`);
+console.log(\`年齢: \${currentAge}歳\`);
+console.log(\`ログイン状態: \${isCurrentlyLoggedIn ? 'ログイン中' : 'ログアウト中'}\`);
+
+// 型安全な関数の例
+function displayUserInfo(name: string, age: number, loggedIn: boolean): string {
+  const status = loggedIn ? "オンライン" : "オフライン";
+  return \`\${name}（\${age}歳）- \${status}\`;
+}
+
+const userInfo = displayUserInfo(fullName, currentAge, isCurrentlyLoggedIn);
+console.log(\`ユーザー情報: \${userInfo}\`);
+
+// 基本型の型チェック例
+function isValidAge(age: number): boolean {
+  return age >= 0 && age <= 150;
+}
+
+function formatName(name: string): string {
+  return name.trim().toLowerCase().replace(/\\b\\w/g, l => l.toUpperCase());
+}
+
+function toggleLoginStatus(currentStatus: boolean): boolean {
+  return !currentStatus;
+}
+
+console.log("\\n=== 型安全な関数の使用例 ===");
+console.log(\`年齢が有効: \${isValidAge(currentAge)}\`);
+console.log(\`整形された名前: \${formatName("  tanaka taro  ")}\`);
+console.log(\`ログイン状態切り替え後: \${toggleLoginStatus(isCurrentlyLoggedIn)}\`);
+
+// 複数の基本型を組み合わせた例
+interface UserProfile {
+  name: string;
+  age: number;
+  isActive: boolean;
+}
+
+const profile: UserProfile = {
+  name: fullName,
+  age: currentAge,
+  isActive: isCurrentlyLoggedIn
+};
+
+console.log("\\n=== ユーザープロフィール ===");
+console.log(profile);
+
+// リテラル型との組み合わせ例
+let status: "online" | "offline" | "away" = "online";
+let priority: 1 | 2 | 3 | 4 | 5 = 3;
+
+console.log(\`ステータス: \${status}\`);
+console.log(\`優先度: \${priority}\`);`,
+    explanation: "TypeScriptの基本型は、JavaScriptの値に対応しており、型注釈により変数の型を明示的に指定できます。"
+  },
+  {
+    day: 10,
+    title: "配列とオブジェクトの型",
+    goal: "型付き配列とオブジェクトが作れる",
+    completion: "User[] 型を定義し使える",
+    task: "ユーザーリストを作成し、出力",
+    phase: 2,
+    sampleCode: `// 配列の型定義
+
+// 基本的な配列の型定義
+let numbers: number[] = [1, 2, 3, 4, 5];
+let names: string[] = ["田中", "佐藤", "鈴木"];
+let flags: boolean[] = [true, false, true];
+
+// ジェネリクス記法でも書ける
+let scores: Array<number> = [85, 92, 78, 96];
+let colors: Array<string> = ["red", "blue", "green"];
+
+console.log("=== 基本的な配列 ===");
+console.log("数値配列:", numbers);
+console.log("名前配列:", names);
+console.log("スコア配列:", scores);
+
+// オブジェクトの型定義
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  age: number;
+  isActive: boolean;
+}
+
+// 単一のオブジェクト
+const user: User = {
+  id: 1,
+  name: "田中太郎",
+  email: "tanaka@example.com",
+  age: 30,
+  isActive: true
+};
+
+console.log("\\n=== 単一ユーザー ===");
+console.log(user);
+
+// 実際のタスク：User[] 型を定義し使用
+const users: User[] = [
+  {
+    id: 1,
+    name: "田中太郎",
+    email: "tanaka@example.com",
+    age: 30,
+    isActive: true
+  },
+  {
+    id: 2,
+    name: "佐藤花子",
+    email: "sato@example.com",
+    age: 25,
+    isActive: false
+  },
+  {
+    id: 3,
+    name: "鈴木一郎",
+    email: "suzuki@example.com",
+    age: 35,
+    isActive: true
+  }
+];
+
+console.log("\\n=== ユーザーリスト ===");
+users.forEach(user => {
+  const status = user.isActive ? "アクティブ" : "非アクティブ";
+  console.log(\`[ID: \${user.id}] \${user.name} (\${user.age}歳) - \${status}\`);
+});
+
+// 配列操作の型安全な例
+function getActiveUsers(userList: User[]): User[] {
+  return userList.filter(user => user.isActive);
+}
+
+function getUserNames(userList: User[]): string[] {
+  return userList.map(user => user.name);
+}
+
+function getAverageAge(userList: User[]): number {
+  const totalAge = userList.reduce((sum, user) => sum + user.age, 0);
+  return Math.round(totalAge / userList.length);
+}
+
+const activeUsers = getActiveUsers(users);
+const userNames = getUserNames(users);
+const averageAge = getAverageAge(users);
+
+console.log("\\n=== 配列操作の結果 ===");
+console.log(\`アクティブユーザー数: \${activeUsers.length}人\`);
+console.log(\`全ユーザー名: \${userNames.join(", ")}\`);
+console.log(\`平均年齢: \${averageAge}歳\`);
+
+// ネストしたオブジェクトの型定義
+interface Address {
+  street: string;
+  city: string;
+  zipCode: string;
+}
+
+interface UserWithAddress {
+  id: number;
+  name: string;
+  email: string;
+  age: number;
+  address: Address;
+  hobbies: string[];
+}
+
+const userWithAddress: UserWithAddress = {
+  id: 4,
+  name: "山田太郎",
+  email: "yamada@example.com",
+  age: 28,
+  address: {
+    street: "1-2-3 東京街",
+    city: "東京",
+    zipCode: "100-0001"
+  },
+  hobbies: ["読書", "映画鑑賞", "料理"]
+};
+
+console.log("\\n=== 詳細ユーザー情報 ===");
+console.log(\`名前: \${userWithAddress.name}\`);
+console.log(\`住所: \${userWithAddress.address.city}\${userWithAddress.address.street}\`);
+console.log(\`趣味: \${userWithAddress.hobbies.join(", ")}\`);
+
+// 複雑な配列操作の例
+const usersWithAddress: UserWithAddress[] = [userWithAddress];
+
+function searchUsersByCity(userList: UserWithAddress[], cityName: string): UserWithAddress[] {
+  return userList.filter(user => user.address.city === cityName);
+}
+
+function getUsersWithHobby(userList: UserWithAddress[], hobby: string): UserWithAddress[] {
+  return userList.filter(user => user.hobbies.includes(hobby));
+}
+
+const tokyoUsers = searchUsersByCity(usersWithAddress, "東京");
+const readingUsers = getUsersWithHobby(usersWithAddress, "読書");
+
+console.log("\\n=== 検索結果 ===");
+console.log(\`東京在住ユーザー: \${tokyoUsers.length}人\`);
+console.log(\`読書好きユーザー: \${readingUsers.length}人\`);
+
+// 型安全な配列の初期化
+const emptyUsers: User[] = [];
+const initialUsers: User[] = [];
+
+// push操作も型安全
+emptyUsers.push({
+  id: 5,
+  name: "新規ユーザー",
+  email: "new@example.com",
+  age: 22,
+  isActive: true
+});
+
+console.log("\\n=== 追加後のユーザー ===");
+console.log(emptyUsers);`,
+    explanation: "TypeScriptでは配列やオブジェクトにも型を定義でき、複雑なデータ構造でも型安全性を保つことができます。"
+  },
+
+  // Phase 3: TypeScript実践応用
+  {
+    day: 19,
+    title: "API設計",
+    goal: "フロントエンドの型安全なAPI呼び出しを設計する",
+    completion: "fetchの戻り値に型を定義できる",
+    task: "データ取得関数とレスポンス型を分けて記述",
+    phase: 3,
+    sampleCode: `// API エンドポイントの型定義
+interface ApiEndpoint {
+  readonly baseUrl: string;
+  readonly endpoints: {
+    readonly users: '/api/users';
+    readonly userById: '/api/users/{id}';
+    readonly posts: '/api/posts';
+    readonly postById: '/api/posts/{id}';
+    readonly auth: '/api/auth/login';
+  };
+}
+
+const API: ApiEndpoint = {
+  baseUrl: 'https://api.example.com',
+  endpoints: {
+    users: '/api/users',
+    userById: '/api/users/{id}',
+    posts: '/api/posts',
+    postById: '/api/posts/{id}',
+    auth: '/api/auth/login'
+  }
+} as const;
+
+// 共通のAPIレスポンス型
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+  error?: string;
+  meta?: {
+    total: number;
+    page: number;
+    limit: number;
+  };
+}
+
+// エラーレスポンス型
+interface ApiError {
+  code: string;
+  message: string;
+  details?: Record<string, any>;
+  timestamp: string;
+}
+
+// ユーザー関連の型定義
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  avatar?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface CreateUserRequest {
+  name: string;
+  email: string;
+  password: string;
+}
+
+interface UpdateUserRequest {
+  name?: string;
+  email?: string;
+  avatar?: string;
+}
+
+  // 汎用的なHTTPクライアントクラス
+class HttpClient {
+  private baseUrl: string;
+  private defaultHeaders: Record<string, string>;
+
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
+    this.defaultHeaders = {
+      'Content-Type': 'application/json',
+    };
+  }
+
+  // 認証トークンを設定
+  setAuthToken(token: string): void {
+    this.defaultHeaders['Authorization'] = \`Bearer \${token}\`;
+  }
+
+  // 認証トークンを削除
+  clearAuthToken(): void {
+    delete this.defaultHeaders['Authorization'];
+  }
+
+  // 汎用リクエストメソッド
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<ApiResponse<T>> {
+    const url = \`\${this.baseUrl}\${endpoint}\`;
+
+    const config: RequestInit = {
+      ...options,
+      headers: {
+        ...this.defaultHeaders,
+        ...options.headers,
+      },
+    };
+
+    try {
+      const response = await fetch(url, config);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(\`HTTP \${response.status}: \${data.message || 'Unknown error'}\`);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('API Request failed:', error);
+      throw error;
+    }
+  }
+
+  // GET リクエスト
+  async get<T>(endpoint: string): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { method: 'GET' });
+  }
+
+  // POST リクエスト
+  async post<T>(endpoint: string, data: any): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+}
+
+// API サービスクラス
+class ApiService {
+  private http: HttpClient;
+
+  constructor() {
+    this.http = new HttpClient(API.baseUrl);
+  }
+
+  // 実際のタスク：データ取得関数とレスポンス型の分離
+
+  // ユーザー関連API
+  async getUsers(): Promise<ApiResponse<User[]>> {
+    return this.http.get<User[]>(API.endpoints.users);
+  }
+
+  async getUserById(id: number): Promise<ApiResponse<User>> {
+    const endpoint = API.endpoints.userById.replace('{id}', id.toString());
+    return this.http.get<User>(endpoint);
+  }
+
+  async createUser(userData: CreateUserRequest): Promise<ApiResponse<User>> {
+    return this.http.post<User>(API.endpoints.users, userData);
+  }
+}
+
+// エラーハンドリング付きのAPIラッパー
+class SafeApiService {
+  private api: ApiService;
+
+  constructor() {
+    this.api = new ApiService();
+  }
+
+  // 安全なAPI呼び出しラッパー
+  private async safeCall<T>(
+    apiCall: () => Promise<ApiResponse<T>>
+  ): Promise<{ data: T | null; error: string | null }> {
+    try {
+      const response = await apiCall();
+
+      if (response.success) {
+        return { data: response.data, error: null };
+      } else {
+        return { data: null, error: response.error || 'Unknown API error' };
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return { data: null, error: errorMessage };
+    }
+  }
+
+  // 型安全なユーザー取得
+  async fetchUsers(): Promise<{ data: User[] | null; error: string | null }> {
+    return this.safeCall(() => this.api.getUsers());
+  }
+
+  async fetchUserById(id: number): Promise<{ data: User | null; error: string | null }> {
+    return this.safeCall(() => this.api.getUserById(id));
+  }
+}
+
+// 実際の使用例
+async function demonstrateApiUsage(): Promise<void> {
+  const safeApi = new SafeApiService();
+
+  // ユーザー一覧取得
+  console.log("=== ユーザー一覧取得 ===");
+  const usersResult = await safeApi.fetchUsers();
+
+  if (usersResult.data) {
+    console.log(\`\${usersResult.data.length}人のユーザーを取得しました\`);
+    usersResult.data.forEach(user => {
+      console.log(\`- \${user.name} (\${user.email})\`);
+    });
+  } else {
+    console.error(\`ユーザー取得失敗: \${usersResult.error}\`);
+  }
+}
+
+// 型ガードを使った安全なAPI レスポンス処理
+function isUser(data: any): data is User {
+  return data &&
+         typeof data.id === 'number' &&
+         typeof data.name === 'string' &&
+         typeof data.email === 'string';
+}
+
+`,
+    explanation: "型安全なAPI設計では、エンドポイント、リクエスト、レスポンスの型を明確に定義し、エラーハンドリングも含めた包括的な設計が重要です。"
+  },
+  {
+    day: 20,
+    title: "総仕上げミニプロジェクト",
+    goal: "TypeScriptの型システム全般を応用できる",
+    completion: "型安全なフォームアプリを実装できる",
+    task: "名前と年齢を入力して出力するTypeScript製アプリ（Playground上）",
+    phase: 3,
+    sampleCode: `// 総仕上げプロジェクト: TypeScript製ユーザー管理システム
+// これまで学んだすべての機能を統合した実践的なアプリケーション
+
+// 1. 基本的な型定義
+interface User {
+  readonly id: number;
+  name: string;
+  age: number;
+  email: string;
+  role: UserRole;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+type UserRole = 'admin' | 'user' | 'guest';
+type SortField = 'name' | 'age' | 'createdAt';
+type SortOrder = 'asc' | 'desc';
+
+// 2. フォーム用の型定義
+interface UserFormData {
+  name: string;
+  age: string; // フォームでは文字列として受け取る
+  email: string;
+  role: UserRole;
+}
+
+interface ValidationError {
+  field: keyof UserFormData;
+  message: string;
+}
+
+interface FormState {
+  data: UserFormData;
+  errors: ValidationError[];
+  isSubmitting: boolean;
+  isValid: boolean;
+}
+
+// 3. バリデーション関数（型ガードを活用）
+class UserValidator {
+  static validateName(name: string): string | null {
+    if (!name.trim()) return '名前は必須です';
+    if (name.length < 2) return '名前は2文字以上で入力してください';
+    if (name.length > 50) return '名前は50文字以内で入力してください';
+    return null;
+  }
+
+  static validateAge(ageStr: string): string | null {
+    const age = parseInt(ageStr, 10);
+    if (isNaN(age)) return '年齢は数値で入力してください';
+    if (age < 0) return '年齢は0以上で入力してください';
+    if (age > 150) return '年齢は150以下で入力してください';
+    return null;
+  }
+
+  static validateEmail(email: string): string | null {
+    if (!email.trim()) return 'メールアドレスは必須です';
+    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+    if (!emailRegex.test(email)) return '正しいメールアドレスを入力してください';
+    return null;
+  }
+
+  static validateRole(role: string): role is UserRole {
+    return ['admin', 'user', 'guest'].includes(role);
+  }
+
+  static validateForm(formData: UserFormData): ValidationError[] {
+    const errors: ValidationError[] = [];
+
+    const nameError = this.validateName(formData.name);
+    if (nameError) errors.push({ field: 'name', message: nameError });
+
+    const ageError = this.validateAge(formData.age);
+    if (ageError) errors.push({ field: 'age', message: ageError });
+
+    const emailError = this.validateEmail(formData.email);
+    if (emailError) errors.push({ field: 'email', message: emailError });
+
+    if (!this.validateRole(formData.role)) {
+      errors.push({ field: 'role', message: '無効なロールです' });
+    }
+
+    return errors;
+  }
+}
+
+// 4. ユーザー管理クラス（ジェネリクス、Utility Types活用）
+class UserManager {
+  private users: User[] = [];
+  private nextId = 1;
+
+  // 新規ユーザー作成
+  createUser(formData: UserFormData): Promise<User> {
+    return new Promise((resolve, reject) => {
+      const errors = UserValidator.validateForm(formData);
+
+      if (errors.length > 0) {
+        reject(new Error(\`バリデーションエラー: \${errors.map(e => e.message).join(', ')}\`));
+        return;
+      }
+
+      // メールアドレスの重複チェック
+      if (this.users.some(user => user.email === formData.email)) {
+        reject(new Error('このメールアドレスは既に使用されています'));
+        return;
+      }
+
+      const user: User = {
+        id: this.nextId++,
+        name: formData.name,
+        age: parseInt(formData.age, 10),
+        email: formData.email,
+        role: formData.role,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      this.users.push(user);
+      resolve(user);
+    });
+  }
+
+  // ユーザー更新（Partial型活用）
+  updateUser(id: number, updates: Partial<Omit<User, 'id' | 'createdAt'>>): User | null {
+    const userIndex = this.users.findIndex(user => user.id === id);
+    if (userIndex === -1) return null;
+
+    this.users[userIndex] = {
+      ...this.users[userIndex],
+      ...updates,
+      updatedAt: new Date()
+    };
+
+    return this.users[userIndex];
+  }
+
+  // ユーザー検索（高階関数活用）
+  findUsers(predicate: (user: User) => boolean): User[] {
+    return this.users.filter(predicate);
+  }
+
+  // ソート機能（Union型活用）
+  getSortedUsers(field: SortField, order: SortOrder = 'asc'): User[] {
+    return [...this.users].sort((a, b) => {
+      let valueA: any;
+      let valueB: any;
+
+      switch (field) {
+        case 'name':
+          valueA = a.name.toLowerCase();
+          valueB = b.name.toLowerCase();
+          break;
+        case 'age':
+          valueA = a.age;
+          valueB = b.age;
+          break;
+        case 'createdAt':
+          valueA = a.createdAt.getTime();
+          valueB = b.createdAt.getTime();
+          break;
+      }
+
+      if (order === 'asc') {
+        return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
+      } else {
+        return valueA > valueB ? -1 : valueA < valueB ? 1 : 0;
+      }
+    });
+  }
+
+  // 統計情報取得（Record型活用）
+  getStatistics(): Record<string, number> {
+    const roleCount = this.users.reduce((acc, user) => {
+      acc[user.role] = (acc[user.role] || 0) + 1;
+      return acc;
+    }, {} as Record<UserRole, number>);
+
+    const avgAge = this.users.length > 0
+      ? this.users.reduce((sum, user) => sum + user.age, 0) / this.users.length
+      : 0;
+
+    return {
+      total: this.users.length,
+      averageAge: Math.round(avgAge * 100) / 100,
+      ...roleCount
+    };
+  }
+
+  // 全ユーザー取得
+  getAllUsers(): User[] {
+    return [...this.users];
+  }
+
+  // ID でユーザー取得
+  getUserById(id: number): User | undefined {
+    return this.users.find(user => user.id === id);
+  }
+}
+
+// 5. アプリケーションメインクラス（全機能統合）
+class UserManagementApp {
+  private userManager: UserManager;
+
+  constructor() {
+    this.userManager = new UserManager();
+    this.init();
+  }
+
+  private init(): void {
+    console.log('TypeScript ユーザー管理アプリケーションを初期化しました');
+  }
+
+  // 実際のタスク：名前と年齢を入力して出力するアプリ
+  async createUserFromInput(name: string, age: string, email: string): Promise<void> {
+    try {
+      // フォームデータを作成
+      const formData: UserFormData = {
+        name,
+        age,
+        email,
+        role: 'user'
+      };
+
+      // ユーザー作成
+      const newUser = await this.userManager.createUser(formData);
+
+      console.log('\\n=== ユーザー作成成功 ===');
+      console.log(\`ID: \${newUser.id}\`);
+      console.log(\`名前: \${newUser.name}\`);
+      console.log(\`年齢: \${newUser.age}歳\`);
+      console.log(\`メール: \${newUser.email}\`);
+      console.log(\`ロール: \${newUser.role}\`);
+      console.log(\`作成日時: \${newUser.createdAt.toLocaleString()}\`);
+
+      // 統計情報も表示
+      this.displayStatistics();
+
+    } catch (error) {
+      console.error('\\n=== ユーザー作成失敗 ===');
+      console.error(error instanceof Error ? error.message : 'unknown error');
+    }
+  }
+
+  // 統計情報表示
+  displayStatistics(): void {
+    const stats = this.userManager.getStatistics();
+    console.log('\\n=== 統計情報 ===');
+    console.log(\`総ユーザー数: \${stats.total}人\`);
+    console.log(\`平均年齢: \${stats.averageAge}歳\`);
+    console.log(\`管理者: \${stats.admin || 0}人\`);
+    console.log(\`一般ユーザー: \${stats.user || 0}人\`);
+    console.log(\`ゲスト: \${stats.guest || 0}人\`);
+  }
+
+  // 全ユーザー表示
+  displayAllUsers(): void {
+    const users = this.userManager.getAllUsers();
+    console.log('\\n=== 全ユーザー一覧 ===');
+
+    if (users.length === 0) {
+      console.log('ユーザーが登録されていません');
+      return;
+    }
+
+    users.forEach(user => {
+      console.log(\`[ID: \${user.id}] \${user.name} (\${user.age}歳) - \${user.email} [\${user.role}]\`);
+    });
+  }
+
+  // ユーザー検索デモ
+  searchUsersDemo(): void {
+    console.log('\\n=== ユーザー検索デモ ===');
+
+    // 20歳以上のユーザー
+    const adults = this.userManager.findUsers(user => user.age >= 20);
+    console.log(\`20歳以上のユーザー: \${adults.length}人\`);
+
+    // 年齢でソート
+    const sortedByAge = this.userManager.getSortedUsers('age', 'desc');
+    console.log('年齢降順:', sortedByAge.map(u => \`\${u.name}(\${u.age}歳)\`).join(', '));
+  }
+
+  // パブリックAPI
+  getUserManager(): UserManager {
+    return this.userManager;
+  }
+}
+
+// 6. アプリケーション実行例
+console.log('TypeScript総仕上げプロジェクト - ユーザー管理システム');
+console.log('='.repeat(50));
+
+// アプリケーション初期化
+const app = new UserManagementApp();
+
+// 実際のタスク実行例
+async function runDemo(): Promise<void> {
+  // サンプルユーザーを作成
+  console.log('\\n🚀 デモンストレーション開始');
+
+  // 課題：名前と年齢を入力して出力
+  await app.createUserFromInput('田中太郎', '30', 'tanaka@example.com');
+  await app.createUserFromInput('佐藤花子', '25', 'sato@example.com');
+  await app.createUserFromInput('鈴木一郎', '35', 'suzuki@example.com');
+
+  // 全ユーザー表示
+  app.displayAllUsers();
+
+  // 検索機能のデモ
+  app.searchUsersDemo();
+
+  console.log('\\n✅ 20日間のTypeScript学習完了おめでとうございます！');
+  console.log('🎯 学習したトピック:');
+  console.log('   - 基本型（string, number, boolean）');
+  console.log('   - 配列とオブジェクトの型');
+  console.log('   - Interface と継承');
+  console.log('   - Generics と型ガード');
+  console.log('   - Utility Types');
+  console.log('   - API設計と型安全性');
+  console.log('   - 実践的なアプリケーション構築');
+  console.log('\\n🌟 これで実際のプロジェクトでTypeScriptを活用できます！');
+}
+
+// デモを実行
+runDemo().catch(console.error);
+
+// 簡単な使用例（小課題の直接実装）
+console.log('\\n📝 小課題：シンプルな名前・年齢入力システム');
+
+interface SimpleUser {
+  name: string;
+  age: number;
+}
+
+function createSimpleUser(name: string, age: number): SimpleUser {
+  return { name, age };
+}
+
+function displayUser(user: SimpleUser): void {
+  console.log(\`ユーザー情報: \${user.name}さん（\${user.age}歳）\`);
+}
+
+// 小課題の実行
+const user1 = createSimpleUser('山田太郎', 28);
+const user2 = createSimpleUser('田村花子', 32);
+
+displayUser(user1);
+displayUser(user2);
+
+`,
+    explanation: "20日間の学習の集大成として、TypeScriptの型システム、クラス、ジェネリクス、エラーハンドリングなど、すべての概念を統合した実践的なユーザー管理システムを構築できます。これで実際のプロジェクトでTypeScriptを活用する準備が整いました！"
   }
 ]
 
