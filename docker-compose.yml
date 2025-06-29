@@ -1,0 +1,26 @@
+
+version: '3.8'
+
+services:
+  typescript-learning:
+    build: .
+    container_name: ts-learning-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      # ソースコードのライブリロード用
+      - .:/app
+      - /app/node_modules  # node_modulesはコンテナ内優先
+      - /app/dist         # distフォルダもコンテナ内優先
+    environment:
+      - NODE_ENV=development
+      - VITE_HOST=0.0.0.0
+      - VITE_PORT=3000
+    stdin_open: true
+    tty: true
+    networks:
+      - dev-network
+
+networks:
+  dev-network:
+    driver: bridge

@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  typescript-learning:
+    # 開発用の追加設定
+    environment:
+      - CHOKIDAR_USEPOLLING=true  # ファイル変更監視の改善
+    volumes:
+      # 開発時の追加マウント
+      - ./.env:/app/.env:ro
+    # デバッグ用ポート
+    ports:
+      - "9229:9229"  # Node.js デバッグポート

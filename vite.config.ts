@@ -11,11 +11,30 @@ export default defineConfig({
     }
   },
   server: {
+    host: '0.0.0.0',
     port: 3000,
-    open: true
+    open: false,
+    hmr: {
+      host: 'localhost'
+    }
   },
   build: {
     outDir: 'dist',
-    assetsDir: 'assets'
+    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          monaco: ['monaco-editor'],
+          vendor: ['vue']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1600
+  },
+  define: {
+    'process.env': {}
+  },
+  optimizeDeps: {
+    include: ['monaco-editor']
   }
 })
