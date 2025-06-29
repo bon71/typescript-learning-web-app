@@ -409,6 +409,235 @@ const userManager = {
   }
 };`,
     explanation: "クラス、関数、DOM操作、イベント処理を組み合わせて実用的なアプリを作成できます。これまでの学習内容の総まとめです。"
+  },
+
+  // Phase 2: TypeScript入門
+  {
+    day: 8,
+    title: "TypeScriptとは",
+    goal: "型があることの利点を理解する",
+    completion: "JSとの違いを説明できる",
+    task: "型あり/なし変数の比較コードを書く",
+    phase: 2,
+    sampleCode: `// JavaScript（型なし）- 実行時エラーが発生する可能性
+let userName = "太郎";
+userName = 123; // エラーにならない
+userName.toUpperCase(); // 実行時エラー！
+
+// TypeScript（型あり）- コンパイル時にエラーを検出
+let userNameTs: string = "太郎";
+// userNameTs = 123; // コンパイルエラー！型 'number' を型 'string' に割り当てることはできません
+
+// 型推論 - 明示的に型を書かなくても推論される
+let inferredName = "花子"; // 自動的にstring型と推論
+// inferredName = 456; // エラー！型 'number' を型 'string' に割り当てることはできません
+
+// 実際のタスク：型の比較
+console.log("=== JavaScript（型なし）===");
+let jsVar = "文字列";
+jsVar = 100;
+console.log(typeof jsVar); // "number"
+
+console.log("=== TypeScript（型あり）===");
+let tsVar: string = "文字列";
+// tsVar = 100; // コンパイルエラー
+console.log(typeof tsVar); // "string"
+
+// TypeScriptの利点を実感
+function greet(name: string): string {
+  return \`こんにちは、\${name}さん！\`;
+}
+
+console.log(greet("太郎")); // OK
+// console.log(greet(123)); // エラー！引数の型が違う
+
+// 開発時に間違いを発見できる
+const user = {
+  name: "田中",
+  age: 30
+};
+
+console.log(user.name); // OK
+// console.log(user.nama); // エラー！プロパティ 'nama' は存在しません`,
+    explanation: "TypeScriptは開発時に型エラーを検出し、より安全で保守しやすいコードを書けます。JavaScriptの実行時エラーを事前に防げます。"
+  },
+  {
+    day: 9,
+    title: "基本の型",
+    goal: "number, string, boolean を使いこなす",
+    completion: "それぞれの変数が定義・使用できる",
+    task: "氏名、年齢、ログイン中かどうかのフラグを定義",
+    phase: 2,
+    sampleCode: `// 基本的な型定義
+// 1. string型 - 文字列
+let userName: string = "田中太郎";
+let email: string = "tanaka@example.com";
+let message: string = \`こんにちは、\${userName}さん\`;
+
+// 2. number型 - 数値（整数・小数・負数）
+let age: number = 30;
+let height: number = 175.5;
+let temperature: number = -5;
+let score: number = 0;
+
+// 3. boolean型 - 真偽値
+let isLoggedIn: boolean = true;
+let isAdmin: boolean = false;
+let hasPermission: boolean = age >= 20;
+
+// 4. 型推論を活用
+let autoString = "自動推論"; // string型と推論
+let autoNumber = 42; // number型と推論
+let autoBool = true; // boolean型と推論
+
+// 実際のタスク：ユーザー情報の定義
+let fullName: string = "山田花子";
+let userAge: number = 25;
+let isCurrentlyLoggedIn: boolean = true;
+
+console.log("=== ユーザー情報 ===");
+console.log(\`氏名: \${fullName}\`);
+console.log(\`年齢: \${userAge}歳\`);
+console.log(\`ログイン状態: \${isCurrentlyLoggedIn ? "ログイン中" : "ログアウト中"}\`);
+
+// 型による条件分岐
+if (typeof userAge === "number" && userAge >= 18) {
+  console.log("成人ユーザーです");
+}
+
+// 複合的な使用例
+function createWelcomeMessage(name: string, age: number, isLoggedIn: boolean): string {
+  if (isLoggedIn) {
+    return \`\${name}さん（\${age}歳）、おかえりなさい！\`;
+  } else {
+    return \`\${name}さん、ログインしてください。\`;
+  }
+}
+
+const welcomeMsg = createWelcomeMessage(fullName, userAge, isCurrentlyLoggedIn);
+console.log(welcomeMsg);
+
+// 型アノテーションの省略も可能
+let productName = "TypeScript学習本"; // string型と推論
+let price = 2980; // number型と推論
+let inStock = true; // boolean型と推論
+
+console.log(\`商品: \${productName}, 価格: \${price}円, 在庫: \${inStock ? "あり" : "なし"}\`);`,
+    explanation: "基本型は TypeScript の基礎です。型を明示することで、開発中のミスを防ぎ、コードの意図を明確にできます。"
+  },
+  {
+    day: 10,
+    title: "配列とオブジェクトの型",
+    goal: "型付き配列とオブジェクトが作れる",
+    completion: "User[] 型を定義し使える",
+    task: "ユーザーリストを作成し、出力",
+    phase: 2,
+    sampleCode: `// 配列の型定義
+// 1. 基本的な配列型
+let numbers: number[] = [1, 2, 3, 4, 5];
+let fruits: string[] = ["apple", "banana", "orange"];
+let flags: boolean[] = [true, false, true];
+
+// 2. Array<T>記法も使用可能
+let scores: Array<number> = [85, 92, 78, 95];
+let names: Array<string> = ["太郎", "花子", "次郎"];
+
+// オブジェクトの型定義
+// 1. インラインでの型定義
+let user: { name: string; age: number; email: string } = {
+  name: "田中太郎",
+  age: 30,
+  email: "tanaka@example.com"
+};
+
+// 2. オプショナルプロパティ（?をつける）
+let product: { name: string; price: number; description?: string } = {
+  name: "TypeScript本",
+  price: 2980
+  // descriptionは省略可能
+};
+
+// 3. 読み取り専用プロパティ（readonlyをつける）
+let config: { readonly apiUrl: string; readonly version: string } = {
+  apiUrl: "https://api.example.com",
+  version: "1.0.0"
+};
+// config.apiUrl = "変更不可"; // エラー！読み取り専用
+
+// 実際のタスク：ユーザーリストの作成
+// ユーザー型の定義
+type User = {
+  id: number;
+  name: string;
+  age: number;
+  isActive: boolean;
+  email?: string; // オプショナル
+};
+
+// ユーザー配列の作成
+let users: User[] = [
+  {
+    id: 1,
+    name: "田中太郎",
+    age: 30,
+    isActive: true,
+    email: "tanaka@example.com"
+  },
+  {
+    id: 2,
+    name: "山田花子",
+    age: 25,
+    isActive: false
+  },
+  {
+    id: 3,
+    name: "佐藤次郎",
+    age: 35,
+    isActive: true,
+    email: "sato@example.com"
+  }
+];
+
+// ユーザーリストの出力
+console.log("=== ユーザーリスト ===");
+users.forEach((user: User) => {
+  const status = user.isActive ? "アクティブ" : "非アクティブ";
+  const emailInfo = user.email ? \`(\${user.email})\` : "(メールアドレス未登録)";
+  console.log(\`ID: \${user.id}, 名前: \${user.name}, 年齢: \${user.age}歳, 状態: \${status} \${emailInfo}\`);
+});
+
+// 配列操作の例
+const activeUsers: User[] = users.filter((user: User) => user.isActive);
+console.log(\`アクティブユーザー数: \${activeUsers.length}人\`);
+
+const userNames: string[] = users.map((user: User) => user.name);
+console.log(\`ユーザー名一覧: \${userNames.join(", ")}\`);
+
+// ネストしたオブジェクトの型
+type Company = {
+  name: string;
+  employees: User[];
+  address: {
+    prefecture: string;
+    city: string;
+    zipCode: string;
+  };
+};
+
+const myCompany: Company = {
+  name: "株式会社サンプル",
+  employees: users,
+  address: {
+    prefecture: "東京都",
+    city: "渋谷区",
+    zipCode: "150-0001"
+  }
+};
+
+console.log(\`会社名: \${myCompany.name}\`);
+console.log(\`所在地: \${myCompany.address.prefecture}\${myCompany.address.city}\`);
+console.log(\`従業員数: \${myCompany.employees.length}人\`);`,
+    explanation: "配列とオブジェクトに型をつけることで、プロパティへの安全なアクセスや配列操作が可能になります。複雑なデータ構造も型安全に扱えます。"
   }
 ]
 
