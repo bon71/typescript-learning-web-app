@@ -1,27 +1,25 @@
 <template>
   <div class="app">
     <ProgressHeader :progress-stats="progressStats" />
-    
-    <PhaseTabs 
+
+    <PhaseTabs
       :current-phase="currentPhase"
       @change-phase="setPhase"
     />
 
     <main>
       <Transition name="fade" mode="out-in">
-        <div 
-          v-for="phaseData in phaseInfo" 
-          :key="phaseData.id"
-          v-show="currentPhase === phaseData.id"
+        <div
+          :key="currentPhase"
           class="phase active"
         >
-          <h2 class="phase-title">{{ phaseData.title }}</h2>
-          <p class="phase-description">{{ phaseData.description }}</p>
-          
+          <h2 class="phase-title">{{ currentPhaseInfo.title }}</h2>
+          <p class="phase-description">{{ currentPhaseInfo.description }}</p>
+
           <!-- 新しいトグルスタイルUI -->
           <div class="learning-list">
             <LearningToggleItem
-              v-for="day in getPhaseData(phaseData.id).value"
+              v-for="day in getPhaseData(currentPhase).value"
               :key="day.day"
               :learning-day="day"
               :is-completed="isCompleted(day.day).value"
@@ -34,7 +32,7 @@
       </Transition>
     </main>
 
-    <StatsFooter 
+    <StatsFooter
       :progress-stats="progressStats"
       @reset-progress="resetProgress"
     />
@@ -42,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { learningData, phaseInfo } from '@/data/learningData'
 import { useLearningProgress } from '@/composables/useLearningProgress'
 import ProgressHeader from '@/components/ProgressHeader.vue'
@@ -62,6 +60,11 @@ const {
   isSampleCodeShown
 } = useLearningProgress(learningData)
 
+// 現在のフェーズの情報を取得
+const currentPhaseInfo = computed(() => {
+  return phaseInfo.find(phase => phase.id === currentPhase.value) || phaseInfo[0]
+})
+
 // キーボードショートカット
 onMounted(() => {
   const handleKeyDown = (e: KeyboardEvent) => {
@@ -70,9 +73,9 @@ onMounted(() => {
       setPhase(parseInt(e.key))
     }
   }
-  
+
   document.addEventListener('keydown', handleKeyDown)
-  
+
   return () => {
     document.removeEventListener('keydown', handleKeyDown)
   }
@@ -130,11 +133,11 @@ main {
   .phase {
     padding: 20px 15px;
   }
-  
+
   .phase-title {
     font-size: 1.5rem;
   }
-  
+
   .phase-description {
     font-size: 1rem;
     margin-bottom: 30px;
