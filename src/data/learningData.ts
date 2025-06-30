@@ -571,24 +571,3 @@ console.log(\`最大: \${stats.max}, 最小: \${stats.min}\`);`,
     explanation: "関数の引数と戻り値に型をつけることで、安全で予測可能な関数を作成できます。"
   }
 ]
-
-export const phaseInfo: PhaseInfo[] = [
-  {
-    id: 1,
-    title: "Phase 1: JavaScript復習（基礎文法）",
-    description: "TypeScriptを学ぶ前に、JavaScriptの基礎をしっかりと固めましょう。7日間でJavaScriptの核となる概念を復習します。",
-    color: "#2196F3"
-  },
-  {
-    id: 2,
-    title: "Phase 2: TypeScript入門",
-    description: "いよいよTypeScriptの世界へ！型システムの基礎から、実践的な使い方まで7日間で学習します。",
-    color: "#FF9800"
-  },
-  {
-    id: 3,
-    title: "Phase 3: TypeScript実践応用",
-    description: "高度なTypeScript機能を学び、実際のプロジェクトで使える実践的なスキルを身につけます。",
-    color: "#9C27B0"
-  }
-]
