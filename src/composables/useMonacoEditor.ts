@@ -1,11 +1,12 @@
 import { ref, computed } from 'vue'
+import * as monaco from 'monaco-editor'
 import type { MonacoEditorOptions, CodeExecutionResult } from '@/types/learning'
 
 export function useMonacoEditor() {
   // エディタの状態管理
   const editorCode = ref('')
   const isEditorReady = ref(false)
-  const editorInstance = ref<any>(null)
+  const editorInstance = ref<monaco.editor.IStandaloneCodeEditor | null>(null)
   
   // 実行関連の状態
   const isRunning = ref(false)
