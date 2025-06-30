@@ -294,26 +294,280 @@ document.addEventListener('DOMContentLoaded', () => {
   new GreetingApp();
 });`,
     explanation: "クラスを使ってコードを整理し、イベント処理やDOM操作を組み合わせて実用的なアプリを作成できます。"
-  }
-]
+  },
+  // Phase 2: TypeScript入門
+  {
+    day: 8,
+    title: "TypeScriptとは",
+    goal: "型があることの利点を理解する",
+    completion: "JSとの違いを説明できる",
+    task: "型あり/なし変数の比較コードを書く",
+    phase: 2,
+    sampleCode: `// JavaScript（型なし）
+let userName = "田中太郎";
+userName = 123; // エラーにならない！
 
-export const phaseInfo: PhaseInfo[] = [
+// TypeScript（型あり）
+let userName: string = "田中太郎";
+// userName = 123; // コンパイルエラー！
+
+// 型推論（TypeScriptが自動で型を判定）
+let age = 30; // number型と推論される
+// age = "三十歳"; // エラー！
+
+// 関数の型注釈
+function greet(name: string): string {
+  return \`こんにちは、\${name}さん！\`;
+}
+
+// greet(123); // エラー！引数はstring型である必要がある
+console.log(greet("山田花子")); // OK
+
+// TypeScriptの利点
+// 1. コンパイル時にエラーを発見
+// 2. IDEでの自動補完
+// 3. リファクタリングの安全性
+// 4. 型情報による自己文書化
+
+// 実際のタスク - 型あり/なしの比較
+console.log("=== JavaScript（型なし）===");
+let jsVariable = "文字列";
+jsVariable = 42;
+jsVariable = true;
+console.log("JSは何でも代入可能:", jsVariable);
+
+console.log("\\n=== TypeScript（型あり）===");
+let tsVariable: string = "文字列";
+console.log("TSは型安全:", tsVariable);
+// tsVariable = 42; // この行のコメントを外すとエラー！`,
+    explanation: "TypeScriptは型システムによって、開発時にエラーを早期発見し、より安全なコードが書けます。"
+  },
+  {
+    day: 9,
+    title: "基本の型",
+    goal: "number, string, boolean を使いこなす",
+    completion: "それぞれの変数が定義・使用できる",
+    task: "氏名、年齢、ログイン中かどうかのフラグを定義",
+    phase: 2,
+    sampleCode: `// 基本的な型の定義
+let userName: string = "田中太郎";
+let age: number = 30;
+let isLoggedIn: boolean = true;
+
+// 型推論を活用（推奨）
+let companyName = "株式会社サンプル"; // string型と推論
+let employeeCount = 150; // number型と推論
+let isActive = true; // boolean型と推論
+
+// 配列の型
+let hobbies: string[] = ["読書", "映画鑑賞", "プログラミング"];
+let scores: number[] = [85, 92, 78, 96];
+let flags: boolean[] = [true, false, true];
+
+// 配列の別記法（Array<T>）
+let languages: Array<string> = ["JavaScript", "TypeScript", "Python"];
+
+// 型注釈の実用例
+function createUserProfile(
+  name: string,
+  age: number,
+  isActive: boolean
+): string {
+  const status = isActive ? "アクティブ" : "非アクティブ";
+  return \`名前: \${name}, 年齢: \${age}歳, 状態: \${status}\`;
+}
+
+// 実際のタスク - 氏名、年齢、ログイン状態を定義
+console.log("=== 基本型の実践 ===");
+console.log(createUserProfile(userName, age, isLoggedIn));
+
+// 配列操作の例
+console.log("\\n=== 配列操作 ===");
+console.log("趣味:", hobbies.join(", "));
+console.log("平均点:", scores.reduce((a, b) => a + b) / scores.length);
+console.log("アクティブフラグ:", flags.filter(flag => flag).length, "個");
+
+// 型の安全性を確認
+console.log("\\n=== 型安全性 ===");
+console.log("userName型:", typeof userName);
+console.log("age型:", typeof age);
+console.log("isLoggedIn型:", typeof isLoggedIn);`,
+    explanation: "TypeScriptの基本型（string, number, boolean）を理解し、配列の型注釈も使えるようになりましょう。"
+  },
+  {
+    day: 10,
+    title: "配列とオブジェクトの型",
+    goal: "型付き配列とオブジェクトが作れる",
+    completion: "User[] 型を定義し使える",
+    task: "ユーザーリストを作成し、出力",
+    phase: 2,
+    sampleCode: `// オブジェクトの型定義
+type User = {
+  id: number;
+  name: string;
+  email: string;
+  isActive: boolean;
+};
+
+// ユーザー配列の型定義
+let users: User[] = [
   {
     id: 1,
-    title: "Phase 1: JavaScript復習（基礎文法）",
-    description: "TypeScriptを学ぶ前に、JavaScriptの基礎をしっかりと固めましょう。7日間でJavaScriptの核となる概念を復習します。",
-    color: "#2196F3"
+    name: "田中太郎",
+    email: "tanaka@example.com",
+    isActive: true
   },
   {
     id: 2,
-    title: "Phase 2: TypeScript入門",
-    description: "いよいよTypeScriptの世界へ！型システムの基礎から、実践的な使い方まで7日間で学習します。",
-    color: "#FF9800"
+    name: "山田花子",
+    email: "yamada@example.com",
+    isActive: false
+  }
+];
+
+// オブジェクトの配列操作
+function getActiveUsers(users: User[]): User[] {
+  return users.filter(user => user.isActive);
+}
+
+function getUserNames(users: User[]): string[] {
+  return users.map(user => user.name);
+}
+
+// 実際のタスク - ユーザーリスト作成と出力
+console.log("=== 全ユーザー ===");
+users.forEach(user => {
+  console.log(\`ID: \${user.id}, 名前: \${user.name}, アクティブ: \${user.isActive}\`);
+});
+
+console.log("\\n=== アクティブユーザー ===");
+const activeUsers = getActiveUsers(users);
+activeUsers.forEach(user => {
+  console.log(\`\${user.name} (\${user.email})\`);
+});
+
+console.log("\\n=== ユーザー名一覧 ===");
+const userNames = getUserNames(users);
+console.log(userNames.join(", "));
+
+// ネストしたオブジェクトの型
+type Address = {
+  prefecture: string;
+  city: string;
+  zipCode: string;
+};
+
+type UserWithAddress = {
+  id: number;
+  name: string;
+  address: Address;
+};
+
+const userWithAddress: UserWithAddress = {
+  id: 3,
+  name: "佐藤次郎",
+  address: {
+    prefecture: "東京都",
+    city: "渋谷区",
+    zipCode: "150-0002"
+  }
+};
+
+console.log("\\n=== 住所付きユーザー ===");
+console.log(\`\${userWithAddress.name}: \${userWithAddress.address.prefecture}\${userWithAddress.address.city}\`);`,
+    explanation: "オブジェクトの型定義にはtypeキーワードを使用し、配列の型は[]を使って表現します。"
   },
   {
-    id: 3,
-    title: "Phase 3: TypeScript実践応用",
-    description: "高度なTypeScript機能を学び、実際のプロジェクトで使える実践的なスキルを身につけます。",
-    color: "#9C27B0"
+    day: 11,
+    title: "関数に型をつける",
+    goal: "関数の引数と戻り値に型をつける",
+    completion: "シグネチャを定義できる",
+    task: "2つの数を受け取り加算する関数を作成",
+    phase: 2,
+    sampleCode: `// 基本的な関数の型注釈
+function add(a: number, b: number): number {
+  return a + b;
+}
+
+// アロー関数の型注釈
+const multiply = (a: number, b: number): number => {
+  return a * b;
+};
+
+// 戻り値の型推論
+const subtract = (a: number, b: number) => {
+  return a - b; // number型と推論される
+};
+
+// オプショナル引数
+function greet(name: string, greeting?: string): string {
+  return \`\${greeting || "こんにちは"}, \${name}さん！\`;
+}
+
+// デフォルト引数
+function createMessage(
+  name: string, 
+  age: number = 20, 
+  prefix: string = "Mr."
+): string {
+  return \`\${prefix} \${name} (\${age}歳)\`;
+}
+
+// 実際のタスク - 2つの数を受け取り加算
+console.log("=== 基本的な計算関数 ===");
+console.log("加算結果:", add(5, 3));
+console.log("乗算結果:", multiply(4, 7));
+console.log("減算結果:", subtract(10, 3));
+
+console.log("\\n=== オプショナル・デフォルト引数 ===");
+console.log(greet("田中太郎"));
+console.log(greet("山田花子", "おはよう"));
+console.log(createMessage("佐藤次郎"));
+console.log(createMessage("鈴木花子", 25, "Ms."));
+
+// 関数型の定義
+type Calculator = (a: number, b: number) => number;
+
+const divide: Calculator = (a, b) => {
+  if (b === 0) {
+    throw new Error("0で割ることはできません");
+  }
+  return a / b;
+};
+
+// 高階関数
+function calculate(
+  a: number, 
+  b: number, 
+  operation: Calculator
+): number {
+  return operation(a, b);
+}
+
+console.log("\\n=== 高階関数と関数型 ===");
+console.log("除算結果:", calculate(10, 2, divide));
+console.log("カスタム計算:", calculate(8, 3, (x, y) => x * y + 1));
+
+// 複数の戻り値を持つ関数
+function calculateStats(numbers: number[]): {
+  sum: number;
+  average: number;
+  max: number;
+  min: number;
+} {
+  const sum = numbers.reduce((a, b) => a + b, 0);
+  return {
+    sum,
+    average: sum / numbers.length,
+    max: Math.max(...numbers),
+    min: Math.min(...numbers)
+  };
+}
+
+const stats = calculateStats([10, 20, 30, 40, 50]);
+console.log("\\n=== 統計計算 ===");
+console.log(\`合計: \${stats.sum}, 平均: \${stats.average}\`);
+console.log(\`最大: \${stats.max}, 最小: \${stats.min}\`);`,
+    explanation: "関数の引数と戻り値に型をつけることで、安全で予測可能な関数を作成できます。"
   }
 ]
