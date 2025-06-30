@@ -1,3 +1,19 @@
+// 演習機能用の型定義
+export interface Exercise {
+  description: string
+  startCode: string
+  solution: string
+  hints: string[]
+  testCases: TestCase[]
+}
+
+export interface TestCase {
+  input: any
+  expected: any
+  description: string
+}
+
+// LearningDay インターフェースの拡張
 export interface LearningDay {
   day: number
   title: string
@@ -7,6 +23,7 @@ export interface LearningDay {
   phase: number
   sampleCode?: string
   explanation?: string
+  exercise?: Exercise
 }
 
 export interface ProgressStats {
@@ -26,7 +43,7 @@ export interface PhaseInfo {
   color: string
 }
 
-// Monaco Editor用の新しい型定義
+// Monaco Editor用の型定義
 export interface MonacoEditorProps {
   value: string
   language: string
