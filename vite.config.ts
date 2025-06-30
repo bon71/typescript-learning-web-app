@@ -11,12 +11,8 @@ export default defineConfig({
     }
   },
   server: {
-    host: '0.0.0.0',
     port: 3000,
-    open: false,
-    hmr: {
-      host: 'localhost'
-    }
+    open: true
   },
   build: {
     outDir: 'dist',
@@ -24,17 +20,23 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          monaco: ['monaco-editor'],
-          vendor: ['vue']
+          // Monaco Editorを別チャンクに分離（パフォーマンス向上）
+          monaco: ['monaco-editor']
         }
       }
-    },
-    chunkSizeWarningLimit: 1600
+    }
   },
-  define: {
-    'process.env': {}
-  },
+  // Monaco Editor用の最適化
   optimizeDeps: {
-    include: ['monaco-editor']
+    include: ['monaco-editor'],
+    exclude: ['@vscode/vscode-languagedetection']
+  },
+  // Worker設定（Monaco Editorが内部で使用）
+  worker: {
+    format: 'es'
+  },
+  // 開発時のパフォーマンス最適化
+  esbuild: {
+    target: 'es2020'
   }
 })
