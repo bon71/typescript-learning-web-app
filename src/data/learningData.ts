@@ -26,50 +26,7 @@ let userAge = 30;
 
 console.log(\`名前: \${userName}\`);
 console.log(\`年齢: \${userAge}歳\`);`,
-    explanation: "const は定数、let は変数として使用します。var は古い書き方なので避けましょう。",
-    exercise: {
-      description: "ユーザーの名前（定数）と年齢（変数）を定義し、1年後の年齢を計算して表示するmain関数を作成してください。",
-      startCode: `// ここにコードを書いてください
-function main(input: {name: string, age: number}) {
-  // input.name と input.age を使って処理を書く
-  
-}`,
-      solution: `function main(input: {name: string, age: number}) {
-  const name = input.name;
-  let age = input.age;
-  
-  // 1年後の年齢を計算
-  age = age + 1;
-  
-  console.log(\`\${name}さんは現在\${input.age}歳です\`);
-  console.log(\`来年は\${age}歳になります\`);
-  
-  return \`\${name}さんは来年\${age}歳になります\`;
-}`,
-      hints: [
-        "constは再代入できない定数を定義します",
-        "letは再代入可能な変数を定義します",
-        "input.nameとinput.ageを使って処理を書きましょう",
-        "テンプレートリテラル（\`\${}\`）を使って文字列を組み立てます"
-      ],
-      testCases: [
-        {
-          input: { name: "田中太郎", age: 25 },
-          expected: "田中太郎さんは来年26歳になります",
-          description: "基本的なケース"
-        },
-        {
-          input: { name: "山田花子", age: 30 },
-          expected: "山田花子さんは来年31歳になります",
-          description: "別の名前と年齢"
-        },
-        {
-          input: { name: "佐藤次郎", age: 0 },
-          expected: "佐藤次郎さんは来年1歳になります",
-          description: "0歳の赤ちゃん"
-        }
-      ]
-    }
+    explanation: "const は定数、let は変数として使用します。var は古い書き方なので避けましょう。"
   },
   {
     day: 2,
@@ -107,60 +64,7 @@ switch (grade) {
 // 三項演算子も便利
 const status = age >= 20 ? "成人" : "未成年";
 console.log(\`あなたは\${status}です\`);`,
-    explanation: "if文、switch文、三項演算子を使い分けて条件分岐を実装しましょう。",
-    exercise: {
-      description: "年齢を受け取り、0-12歳は「子供」、13-19歳は「ティーンエイジャー」、20-64歳は「大人」、65歳以上は「シニア」を返すmain関数を作成してください。",
-      startCode: `function main(age: number): string {
-  // ここに条件分岐のコードを書いてください
-  
-}`,
-      solution: `function main(age: number): string {
-  if (age >= 0 && age <= 12) {
-    return "子供";
-  } else if (age >= 13 && age <= 19) {
-    return "ティーンエイジャー";
-  } else if (age >= 20 && age <= 64) {
-    return "大人";
-  } else if (age >= 65) {
-    return "シニア";
-  } else {
-    return "無効な年齢";
-  }
-}`,
-      hints: [
-        "if-else if-else構文を使いましょう",
-        "年齢の範囲を適切に判定する必要があります",
-        "&&演算子で複数の条件を組み合わせられます",
-        "負の数など無効な入力も考慮しましょう"
-      ],
-      testCases: [
-        {
-          input: 10,
-          expected: "子供",
-          description: "子供の年齢"
-        },
-        {
-          input: 16,
-          expected: "ティーンエイジャー",
-          description: "ティーンエイジャーの年齢"
-        },
-        {
-          input: 35,
-          expected: "大人",
-          description: "大人の年齢"
-        },
-        {
-          input: 70,
-          expected: "シニア",
-          description: "シニアの年齢"
-        },
-        {
-          input: -5,
-          expected: "無効な年齢",
-          description: "負の年齢"
-        }
-      ]
-    }
+    explanation: "if文、switch文、三項演算子を使い分けて条件分岐を実装しましょう。"
   },
   {
     day: 3,
@@ -194,47 +98,202 @@ console.log("=== for...of ===");
 for (const fruit of fruits) {
   console.log(fruit.toUpperCase());
 }`,
-    explanation: "forEach は副作用のため、map は新しい配列作成のために使用します。",
-    exercise: {
-      description: "数値の配列を受け取り、偶数のみを抽出して2倍にした新しい配列を返すmain関数を作成してください。",
-      startCode: `function main(numbers: number[]): number[] {
-  // ここに配列操作のコードを書いてください
+    explanation: "forEach は副作用のため、map は新しい配列作成のために使用します。"
+  },
+  {
+    day: 4,
+    title: "関数の定義と使い方",
+    goal: "関数定義とアロー関数を理解する",
+    completion: "引数・戻り値のある関数を定義できる",
+    task: "税率を加算する関数を定義して呼び出し",
+    phase: 1,
+    sampleCode: `// 通常の関数定義
+function calculateTax(price, taxRate) {
+  return price * (1 + taxRate);
+}
+
+// アロー関数
+const calculateTaxArrow = (price, taxRate) => {
+  return price * (1 + taxRate);
+};
+
+// アロー関数（短縮形）
+const calculateTaxShort = (price, taxRate) => price * (1 + taxRate);
+
+// 使用例
+const originalPrice = 1000;
+const taxRate = 0.1; // 10%
+
+const totalPrice1 = calculateTax(originalPrice, taxRate);
+const totalPrice2 = calculateTaxArrow(originalPrice, taxRate);
+const totalPrice3 = calculateTaxShort(originalPrice, taxRate);
+
+console.log(\`税込価格: \${totalPrice1}円\`); // 1100円
+console.log(\`税込価格: \${totalPrice2}円\`); // 1100円
+console.log(\`税込価格: \${totalPrice3}円\`); // 1100円
+
+// デフォルト引数
+const calculateTaxWithDefault = (price, taxRate = 0.1) => {
+  return price * (1 + taxRate);
+};
+
+console.log(calculateTaxWithDefault(1000)); // デフォルト10%適用`,
+    explanation: "アロー関数は簡潔な書き方ができ、thisの扱いが異なります。デフォルト引数も便利です。"
+  },
+  {
+    day: 5,
+    title: "オブジェクトの基本",
+    goal: "オブジェクトの作成とアクセスを理解する",
+    completion: "メソッド付きオブジェクトを使える",
+    task: "user オブジェクトと sayHello() メソッドを実装",
+    phase: 1,
+    sampleCode: `// オブジェクトの作成
+const user = {
+  name: "田中太郎",
+  age: 30,
+  email: "tanaka@example.com",
   
-}`,
-      solution: `function main(numbers: number[]): number[] {
-  return numbers
-    .filter(num => num % 2 === 0)  // 偶数のみを抽出
-    .map(num => num * 2);          // 2倍にする
-}`,
-      hints: [
-        "filter()メソッドで条件に合う要素を抽出できます",
-        "map()メソッドで配列の各要素を変換できます",
-        "偶数判定は num % 2 === 0 で行えます",
-        "メソッドチェーンを使うと簡潔に書けます"
-      ],
-      testCases: [
-        {
-          input: [1, 2, 3, 4, 5, 6],
-          expected: [4, 8, 12],
-          description: "基本的なケース"
-        },
-        {
-          input: [1, 3, 5, 7],
-          expected: [],
-          description: "偶数がない場合"
-        },
-        {
-          input: [2, 4, 6, 8],
-          expected: [4, 8, 12, 16],
-          description: "すべて偶数の場合"
-        },
-        {
-          input: [],
-          expected: [],
-          description: "空配列の場合"
-        }
-      ]
+  // メソッドの定義
+  sayHello: function() {
+    console.log(\`こんにちは、\${this.name}です！\`);
+  },
+  
+  // ES6の短縮記法
+  introduce() {
+    console.log(\`私は\${this.name}、\${this.age}歳です。\`);
+  }
+};
+
+// オブジェクトのプロパティにアクセス
+console.log(user.name); // ドット記法
+console.log(user["email"]); // ブラケット記法
+
+// メソッドの呼び出し
+user.sayHello(); // "こんにちは、田中太郎です！"
+user.introduce(); // "私は田中太郎、30歳です。"
+
+// プロパティの追加・変更
+user.city = "東京";
+user.age = 31;
+
+console.log(user);
+
+// 分割代入
+const { name, age } = user;
+console.log(\`\${name}さんは\${age}歳です\`);`,
+    explanation: "オブジェクトにはプロパティとメソッドを持たせることができます。thisはメソッドが呼ばれたオブジェクトを指します。"
+  },
+  {
+    day: 6,
+    title: "DOM操作とイベント",
+    goal: "DOMへのアクセスとイベント処理の基本を学ぶ",
+    completion: "簡単なイベントリスナーが書ける",
+    task: "ボタンを押したら「こんにちは」と表示",
+    phase: 1,
+    sampleCode: `// HTML例:
+// <button id="myButton">クリック</button>
+// <div id="output"></div>
+
+// DOM要素の取得
+const button = document.getElementById('myButton');
+const output = document.getElementById('output');
+
+// イベントリスナーの追加
+button.addEventListener('click', function() {
+  output.textContent = 'こんにちは！';
+});
+
+// アロー関数でも書ける
+button.addEventListener('click', () => {
+  output.innerHTML = '<strong>こんにちは！</strong>';
+});
+
+// より実用的な例
+const nameInput = document.getElementById('nameInput');
+const greetButton = document.getElementById('greetButton');
+const greeting = document.getElementById('greeting');
+
+greetButton.addEventListener('click', () => {
+  const name = nameInput.value;
+  if (name) {
+    greeting.textContent = \`こんにちは、\${name}さん！\`;
+  } else {
+    greeting.textContent = '名前を入力してください';
+  }
+});`,
+    explanation: "DOM操作でHTMLを動的に変更できます。イベントリスナーでユーザーの操作に反応できます。"
+  },
+  {
+    day: 7,
+    title: "総復習とミニアプリ",
+    goal: "一連の構文を組み合わせて使える",
+    completion: "JSでUI操作ができる",
+    task: "入力された名前を使って挨拶を表示するHTML+JSアプリ",
+    phase: 1,
+    sampleCode: `// HTML構造例:
+/*
+<!DOCTYPE html>
+<html>
+<head>
+  <title>挨拶アプリ</title>
+</head>
+<body>
+  <h1>挨拶アプリ</h1>
+  <input id="nameInput" placeholder="お名前を入力">
+  <button id="greetButton">挨拶する</button>
+  <div id="output"></div>
+  <script src="script.js"></script>
+</body>
+</html>
+*/
+
+// JavaScript (script.js)
+class GreetingApp {
+  constructor() {
+    this.nameInput = document.getElementById('nameInput');
+    this.greetButton = document.getElementById('greetButton');
+    this.output = document.getElementById('output');
+    this.greetings = ['こんにちは', 'おはよう', 'こんばんは'];
+    
+    this.init();
+  }
+  
+  init() {
+    this.greetButton.addEventListener('click', () => this.greet());
+    this.nameInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') this.greet();
+    });
+  }
+  
+  greet() {
+    const name = this.nameInput.value.trim();
+    
+    if (!name) {
+      this.showMessage('名前を入力してください', 'error');
+      return;
     }
+    
+    const randomGreeting = this.getRandomGreeting();
+    this.showMessage(\`\${randomGreeting}、\${name}さん！\`, 'success');
+    this.nameInput.value = '';
+  }
+  
+  getRandomGreeting() {
+    const index = Math.floor(Math.random() * this.greetings.length);
+    return this.greetings[index];
+  }
+  
+  showMessage(message, type) {
+    this.output.textContent = message;
+    this.output.className = type;
+  }
+}
+
+// アプリの初期化
+document.addEventListener('DOMContentLoaded', () => {
+  new GreetingApp();
+});`,
+    explanation: "クラスを使ってコードを整理し、イベント処理やDOM操作を組み合わせて実用的なアプリを作成できます。"
   }
 ]
 
