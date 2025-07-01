@@ -496,3 +496,638 @@ onUnmounted(() => {
   }
 })
 </script>
+
+<style scoped>
+/* メインコンテナ */
+.learning-item {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.learning-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* ヘッダー部分 */
+.learning-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.learning-header:hover {
+  background: #f8f9fa;
+}
+
+.learning-header.completed {
+  background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+  border-left-color: #4caf50;
+}
+
+.learning-header.expanded {
+  background: #f0f4ff;
+  border-left-color: #2196f3;
+}
+
+.learning-header.phase-1 {
+  border-left-color: #2196f3;
+}
+
+.learning-header.phase-2 {
+  border-left-color: #ff9800;
+}
+
+.learning-header.phase-3 {
+  border-left-color: #9c27b0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.day-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  min-width: 45px;
+  text-align: center;
+}
+
+.learning-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.completion-badge {
+  background: #4caf50;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.expand-icon {
+  background: #e0e7ff;
+  color: #4f46e5;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.learning-header.expanded .expand-icon {
+  background: #4f46e5;
+  color: white;
+  transform: rotate(180deg);
+}
+
+/* コンテンツ部分 */
+.learning-content {
+  padding: 0 20px 20px;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.learning-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detail-section {
+  padding: 16px;
+  background: #f8fafb;
+  border-radius: 8px;
+  border-left: 3px solid #e5e7eb;
+}
+
+.section-label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.section-content {
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.task-content {
+  color: #059669;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* アクションエリア */
+.action-area {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid #e5e7eb;
+  background: white;
+}
+
+.action-button:hover {
+  border-color: #d1d5db;
+  background: #f9fafb;
+}
+
+.action-button.completed,
+.action-button.active {
+  border-color: #10b981;
+  background: #ecfdf5;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d1d5db;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.checkbox.checked {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.checkbox.checked::after {
+  content: '✓';
+  position: absolute;
+  top: -2px;
+  left: 2px;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.button-label {
+  font-weight: 500;
+  color: #374151;
+}
+
+/* エディタセクション */
+.interactive-editor-section {
+  margin-top: 24px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.editor-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.learning-level-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  margin-left: 12px;
+}
+
+.editor-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.control-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.control-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.control-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.run-button {
+  background: #10b981;
+}
+
+.run-button:hover:not(:disabled) {
+  background: #059669;
+}
+
+/* 結果パネル */
+.execution-result {
+  margin-top: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #f8fafb;
+  border-bottom: 1px solid #e5e7eb;
+  font-weight: 500;
+}
+
+.result-output {
+  padding: 16px;
+}
+
+.output-header {
+  font-weight: 600;
+  color: #059669;
+  margin-bottom: 8px;
+}
+
+.output-content {
+  background: #f8fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  padding: 12px;
+  font-family: 'Fira Code', 'Monaco', 'Cascadia Code', monospace;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  overflow-x: auto;
+}
+
+.result-errors {
+  padding: 16px;
+  background: #fef2f2;
+}
+
+.errors-header {
+  font-weight: 600;
+  color: #dc2626;
+  margin-bottom: 8px;
+}
+
+.errors-content {
+  color: #991b1b;
+}
+
+.error-line {
+  margin-bottom: 4px;
+  font-family: 'Fira Code', 'Monaco', 'Cascadia Code', monospace;
+  font-size: 0.9rem;
+}
+
+/* ヒントパネル */
+.hints-panel {
+  margin-top: 16px;
+  border: 1px solid #fbbf24;
+  border-radius: 8px;
+  background: #fffbeb;
+}
+
+.hints-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #fef3c7;
+  border-bottom: 1px solid #fbbf24;
+  font-weight: 500;
+}
+
+.hints-close {
+  background: none;
+  border: none;
+  color: #92400e;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.hints-content {
+  padding: 16px;
+}
+
+.hint-item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.hint-number {
+  background: #fbbf24;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.hint-text {
+  color: #92400e;
+  line-height: 1.5;
+}
+
+/* 進捗パネル */
+.progress-panel {
+  margin-top: 16px;
+  border: 1px solid #3b82f6;
+  border-radius: 8px;
+  background: #eff6ff;
+}
+
+.progress-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #dbeafe;
+  border-bottom: 1px solid #3b82f6;
+  font-weight: 500;
+}
+
+.progress-content {
+  padding: 16px;
+}
+
+.progress-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.progress-label {
+  color: #1e40af;
+}
+
+.progress-value {
+  font-weight: 600;
+  color: #1d4ed8;
+}
+
+/* 解説セクション */
+.explanation {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 8px;
+}
+
+.explanation-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: #0c4a6e;
+}
+
+.explanation-content {
+  color: #0c4a6e;
+  line-height: 1.6;
+}
+
+/* 学習アクションボタン */
+.learning-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.learning-action-button {
+  background: #f3f4f6;
+  border: 2px solid #d1d5db;
+  color: #374151;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.learning-action-button:hover {
+  border-color: #9ca3af;
+  background: #e5e7eb;
+}
+
+.learning-action-button.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+/* サンプルコードセクション */
+.sample-code-section {
+  margin-top: 24px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.sample-code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #f8fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.sample-title {
+  font-weight: 600;
+  color: #374151;
+}
+
+.copy-button {
+  background: #3b82f6;
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.copy-button:hover {
+  background: #2563eb;
+}
+
+.copy-button.copied {
+  background: #10b981;
+}
+
+.sample-code {
+  background: #1a1a1a;
+  color: #e5e5e5;
+  padding: 20px;
+  margin: 0;
+  overflow-x: auto;
+  font-family: 'Fira Code', 'Monaco', 'Cascadia Code', monospace;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+/* アニメーション */
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.slide-down-enter-to,
+.slide-down-leave-from {
+  max-height: 2000px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 768px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .learning-header {
+    padding: 16px;
+  }
+  
+  .learning-content {
+    padding: 0 16px 16px;
+  }
+  
+  .learning-title {
+    font-size: 1.1rem;
+  }
+  
+  .day-badge {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    min-width: 40px;
+  }
+  
+  .editor-header {
+    padding: 12px 16px;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .editor-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .learning-actions {
+    flex-direction: column;
+  }
+  
+  .learning-action-button {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-left {
+    gap: 12px;
+  }
+  
+  .learning-title {
+    font-size: 1rem;
+  }
+  
+  .detail-section {
+    padding: 12px;
+  }
+  
+  .action-button {
+    padding: 10px 12px;
+  }
+  
+  .sample-code {
+    padding: 16px;
+    font-size: 0.8rem;
+  }
+}
+</style>
