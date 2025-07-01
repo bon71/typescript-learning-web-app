@@ -47,26 +47,40 @@ Vue.js 3 + TypeScript + Monaco Editor で構築された、20日間のTypeScript
 - **コードリセット機能**: 元のサンプルコードに戻す
 - **リアルタイムフィードバック**: コード変更時の即座な反応
 
-## 🛠️ セットアップ手順
+## 🛠️ 環境要件
 
-### 1. リポジトリのクローン
+- **Node.js**: 24.2.0 以上
+- **npm**: 10.0.0 以上
+
+## 🚀 セットアップ手順
+
+### 1. Node.js環境の準備
+```bash
+# nvm使用の場合
+nvm use 24.2.0
+
+# 直接Node.js 24.2.0をインストール
+# https://nodejs.org/en/download/
+```
+
+### 2. リポジトリのクローン
 ```bash
 git clone https://github.com/bon71/typescript-learning-web-app.git
 cd typescript-learning-web-app
 ```
 
-### 2. 依存関係のインストール
+### 3. 依存関係のインストール
 ```bash
 npm install
 ```
 
-### 3. 開発サーバーの起動
+### 4. 開発サーバーの起動
 ```bash
 npm run dev
 ```
 → http://localhost:3000 でアクセス
 
-### 4. 本番ビルド
+### 5. 本番ビルド
 ```bash
 npm run build
 ```
@@ -96,8 +110,18 @@ npm run build
 
 ### 🚀 デプロイ・CI/CD
 - **GitHub Pages**: 静的サイトホスティング
-- **GitHub Actions**: 自動ビルド・デプロイ
+- **GitHub Actions**: 自動ビルド・デプロイ（Node.js 24.2.0）
 - **Vite最適化**: Monaco Editorチャンク分割・パフォーマンス向上
+
+### 🐳 Docker サポート
+```bash
+# Docker環境での開発
+npm run docker:dev
+
+# Docker環境でのビルド
+npm run docker:install
+npm run docker:build
+```
 
 ## 📝 ライセンス
 
@@ -109,5 +133,5 @@ MIT License
 
 ---
 
-**🎉 Monaco Editor統合により、VS Code同等のTypeScript学習環境を実現！**  
+**🎉 Node.js 24.2.0対応 + Monaco Editor統合により、最新・最高のTypeScript学習環境を実現！**  
 **本格的なインタラクティブ学習でTypeScriptマスターを目指しましょう！**
