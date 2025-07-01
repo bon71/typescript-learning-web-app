@@ -1,310 +1,504 @@
 <template>
-  <div class="monaco-editor-container">
-    <!-- ツールバー -->
-    <div class="editor-toolbar">
-      <div class="toolbar-left">
-        <span class="editor-title">
-          <span class="code-icon">💻</span>
-          TypeScript エディタ
-        </span>
+  <div class="monaco-editor-wrapper">
+    <!-- ローディング表示 -->
+    <div v-if="isLoading" class="editor-loading">
+      <div class="loading-spinner"></div>
+      <p>エディタを読み込み中...</p>
+    </div>
+
+    <!-- エディタコンテナ -->
+    <div 
+      ref="editorContainer" 
+      :class="['monaco-editor-container', { 'loading': isLoading }]"
+      :style="{ height: height, width: width }"
+    ></div>
+
+    <!-- エラー表示 -->
+    <div v-if="showErrors && errors.length > 0" class="error-panel">
+      <div class="error-header">
+        <span class="error-icon">⚠️</span>
+        <span class="error-title">TypeScriptエラー ({{ errors.length }})</span>
+        <button @click="showErrors = false" class="error-close">✕</button>
       </div>
-      
-      <div class="toolbar-right">
-        <button 
-          @click="formatCode" 
-          :disabled="!editor"
-          class="toolbar-button"
-          title="コードをフォーマット (Shift+Alt+F)"
+      <div class="error-list">
+        <div 
+          v-for="error in errors" 
+          :key="`${error.startLineNumber}-${error.startColumn}-${error.code}`"
+          class="error-item"
+          @click="goToError(error)"
         >
-          <span class="button-icon">🎨</span>
-          フォーマット
-        </button>
-        
-        <button 
-          @click="checkErrors" 
-          :disabled="!editor"
-          class="toolbar-button"
-          title="エラーと警告をチェック"
-        >
-          <span class="button-icon">🔍</span>
-          エラー確認
-        </button>
-        
-        <select 
-          v-model="selectedTheme" 
-          @change="changeTheme" 
-          class="theme-select"
-          title="エディタテーマを変更"
-        >
-          <option value="vs-light">ライトテーマ</option>
-          <option value="vs-dark">ダークテーマ</option>
-          <option value="hc-black">ハイコントラスト</option>
-        </select>
+          <div class="error-severity">
+            <span :class="['severity-badge', `severity-${error.severity}`]">
+              {{ getSeverityText(error.severity) }}
+            </span>
+          </div>
+          <div class="error-content">
+            <div class="error-message">{{ error.message }}</div>
+            <div class="error-location">
+              行 {{ error.startLineNumber }}, 列 {{ error.startColumn }}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Monaco Editor -->
-    <div 
-      ref="editorContainer" 
-      class="monaco-editor"
-      :style="{ height: height }"
-    ></div>
-
-    <!-- ステータスバー -->
-    <div class="editor-status">
-      <div class="status-left">
-        <span class="language-indicator">TypeScript</span>
-        <span v-if="editor" class="cursor-position">
-          行 {{ cursorPosition.line }}, 列 {{ cursorPosition.column }}
+    <!-- 実行結果表示 -->
+    <div v-if="showExecutionResult && executionResult" class="execution-result">
+      <div class="result-header">
+        <span class="result-icon">{{ executionResult.success ? '✅' : '❌' }}</span>
+        <span class="result-title">
+          実行結果 ({{ executionResult.executionTime }}ms)
         </span>
+        <button @click="showExecutionResult = false" class="result-close">✕</button>
       </div>
-      <div class="status-right">
-        <span class="ready-indicator">準備完了</span>
+      
+      <!-- 出力 -->
+      <div v-if="executionResult.output.length > 0" class="result-output">
+        <div class="output-header">📤 出力:</div>
+        <pre class="output-content">{{ executionResult.output.join('\n') }}</pre>
+      </div>
+      
+      <!-- エラー -->
+      <div v-if="executionResult.errors.length > 0" class="result-errors">
+        <div class="errors-header">❌ エラー:</div>
+        <div class="errors-content">
+          <div v-for="error in executionResult.errors" :key="error" class="error-line">
+            {{ error }}
+          </div>
+        </div>
+      </div>
+      
+      <!-- 警告 -->
+      <div v-if="executionResult.warnings.length > 0" class="result-warnings">
+        <div class="warnings-header">⚠️ 警告:</div>
+        <div class="warnings-content">
+          <div v-for="warning in executionResult.warnings" :key="warning" class="warning-line">
+            {{ warning }}
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import { useMonacoEditor, type UseMonacoEditorOptions } from '@/composables/useMonacoEditor'
+import { LearningLevel, LearningLevels } from '@/utils/monacoConfig'
 import * as monaco from 'monaco-editor'
 
-// Props定義
 interface Props {
-  value: string
-  language?: string
-  theme?: 'vs-dark' | 'vs-light' | 'hc-black'
-  readOnly?: boolean
+  value?: string
   height?: string
+  width?: string
+  language?: string
+  theme?: string
+  readOnly?: boolean
+  learningLevel?: LearningLevel
+  autoExecute?: boolean
+  showErrorPanel?: boolean
+  showResultPanel?: boolean
+}
+
+interface Emits {
+  (e: 'update:value', value: string): void
+  (e: 'change', value: string): void
+  (e: 'execute', result: any): void
+  (e: 'mount', editor: monaco.editor.IStandaloneCodeEditor): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  value: '',
+  height: '300px',
+  width: '100%',
   language: 'typescript',
-  theme: 'vs-dark',
+  theme: 'learning-dark',
   readOnly: false,
-  height: '400px'
+  learningLevel: LearningLevels.BEGINNER,
+  autoExecute: false,
+  showErrorPanel: true,
+  showResultPanel: true
 })
 
-// Emits定義
-const emit = defineEmits<{
-  'update:value': [value: string]
-  'change': [value: string]
-}>()
+const emit = defineEmits<Emits>()
 
-// リアクティブな状態
-const editor = ref<monaco.editor.IStandaloneCodeEditor | null>(null)
-const editorContainer = ref<HTMLElement | null>(null)
-const selectedTheme = ref(props.theme)
-const cursorPosition = ref({ line: 1, column: 1 })
+// UI状態
+const showErrors = ref(props.showErrorPanel)
+const showExecutionResult = ref(false)
 
-// エディタ初期化
-const initializeEditor = () => {
-  if (!editorContainer.value) return
-
-  // エディタ作成
-  const defaultOptions: monaco.editor.IStandaloneEditorConstructionOptions = {
-    value: props.value,
-    language: props.language,
-    theme: selectedTheme.value,
-    readOnly: props.readOnly,
-    automaticLayout: true,
-    fontSize: 14,
-    lineNumbers: 'on',
-    minimap: { enabled: false },
-    scrollBeyondLastLine: false,
-    wordWrap: 'on',
-    tabSize: 2,
-    insertSpaces: true
-  }
-
-  editor.value = monaco.editor.create(editorContainer.value, defaultOptions)
-  setupEventListeners()
-}
-
-const setupEventListeners = () => {
-  if (!editor.value) return
-
-  editor.value.onDidChangeModelContent(() => {
-    const value = editor.value?.getValue() || ''
+// Monaco Editor の使用
+const {
+  editorContainer,
+  editor,
+  isLoading,
+  currentValue,
+  errors,
+  isExecuting,
+  executionResult,
+  learningLevel,
+  setValue,
+  getValue,
+  setLearningLevel,
+  executeCode,
+  focus,
+  resize,
+  formatCode,
+  setTheme,
+  setReadOnly,
+  setCursorPosition,
+  highlightLine,
+  updateErrors
+} = useMonacoEditor({
+  value: props.value,
+  language: props.language,
+  theme: props.theme,
+  height: props.height,
+  width: props.width,
+  learningLevel: props.learningLevel,
+  readOnly: props.readOnly,
+  onChange: (value: string) => {
     emit('update:value', value)
     emit('change', value)
-  })
-
-  editor.value.onDidChangeCursorPosition((e) => {
-    cursorPosition.value = {
-      line: e.position.lineNumber,
-      column: e.position.column
+    
+    // 自動実行が有効な場合
+    if (props.autoExecute && !props.readOnly) {
+      executeCodeDelayed()
     }
-  })
+  },
+  onMount: (editorInstance: monaco.editor.IStandaloneCodeEditor) => {
+    emit('mount', editorInstance)
+  }
+})
+
+// 重複する実行を防ぐためのデバウンス
+let executeTimeout: NodeJS.Timeout | null = null
+const executeCodeDelayed = () => {
+  if (executeTimeout) {
+    clearTimeout(executeTimeout)
+  }
+  executeTimeout = setTimeout(async () => {
+    const result = await executeCode()
+    executionResult.value = result
+    showExecutionResult.value = props.showResultPanel
+    emit('execute', result)
+  }, 1000)
 }
 
-const formatCode = async () => {
-  if (!editor.value) return
-  try {
-    await editor.value.getAction('editor.action.formatDocument')?.run()
-  } catch (error) {
-    console.error('フォーマットに失敗しました:', error)
+// エラーの重要度テキスト
+const getSeverityText = (severity: monaco.MarkerSeverity): string => {
+  switch (severity) {
+    case monaco.MarkerSeverity.Error:
+      return 'エラー'
+    case monaco.MarkerSeverity.Warning:
+      return '警告'
+    case monaco.MarkerSeverity.Info:
+      return '情報'
+    case monaco.MarkerSeverity.Hint:
+      return 'ヒント'
+    default:
+      return '不明'
   }
 }
 
-const checkErrors = () => {
-  console.log('エラーチェック実行')
+// エラー位置にジャンプ
+const goToError = (error: monaco.editor.IMarker) => {
+  setCursorPosition(error.startLineNumber, error.startColumn)
+  highlightLine(error.startLineNumber)
+  focus()
 }
 
-const changeTheme = () => {
-  monaco.editor.setTheme(selectedTheme.value)
-}
-
+// プロパティの変更を監視
 watch(() => props.value, (newValue) => {
-  if (editor.value && newValue !== editor.value.getValue()) {
-    editor.value.setValue(newValue)
+  if (newValue !== currentValue.value) {
+    setValue(newValue || '')
   }
 })
 
-onMounted(() => {
-  initializeEditor()
+watch(() => props.learningLevel, (newLevel) => {
+  setLearningLevel(newLevel)
 })
 
-onUnmounted(() => {
-  if (editor.value) {
-    editor.value.dispose()
+watch(() => props.theme, (newTheme) => {
+  setTheme(newTheme)
+})
+
+watch(() => props.readOnly, (readOnly) => {
+  setReadOnly(readOnly)
+})
+
+// エラー数の監視
+watch(errors, () => {
+  if (errors.value.length > 0 && props.showErrorPanel) {
+    showErrors.value = true
   }
+}, { deep: true })
+
+// パブリックメソッドの公開
+defineExpose({
+  // エディタインスタンス
+  editor,
+  
+  // 値の操作
+  setValue,
+  getValue,
+  
+  // エディタ操作
+  focus,
+  resize,
+  formatCode,
+  
+  // 実行機能
+  executeCode: async () => {
+    const result = await executeCode()
+    executionResult.value = result
+    showExecutionResult.value = props.showResultPanel
+    emit('execute', result)
+    return result
+  },
+  
+  // 学習レベル操作
+  setLearningLevel,
+  
+  // その他
+  setTheme,
+  setReadOnly,
+  setCursorPosition,
+  highlightLine,
+  updateErrors
 })
 </script>
 
 <style scoped>
-.monaco-editor-container {
-  border: 1px solid #e9ecef;
-  border-radius: 12px;
+.monaco-editor-wrapper {
+  position: relative;
+  border-radius: 8px;
   overflow: hidden;
-  background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e1e5e9;
+  background: #fff;
 }
 
-.editor-toolbar {
+.monaco-editor-container {
+  min-height: 200px;
+  transition: opacity 0.3s ease;
+}
+
+.monaco-editor-container.loading {
+  opacity: 0.5;
+}
+
+.editor-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #2196F3;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-panel, .execution-result {
+  border-top: 1px solid #e1e5e9;
+  background: #f8f9fa;
+}
+
+.error-header, .result-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.toolbar-left {
-  display: flex;
-  align-items: center;
-}
-
-.editor-title {
-  display: flex;
-  align-items: center;
+  background: #fff3cd;
+  border-bottom: 1px solid #ffeaa7;
   font-weight: 600;
-  color: #333;
-  font-size: 0.9rem;
 }
 
-.code-icon {
+.result-header {
+  background: #d1ecf1;
+  border-bottom: 1px solid #bee5eb;
+}
+
+.error-icon, .result-icon {
   margin-right: 8px;
 }
 
-.toolbar-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.toolbar-button {
-  display: flex;
-  align-items: center;
-  padding: 6px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background: white;
-  color: #555;
-  font-size: 0.85rem;
+.error-close, .result-close {
+  background: none;
+  border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #666;
+  font-size: 14px;
 }
 
-.toolbar-button:hover:not(:disabled) {
-  background: #f0f0f0;
-  border-color: #ccc;
+.error-close:hover, .result-close:hover {
+  background: rgba(0, 0, 0, 0.1);
 }
 
-.toolbar-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.error-list {
+  max-height: 200px;
+  overflow-y: auto;
 }
 
-.button-icon {
-  margin-right: 4px;
-  font-size: 0.8rem;
-}
-
-.theme-select {
-  padding: 6px 8px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background: white;
-  color: #555;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-.monaco-editor {
-  position: relative;
-}
-
-.editor-status {
+.error-item {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 16px;
-  background: #f8f9fa;
-  border-top: 1px solid #e9ecef;
-  font-size: 0.75rem;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.error-item:hover {
+  background: #f5f5f5;
+}
+
+.error-item:last-child {
+  border-bottom: none;
+}
+
+.error-severity {
+  margin-right: 12px;
+  display: flex;
+  align-items: flex-start;
+  padding-top: 2px;
+}
+
+.severity-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.severity-1 { /* Error */
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.severity-2 { /* Warning */
+  background: #fff3cd;
+  color: #856404;
+}
+
+.severity-4 { /* Info */
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.severity-8 { /* Hint */
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+.error-content {
+  flex: 1;
+}
+
+.error-message {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.error-location {
+  font-size: 12px;
   color: #666;
 }
 
-.status-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.result-output, .result-errors, .result-warnings {
+  margin: 8px 16px;
 }
 
-.language-indicator {
-  background: #2196F3;
-  color: white;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-weight: 500;
+.output-header, .errors-header, .warnings-header {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
 }
 
-.status-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.output-content {
+  background: #2d3748;
+  color: #e2e8f0;
+  padding: 12px;
+  border-radius: 4px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 0;
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
-.ready-indicator {
-  color: #28a745;
-  font-weight: 500;
+.errors-content, .warnings-content {
+  background: #fff;
+  border: 1px solid #e1e5e9;
+  border-radius: 4px;
+  max-height: 150px;
+  overflow-y: auto;
 }
 
+.error-line, .warning-line {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+}
+
+.error-line {
+  color: #dc3545;
+  background: #fff5f5;
+}
+
+.warning-line {
+  color: #856404;
+  background: #fffef5;
+}
+
+.error-line:last-child, .warning-line:last-child {
+  border-bottom: none;
+}
+
+/* Monaco Editor内のカスタムスタイル */
+:global(.learning-highlight-line) {
+  background: rgba(255, 255, 0, 0.2) !important;
+}
+
+:global(.learning-highlight-glyph) {
+  background: #ffeb3b;
+}
+
+/* レスポンシブデザイン */
 @media (max-width: 768px) {
-  .editor-toolbar {
+  .error-item {
     flex-direction: column;
-    gap: 8px;
-    align-items: stretch;
+    align-items: flex-start;
   }
-
-  .toolbar-right {
-    justify-content: space-between;
+  
+  .error-severity {
+    margin-right: 0;
+    margin-bottom: 8px;
   }
-
-  .toolbar-button {
-    font-size: 0.8rem;
-    padding: 4px 8px;
+  
+  .output-content {
+    font-size: 12px;
   }
 }
 </style>
