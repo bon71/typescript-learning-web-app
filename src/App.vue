@@ -41,7 +41,7 @@
 
 <script setup lang="ts">
 import { onMounted, computed } from 'vue'
-import { learningData, phaseInfo } from '@/data/learningData'
+import { learningData, phaseInfo } from '@/data'
 import { useLearningProgress } from '@/composables/useLearningProgress'
 import ProgressHeader from '@/components/ProgressHeader.vue'
 import PhaseTabs from '@/components/PhaseTabs.vue'
