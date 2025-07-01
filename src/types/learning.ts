@@ -8,9 +8,11 @@ export interface Exercise {
 }
 
 export interface TestCase {
-  input: any
-  expected: any
+  id: string
   description: string
+  input?: any
+  expectedOutput?: any
+  testFunction?: string  // テスト関数のコード
 }
 
 // LearningDay インターフェースの拡張
@@ -24,6 +26,10 @@ export interface LearningDay {
   sampleCode?: string
   explanation?: string
   exercise?: Exercise
+  exerciseCode?: string  // 🆕 演習用の初期コード
+  testCases?: TestCase[] // 🆕 自動評価用テストケース
+  hints?: string[]       // 🆕 段階的ヒント
+  difficulty?: 'easy' | 'medium' | 'hard' // 🆕 難易度
 }
 
 export interface ProgressStats {
@@ -34,6 +40,9 @@ export interface ProgressStats {
   phase2Progress: number
   phase3Progress: number
   studyStreak: number
+  exercisesCompleted?: number // 🆕 完了した演習数
+  codingTime?: number         // 🆕 コーディング時間（分）
+  errorsEncountered?: number  // 🆕 遭遇したエラー数
 }
 
 export interface PhaseInfo {
@@ -47,11 +56,15 @@ export interface PhaseInfo {
 export interface MonacoEditorProps {
   value: string
   language: string
-  theme?: 'vs-dark' | 'vs-light' | 'hc-black'
+  theme?: 'vs-dark' | 'vs-light' | 'hc-black' | 'learning-dark' | 'learning-light'
   readOnly?: boolean
   height?: string
   width?: string
   options?: MonacoEditorOptions
+  learningLevel?: 'beginner' | 'intermediate' | 'advanced'
+  autoExecute?: boolean
+  showErrorPanel?: boolean
+  showResultPanel?: boolean
 }
 
 export interface MonacoEditorOptions {
@@ -59,6 +72,7 @@ export interface MonacoEditorOptions {
   lineNumbers?: 'on' | 'off' | 'relative' | 'interval'
   minimap?: {
     enabled: boolean
+    maxColumn?: number
   }
   automaticLayout?: boolean
   scrollBeyondLastLine?: boolean
@@ -66,6 +80,16 @@ export interface MonacoEditorOptions {
   tabSize?: number
   insertSpaces?: boolean
   renderWhitespace?: 'none' | 'boundary' | 'selection' | 'all'
+  quickSuggestions?: boolean | {
+    other: boolean
+    comments: boolean
+    strings: boolean
+  }
+  parameterHints?: {
+    enabled: boolean
+  }
+  folding?: boolean
+  glyphMargin?: boolean
 }
 
 export interface MonacoEditorEmits {
@@ -75,6 +99,25 @@ export interface MonacoEditorEmits {
   (e: 'blur'): void
   (e: 'format'): void
   (e: 'error-check'): void
+  (e: 'execute', result: ExecutionResult): void
+  (e: 'mount', editor: any): void
+}
+
+export interface ExecutionResult {
+  output: string[]
+  errors: string[]
+  warnings: string[]
+  executionTime: number
+  success: boolean
+  testResults?: TestResult[]
+}
+
+export interface TestResult {
+  testId: string
+  passed: boolean
+  actualOutput?: any
+  expectedOutput?: any
+  errorMessage?: string
 }
 
 export interface CodeExecutionResult {
@@ -90,4 +133,15 @@ export interface LearningCodeSession {
   lastModified: Date
   errors: number
   completionStatus: 'not-started' | 'in-progress' | 'completed'
+  executionCount?: number
+  learningTime?: number
+}
+
+// エディタ設定用
+export interface EditorSettings {
+  theme: 'light' | 'dark'
+  fontSize: number
+  enableAutocompletion: boolean
+  enableErrorChecking: boolean
+  learningLevel: 'beginner' | 'intermediate' | 'advanced'
 }
