@@ -49,10 +49,10 @@ export const phase3Info: PhaseContent = {
   skills: [
     "Generics（ジェネリクス）",
     "型ガード（Type Guards）",
-    "非同期処理の型安全性",
-    "Utility Types活用",
-    "型安全なAPI設計",
-    "大規模TypeScriptプロジェクト開発"
+    "非同期処理とPromise<T>",
+    "Utility Types（Partial, Pick, Omit等）",
+    "型安全なAPI設計パターン",
+    "実践的TypeScriptプロジェクト開発"
   ]
 } as const
 

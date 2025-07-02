@@ -3,13 +3,21 @@
     <!-- Navigation Header -->
     <div class="lesson-header">
       <div class="lesson-nav">
-        <button 
-          @click="goToPreviousLesson" 
-          :disabled="!hasPreviousLesson"
-          class="nav-button prev"
-        >
-          ← 前へ
-        </button>
+        <div class="nav-left">
+          <button 
+            @click="goToPhaseOverview"
+            class="nav-button phase-back"
+          >
+            📚 フェーズ選択
+          </button>
+          <button 
+            @click="goToPreviousLesson" 
+            :disabled="!hasPreviousLesson"
+            class="nav-button prev"
+          >
+            ← 前へ
+          </button>
+        </div>
         
         <div class="lesson-info">
           <h1 class="lesson-title">
@@ -24,13 +32,15 @@
           </div>
         </div>
         
-        <button 
-          @click="goToNextLesson" 
-          :disabled="!hasNextLesson"
-          class="nav-button next"
-        >
-          次へ →
-        </button>
+        <div class="nav-right">
+          <button 
+            @click="goToNextLesson" 
+            :disabled="!hasNextLesson"
+            class="nav-button next"
+          >
+            次へ →
+          </button>
+        </div>
       </div>
     </div>
 
@@ -324,6 +334,10 @@ const goToNextLesson = () => {
   }
 }
 
+const goToPhaseOverview = () => {
+  router.push('/phases')
+}
+
 // Progress calculations
 const overallProgress = computed(() => progressStats.value.totalProgress)
 
@@ -367,12 +381,431 @@ const outputTabs = [
 
 // Initialize code with sample
 onMounted(() => {
-  code.value = lesson.value.sampleCode || '// Write your TypeScript code here\nconsole.log("Hello, World!");'
+  code.value = getInitialCode()
 })
+
+// Get initial code based on lesson content
+const getInitialCode = (): string => {
+  if (lesson.value.sampleCode) {
+    return lesson.value.sampleCode
+  }
+  
+  // レッスン固有のデフォルトコードを生成
+  switch (lesson.value.day) {
+    case 1:
+      return `// Day 1: 変数の宣言と基本型
+// あなたの名前と年齢を変数に代入してください
+let name = ""; // ここに名前を入力
+const age = 0; // ここに年齢を入力
+
+console.log("名前:", name);
+console.log("年齢:", age);`
+    
+    case 2:
+      return `// Day 2: 条件分岐と比較演算子
+// 年齢に応じた出力を作成してください
+const age = 20; // この値を変更して試してみてください
+
+// if文を使って成人かどうかを判定
+if (age >= 20) {
+  console.log("成人です");
+} else {
+  console.log("未成年です");
+}`
+    
+    case 3:
+      return `// Day 3: 配列とループ
+// 果物リストをすべて大文字にして出力してください
+const fruits = ["apple", "banana", "orange"];
+
+// ここに配列を大文字に変換するコードを書いてください
+// ヒント: toUpperCase() メソッドを使用します`
+    
+    case 4:
+      return `// Day 4: 関数の定義と使い方
+// 挨拶をする関数を作成してください
+function greet(name) {
+  // ここに挨拶メッセージを返すコードを書いてください
+}
+
+// 関数を呼び出してテストしてください
+greet("太郎");`
+    
+    case 5:
+      return `// Day 5: オブジェクトの基本
+// 人物の情報を表すオブジェクトを作成してください
+const person = {
+  name: "", // 名前を入力
+  age: 0,   // 年齢を入力
+  // 自己紹介メソッドを追加してください
+};
+
+console.log(person);`
+    
+    case 6:
+      return `// Day 6: DOM操作とイベント
+// ボタンクリック時の動作を実装してください
+// 注意: このコードはブラウザ環境で動作します
+
+// ボタンがクリックされた時の処理
+function handleClick() {
+  console.log("ボタンがクリックされました！");
+  // ここに追加の処理を書いてください
+}
+
+// イベントリスナーの設定例
+// document.getElementById("myButton").addEventListener("click", handleClick);`
+    
+    case 7:
+      return `// Day 7: 総復習とミニアプリ
+// これまで学んだことを組み合わせてミニアプリを作成してください
+const tasks = []; // タスクリスト
+
+function addTask(task) {
+  // タスクを追加する関数
+}
+
+function showTasks() {
+  // タスク一覧を表示する関数
+}
+
+// 使用例
+addTask("TypeScriptを学ぶ");
+showTasks();`
+
+    // Phase 2: TypeScript基礎
+    case 8:
+      return `// Day 8: TypeScriptとは
+// 型注釈を使って変数を定義してみましょう
+let message: string = "Hello TypeScript";
+let count: number = 0;
+let isActive: boolean = true;
+
+// JavaScriptとの違いを確認
+// message = 123; // エラー：Type 'number' is not assignable to type 'string'
+
+console.log(message);
+console.log(typeof message);`
+
+    case 9:
+      return `// Day 9: 基本の型
+// 基本型の型注釈を練習しましょう
+let userName: string = ""; // 名前を入力してください
+let userAge: number = 0;   // 年齢を入力してください
+let isStudent: boolean = false; // 学生かどうか
+
+// 配列の型定義
+let scores: number[] = [85, 92, 78];
+let subjects: string[] = ["Math", "English", "Science"];
+
+console.log(\`\${userName}さんは\${userAge}歳です\`);`
+
+    case 10:
+      return `// Day 10: 配列とオブジェクトの型
+// オブジェクトの型定義を練習しましょう
+const user: {
+  name: string;
+  age: number;
+  email: string;
+} = {
+  name: "", // 名前を入力
+  age: 0,   // 年齢を入力
+  email: "" // メールアドレスを入力
+};
+
+// 配列とオブジェクトの組み合わせ
+const users: Array<{name: string, age: number}> = [];
+
+console.log(user);`
+
+    case 11:
+      return `// Day 11: 関数に型をつける
+// 型安全な関数を作成しましょう
+function calculateTotal(price: number, tax: number): number {
+  // 税込み価格を計算して返してください
+  return 0; // ここを実装してください
+}
+
+// アロー関数での型定義
+const greetUser = (name: string, age: number): string => {
+  // 挨拶メッセージを返してください
+  return "";
+};
+
+// 関数を呼び出してテスト
+console.log(calculateTotal(1000, 0.1));`
+
+    case 12:
+      return `// Day 12: Union型とLiteral型
+// Union型とLiteral型を練習しましょう
+type Status = "pending" | "approved" | "rejected";
+type Priority = "low" | "medium" | "high";
+
+let taskStatus: Status = "pending";
+let taskPriority: Priority = "medium";
+
+// Union型の関数
+function processTask(status: Status, priority: Priority): string {
+  // statusとpriorityに応じたメッセージを返してください
+  return "";
+}
+
+console.log(processTask(taskStatus, taskPriority));`
+
+    case 13:
+      return `// Day 13: Interfaceと継承
+// Interfaceを使った型定義を練習しましょう
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+interface Admin extends User {
+  permissions: string[];
+}
+
+// オブジェクトを作成してください
+const regularUser: User = {
+  // プロパティを実装してください
+};
+
+const adminUser: Admin = {
+  // プロパティを実装してください
+};
+
+console.log(regularUser, adminUser);`
+
+    case 14:
+      return `// Day 14: クラスとTypeScript
+// TypeScriptでクラスを定義しましょう
+class Task {
+  private id: number;
+  public title: string;
+  public completed: boolean;
+
+  constructor(id: number, title: string) {
+    // コンストラクタを実装してください
+  }
+
+  public complete(): void {
+    // タスクを完了状態にするメソッド
+  }
+
+  public getStatus(): string {
+    // タスクの状態を返すメソッド
+    return "";
+  }
+}
+
+// クラスのインスタンスを作成してテスト
+const task = new Task(1, "TypeScriptを学ぶ");`
+
+    // Phase 3: 実践応用
+    case 15:
+      return `// Day 15: Generics
+// ジェネリクスを使った関数を作成しましょう
+function createArray<T>(length: number, value: T): T[] {
+  // 指定された長さと値で配列を作成してください
+  return [];
+}
+
+// ジェネリクスを使ったインターフェース
+interface Repository<T> {
+  items: T[];
+  add(item: T): void;
+  findById(id: number): T | undefined;
+}
+
+// 使用例
+const numbers = createArray(3, 0);
+const strings = createArray(2, "hello");
+
+console.log(numbers, strings);`
+
+    case 16:
+      return `// Day 16: 型ガード
+// 型ガードを使った安全な型チェック
+type User = { type: "user"; name: string; email: string };
+type Admin = { type: "admin"; name: string; permissions: string[] };
+type Person = User | Admin;
+
+// 型ガード関数
+function isAdmin(person: Person): person is Admin {
+  // Adminかどうかを判定してください
+  return false;
+}
+
+function handlePerson(person: Person): string {
+  if (isAdmin(person)) {
+    // ここではpersonはAdmin型として扱われます
+    return \`Admin: \${person.name}\`;
+  } else {
+    // ここではpersonはUser型として扱われます
+    return \`User: \${person.name}\`;
+  }
+}
+
+// テスト用データ
+const testPerson: Person = { type: "user", name: "太郎", email: "taro@example.com" };`
+
+    case 17:
+      return `// Day 17: Promiseと非同期処理
+// 非同期処理とPromiseの型定義
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
+
+// 非同期関数の型定義
+async function fetchUserData(userId: number): Promise<ApiResponse<User>> {
+  // ユーザーデータを取得する非同期関数を実装
+  return {
+    success: true,
+    data: { id: userId, name: "サンプルユーザー", email: "user@example.com" }
+  };
+}
+
+// 非同期処理の使用例
+async function main() {
+  try {
+    const response = await fetchUserData(1);
+    if (response.success) {
+      console.log("ユーザー:", response.data);
+    }
+  } catch (error) {
+    console.error("エラー:", error);
+  }
+}
+
+main();`
+
+    case 18:
+      return `// Day 18: Utility Types
+// TypeScriptの便利なUtility Typesを練習
+interface FullUser {
+  id: number;
+  name: string;
+  email: string;
+  age: number;
+  address: string;
+}
+
+// Utility Typesの使用例
+type PartialUser = Partial<FullUser>;      // すべてのプロパティがオプション
+type RequiredUser = Required<PartialUser>; // すべてのプロパティが必須
+type UserSummary = Pick<FullUser, "id" | "name" | "email">; // 特定のプロパティのみ
+type UserWithoutId = Omit<FullUser, "id">; // 特定のプロパティを除外
+
+// 実際の使用例
+function updateUser(id: number, updates: PartialUser): FullUser {
+  // ユーザー情報を部分的に更新する関数
+  return {} as FullUser; // 実装してください
+}
+
+const userSummary: UserSummary = {
+  id: 1,
+  name: "太郎",
+  email: "taro@example.com"
+};`
+
+    case 19:
+      return `// Day 19: API設計
+// TypeScriptでのAPI設計パターン
+interface BaseResponse {
+  success: boolean;
+  timestamp: string;
+}
+
+interface SuccessResponse<T> extends BaseResponse {
+  success: true;
+  data: T;
+}
+
+interface ErrorResponse extends BaseResponse {
+  success: false;
+  error: {
+    code: string;
+    message: string;
+  };
+}
+
+type ApiResponse<T> = SuccessResponse<T> | ErrorResponse;
+
+// API関数の型定義
+class ApiClient {
+  async get<T>(endpoint: string): Promise<ApiResponse<T>> {
+    // GET リクエストを実装してください
+    return {
+      success: true,
+      data: {} as T,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  async post<T, U>(endpoint: string, data: T): Promise<ApiResponse<U>> {
+    // POST リクエストを実装してください
+    return {} as ApiResponse<U>;
+  }
+}
+
+// 使用例
+const api = new ApiClient();`
+
+    case 20:
+      return `// Day 20: 総仕上げミニプロジェクト
+// TypeScriptの機能を組み合わせたミニプロジェクト
+interface Task {
+  id: number;
+  title: string;
+  description: string;
+  completed: boolean;
+  priority: "low" | "medium" | "high";
+  createdAt: Date;
+}
+
+class TaskManager<T extends Task = Task> {
+  private tasks: T[] = [];
+  private nextId = 1;
+
+  addTask(taskData: Omit<T, "id" | "createdAt">): T {
+    // 新しいタスクを追加する実装
+    return {} as T;
+  }
+
+  getTasks(): T[] {
+    return this.tasks;
+  }
+
+  updateTask(id: number, updates: Partial<T>): T | null {
+    // タスクを更新する実装
+    return null;
+  }
+
+  deleteTask(id: number): boolean {
+    // タスクを削除する実装
+    return false;
+  }
+
+  getTasksByPriority(priority: T["priority"]): T[] {
+    // 優先度でフィルタする実装
+    return [];
+  }
+}
+
+// 使用例
+const taskManager = new TaskManager<Task>();
+// ここでTaskManagerを使ってみてください`
+    
+    default:
+      return '// Write your TypeScript code here\nconsole.log("Hello, World!");'
+  }
+}
 
 // Editor methods
 const resetCode = () => {
-  code.value = lesson.value.sampleCode || '// Write your TypeScript code here\nconsole.log("Hello, World!");'
+  code.value = getInitialCode()
   clearConsole()
   errors.value = []
 }
@@ -534,6 +967,18 @@ onUnmounted(() => {
   margin: 0 auto;
 }
 
+.nav-left,
+.nav-right {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  min-width: 200px;
+}
+
+.nav-right {
+  justify-content: flex-end;
+}
+
 .nav-button {
   background: #667eea;
   color: white;
@@ -555,6 +1000,16 @@ onUnmounted(() => {
   background: #cbd5e1;
   cursor: not-allowed;
   transform: none;
+}
+
+.nav-button.phase-back {
+  background: #10b981;
+  border: 2px solid #10b981;
+}
+
+.nav-button.phase-back:hover {
+  background: #059669;
+  border-color: #059669;
 }
 
 .lesson-info {
@@ -1213,6 +1668,12 @@ onUnmounted(() => {
   .lesson-nav {
     flex-direction: column;
     gap: 1rem;
+  }
+  
+  .nav-left,
+  .nav-right {
+    min-width: auto;
+    justify-content: center;
   }
   
   .lesson-info {
