@@ -1,137 +1,114 @@
 import { ref, computed, watch } from 'vue'
-import type { LearningDay, ProgressStats } from '@/types/learning'
+import { allLessons } from '@/data'
+import type { LessonContent } from '@/types/content'
 
-export function useLearningProgress(learningData: LearningDay[]) {
+export interface ProgressStats {
+  completedLessons: number
+  totalLessons: number
+  completedDays: number[]
+  totalProgress: number
+  totalStudyTime: string
+  phase1Progress: number
+  phase2Progress: number
+  phase3Progress: number
+}
+
+export function useLearningProgress() {
   // リアクティブな状態
   const completedDays = ref<number[]>(
     JSON.parse(localStorage.getItem('completedDays') || '[]')
   )
+  
   const studyStreak = ref<number>(
     parseInt(localStorage.getItem('studyStreak') || '0')
   )
-  const currentPhase = ref<number>(1)
   
-  // サンプルコード表示状態
-  const showSampleCode = ref<number[]>(
-    JSON.parse(localStorage.getItem('showSampleCode') || '[]')
+  const totalStudyTimeMinutes = ref<number>(
+    parseInt(localStorage.getItem('totalStudyTime') || '0')
   )
 
   // 進捗の計算
   const progressStats = computed<ProgressStats>(() => {
-    const totalDays = learningData.length
+    const totalLessons = allLessons.length
     const completed = completedDays.value.length
-    const totalProgress = Math.round((completed / totalDays) * 100)
+    const totalProgress = Math.round((completed / totalLessons) * 100)
 
     // フェーズごとの進捗
     const getPhaseProgress = (phase: number) => {
-      const phaseData = learningData.filter(item => item.phase === phase)
-      const phaseCompleted = phaseData.filter(item => 
-        completedDays.value.includes(item.day)
+      const phaseData = allLessons.filter(lesson => lesson.phase === phase)
+      const phaseCompleted = phaseData.filter(lesson => 
+        completedDays.value.includes(lesson.day)
       ).length
-      return Math.round((phaseCompleted / phaseData.length) * 100)
+      return phaseData.length > 0 ? Math.round((phaseCompleted / phaseData.length) * 100) : 0
+    }
+
+    // 学習時間をフォーマット
+    const formatStudyTime = (minutes: number): string => {
+      if (minutes < 60) {
+        return `${minutes}分`
+      } else {
+        const hours = Math.floor(minutes / 60)
+        const remainingMinutes = minutes % 60
+        return `${hours}時間${remainingMinutes}分`
+      }
     }
 
     return {
+      completedLessons: completed,
+      totalLessons,
+      completedDays: completedDays.value,
       totalProgress,
-      completedDays: completed,
-      remainingDays: totalDays - completed,
+      totalStudyTime: formatStudyTime(totalStudyTimeMinutes.value),
       phase1Progress: getPhaseProgress(1),
       phase2Progress: getPhaseProgress(2),
-      phase3Progress: getPhaseProgress(3),
-      studyStreak: studyStreak.value
+      phase3Progress: getPhaseProgress(3)
     }
   })
 
-  // フェーズごとのデータ
-  const getPhaseData = (phase: number) => 
-    computed(() => learningData.filter(item => item.phase === phase))
+  // レッスン完了状態の確認
+  const isCompleted = (day: number) => {
+    return computed(() => completedDays.value.includes(day))
+  }
 
-  // 完了状態の切り替え
+  // レッスン完了の切り替え
   const toggleCompletion = (day: number) => {
     const index = completedDays.value.indexOf(day)
-    
     if (index > -1) {
       completedDays.value.splice(index, 1)
     } else {
       completedDays.value.push(day)
-      updateStudyStreak()
-    }
-  }
-
-  // サンプルコード表示の切り替え
-  const toggleSampleCode = (day: number) => {
-    const index = showSampleCode.value.indexOf(day)
-    
-    if (index > -1) {
-      showSampleCode.value.splice(index, 1)
-    } else {
-      showSampleCode.value.push(day)
-    }
-  }
-
-  // 学習継続日数の更新
-  const updateStudyStreak = () => {
-    const today = new Date().toDateString()
-    const lastStudyDate = localStorage.getItem('lastStudyDate')
-    
-    if (lastStudyDate !== today) {
-      studyStreak.value++
-      localStorage.setItem('lastStudyDate', today)
+      // 学習時間を追加（仮の実装）
+      const lesson = allLessons.find(l => l.day === day)
+      if (lesson) {
+        totalStudyTimeMinutes.value += lesson.estimatedTime || 15
+      }
     }
   }
 
   // 進捗のリセット
   const resetProgress = () => {
-    if (confirm('本当に進捗をリセットしますか？この操作は取り消せません。')) {
-      completedDays.value = []
-      studyStreak.value = 0
-      showSampleCode.value = []
-      
-      localStorage.removeItem('completedDays')
-      localStorage.removeItem('studyStreak')
-      localStorage.removeItem('lastStudyDate')
-      localStorage.removeItem('showSampleCode')
-    }
+    completedDays.value = []
+    studyStreak.value = 0
+    totalStudyTimeMinutes.value = 0
   }
-
-  // フェーズの切り替え
-  const setPhase = (phase: number) => {
-    currentPhase.value = phase
-  }
-
-  // 完了状態チェック
-  const isCompleted = (day: number) => 
-    computed(() => completedDays.value.includes(day))
-    
-  // サンプルコード表示状態チェック
-  const isSampleCodeShown = (day: number) => 
-    computed(() => showSampleCode.value.includes(day))
 
   // ローカルストレージへの保存
-  watch(completedDays, (newValue) => {
-    localStorage.setItem('completedDays', JSON.stringify(newValue))
+  watch(completedDays, (newDays) => {
+    localStorage.setItem('completedDays', JSON.stringify(newDays))
   }, { deep: true })
 
-  watch(studyStreak, (newValue) => {
-    localStorage.setItem('studyStreak', newValue.toString())
+  watch(studyStreak, (newStreak) => {
+    localStorage.setItem('studyStreak', newStreak.toString())
   })
-  
-  watch(showSampleCode, (newValue) => {
-    localStorage.setItem('showSampleCode', JSON.stringify(newValue))
-  }, { deep: true })
+
+  watch(totalStudyTimeMinutes, (newTime) => {
+    localStorage.setItem('totalStudyTime', newTime.toString())
+  })
 
   return {
-    completedDays,
-    studyStreak,
-    currentPhase,
-    showSampleCode,
     progressStats,
-    getPhaseData,
-    toggleCompletion,
-    toggleSampleCode,
-    resetProgress,
-    setPhase,
     isCompleted,
-    isSampleCodeShown
+    toggleCompletion,
+    resetProgress
   }
 }

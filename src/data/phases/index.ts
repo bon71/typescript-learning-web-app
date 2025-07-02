@@ -6,6 +6,7 @@ export const phase1Info: PhaseContent = {
   description: "TypeScriptを学ぶ前に、JavaScriptの基礎をしっかりと固めましょう。7日間でJavaScriptの核となる概念を復習します。",
   color: "#2196F3",
   duration: "7日間",
+  difficulty: "beginner",
   totalLessons: 7,
   skills: [
     "変数宣言（let, const, var）",
@@ -24,6 +25,7 @@ export const phase2Info: PhaseContent = {
   description: "いよいよTypeScriptの世界へ！型システムの基礎から、実践的な使い方まで7日間で学習します。",
   color: "#FF9800",
   duration: "7日間",
+  difficulty: "intermediate",
   totalLessons: 7,
   skills: [
     "TypeScriptの基本概念",
@@ -42,6 +44,7 @@ export const phase3Info: PhaseContent = {
   description: "高度なTypeScript機能を学び、実際のプロジェクトで使える実践的なスキルを身につけます。",
   color: "#9C27B0",
   duration: "6日間",
+  difficulty: "advanced",
   totalLessons: 6,
   skills: [
     "Generics（ジェネリクス）",

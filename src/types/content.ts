@@ -12,6 +12,7 @@ export interface LessonContent {
   readonly estimatedTime?: number // 分単位
   readonly tags?: readonly string[] // 学習トピックタグ
   readonly prerequisites?: readonly number[] // 前提となる日（day番号）
+  readonly hints?: readonly string[] // 学習ヒント
 }
 
 // フェーズ情報の型定義
@@ -21,8 +22,10 @@ export interface PhaseContent {
   readonly description: string
   readonly color: string
   readonly duration: string
+  readonly difficulty: 'beginner' | 'intermediate' | 'advanced'
   readonly totalLessons: number
   readonly skills: readonly string[] // 習得できるスキル
+  readonly prerequisites?: readonly string[] // 前提知識
 }
 
 // 将来拡張用：演習問題の型定義

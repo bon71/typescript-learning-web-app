@@ -11,6 +11,12 @@ export const day01: LessonContent = {
   estimatedTime: 15,
   tags: ['変数', 'スコープ', '基本文法', 'JavaScript'],
   prerequisites: [],
+  hints: [
+    "letは再代入可能な変数宣言です",
+    "constは定数（再代入不可）の宣言です",
+    "varは古い書き方なので、現在は避けましょう",
+    "console.log()を使って値を確認できます"
+  ],
   sampleCode: `// 変数の宣言と基本型
 let name = "太郎";     // 文字列型（再代入可能）
 const age = 25;       // 数値型（再代入不可）

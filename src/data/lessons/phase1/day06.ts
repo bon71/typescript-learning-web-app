@@ -10,5 +10,12 @@ export const day06: LessonContent = {
   difficulty: 'intermediate',
   estimatedTime: 25,
   tags: ['DOM', 'イベント', 'HTML', 'JavaScript'],
-  prerequisites: [1, 2, 3, 4, 5]
+  prerequisites: [1, 2, 3, 4, 5],
+  hints: [
+    "document.getElementById() で要素を取得できます",
+    "addEventListener() でイベントを監視できます",
+    "innerHTML や textContent で要素の内容を変更できます",
+    "click イベントはボタンがクリックされた時に発生します",
+    "DOM操作はHTMLとJavaScriptを連携させる基本技術です"
+  ]
 } as const

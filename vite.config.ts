@@ -4,7 +4,7 @@ import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [vue()],
-  base: '/typescript-learning-web-app/',
+  base: process.env.NODE_ENV === 'production' ? '/typescript-learning-web-app/' : '/',
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src')

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypeScript Learning - Test</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        .status {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        .success { background: #d1fae5; color: #065f46; }
+        .error { background: #fecaca; color: #991b1b; }
+        .info { background: #dbeafe; color: #1e40af; }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        button:hover { background: #2563eb; }
+    </style>
+</head>
+<body>
+    <h1>🚀 TypeScript Learning - System Status</h1>
+    
+    <div class="info status">
+        <strong>✨ 新しいページベースUIが完成しました！</strong><br>
+        下記のリンクから各ページにアクセスできます。
+    </div>
+    
+    <h2>📋 ページリスト</h2>
+    <div>
+        <button onclick="window.location.href='http://localhost:3001/'">🏠 ホームページ</button>
+        <button onclick="window.location.href='http://localhost:3001/phases'">📚 フェーズ選択</button>
+        <button onclick="window.location.href='http://localhost:3001/phase/1'">📝 Phase 1 詳細</button>
+        <button onclick="window.location.href='http://localhost:3001/lesson/1'">💻 レッスン1</button>
+        <button onclick="window.location.href='http://localhost:3001/progress'">📊 進捗ダッシュボード</button>
+    </div>
+    
+    <h2>🔧 トラブルシューティング</h2>
+    <div class="info status">
+        <strong>ページが表示されない場合:</strong><br>
+        1. ブラウザのコンソール（F12キー）でエラーを確認<br>
+        2. キャッシュを削除してリロード（Ctrl+F5）<br>
+        3. 開発サーバーが正常に起動していることを確認
+    </div>
+    
+    <h2>✅ 実装済み機能</h2>
+    <ul>
+        <li>✅ Vue Router によるページベースナビゲーション</li>
+        <li>✅ レスポンシブデザイン</li>
+        <li>✅ 軽量Monaco Editorの統合</li>
+        <li>✅ リアルタイムコード実行</li>
+        <li>✅ 学習進捗管理</li>
+        <li>✅ ダーク/ライトテーマ</li>
+    </ul>
+    
+    <h2>🎯 次のステップ</h2>
+    <div class="success status">
+        各ページにアクセスして、新しいUXを体験してください！<br>
+        レッスンページでは、左側で学習内容を確認し、右側のコードエディタでTypeScriptを実践できます。
+    </div>
+    
+    <script>
+        // 簡単なステータスチェック
+        console.log('🎉 TypeScript Learning System - Test Page Loaded');
+        console.log('📍 Development Server: http://localhost:3001/');
+        
+        // Vue Router のテスト
+        setTimeout(() => {
+            fetch('http://localhost:3001/')
+                .then(response => {
+                    if (response.ok) {
+                        console.log('✅ Main application is accessible');
+                    } else {
+                        console.log('❌ Main application returned error:', response.status);
+                    }
+                })
+                .catch(error => {
+                    console.log('❌ Failed to connect to main application:', error);
+                });
+        }, 1000);
+    </script>
+</body>
+</html>

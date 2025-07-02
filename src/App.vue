@@ -1,124 +1,113 @@
 <template>
-  <div class="app">
-    <ProgressHeader :progress-stats="progressStats" />
+  <div id="app">
+    <!-- Page loading indicator -->
+    <Transition name="fade">
+      <div v-if="isPageLoading" class="page-loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Loading...</p>
+      </div>
+    </Transition>
 
-    <PhaseTabs
-      :current-phase="currentPhase"
-      @change-phase="setPhase"
-    />
-
-    <main>
-      <Transition name="fade" mode="out-in">
-        <div
-          :key="currentPhase"
-          class="phase active"
-        >
-          <h2 class="phase-title">{{ currentPhaseInfo.title }}</h2>
-          <p class="phase-description">{{ currentPhaseInfo.description }}</p>
-
-          <!-- 新しいトグルスタイルUI -->
-          <div class="learning-list">
-            <LearningToggleItem
-              v-for="day in getPhaseData(currentPhase).value"
-              :key="day.day"
-              :learning-day="day"
-              :is-completed="isCompleted(day.day).value"
-              :is-sample-code-shown="isSampleCodeShown(day.day).value"
-              @toggle-completion="toggleCompletion"
-              @toggle-sample-code="toggleSampleCode"
-            />
-          </div>
-        </div>
+    <!-- Router View -->
+    <router-view v-slot="{ Component }">
+      <Transition name="page" mode="out-in">
+        <component :is="Component" />
       </Transition>
-    </main>
-
-    <StatsFooter
-      :progress-stats="progressStats"
-      @reset-progress="resetProgress"
-    />
+    </router-view>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
-import { learningData, phaseInfo } from '@/data'
-import { useLearningProgress } from '@/composables/useLearningProgress'
-import ProgressHeader from '@/components/ProgressHeader.vue'
-import PhaseTabs from '@/components/PhaseTabs.vue'
-import LearningToggleItem from '@/components/LearningToggleItem.vue'
-import StatsFooter from '@/components/StatsFooter.vue'
+import { ref, onMounted } from 'vue'
 
-const {
-  currentPhase,
-  progressStats,
-  getPhaseData,
-  toggleCompletion,
-  toggleSampleCode,
-  resetProgress,
-  setPhase,
-  isCompleted,
-  isSampleCodeShown
-} = useLearningProgress(learningData)
+// Page loading state
+const isPageLoading = ref(false)
 
-// 現在のフェーズの情報を取得
-const currentPhaseInfo = computed(() => {
-  return phaseInfo.find(phase => phase.id === currentPhase.value) || phaseInfo[0]
-})
-
-// キーボードショートカット
+// Monitor page loading state
 onMounted(() => {
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.ctrlKey && e.key >= '1' && e.key <= '3') {
-      e.preventDefault()
-      setPhase(parseInt(e.key))
-    }
-  }
-
-  document.addEventListener('keydown', handleKeyDown)
-
-  return () => {
-    document.removeEventListener('keydown', handleKeyDown)
-  }
+  // Listen for page loading events
+  document.body.classList.contains('page-loading')
+    ? isPageLoading.value = true
+    : isPageLoading.value = false
+    
+  // Watch for body class changes
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+        isPageLoading.value = document.body.classList.contains('page-loading')
+      }
+    })
+  })
+  
+  observer.observe(document.body, {
+    attributes: true,
+    attributeFilter: ['class']
+  })
 })
 </script>
 
 <style scoped>
-.app {
+#app {
   min-height: 100vh;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Page loading overlay */
+.page-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
 }
 
-main {
-  flex: 1;
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
 }
 
-.phase {
-  padding: 30px;
-  max-width: 1000px;
-  margin: 0 auto;
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-.phase-title {
-  font-size: 1.8rem;
-  margin-bottom: 10px;
-  color: #333;
-  text-align: center;
+.page-loading-overlay p {
+  color: #64748b;
+  font-size: 1rem;
+  margin: 0;
 }
 
-.phase-description {
-  color: #666;
-  margin-bottom: 40px;
-  font-size: 1.1rem;
-  text-align: center;
-  line-height: 1.6;
+/* Page transitions */
+.page-enter-active,
+.page-leave-active {
+  transition: all 0.3s ease;
 }
 
-.learning-list {
-  width: 100%;
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
 }
 
-/* フェードアニメーション */
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+/* Fade transition */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;
@@ -129,18 +118,15 @@ main {
   opacity: 0;
 }
 
+/* Global body loading state */
+:global(body.page-loading) {
+  overflow: hidden;
+}
+
+/* Responsive improvements */
 @media (max-width: 768px) {
-  .phase {
-    padding: 20px 15px;
-  }
-
-  .phase-title {
-    font-size: 1.5rem;
-  }
-
-  .phase-description {
-    font-size: 1rem;
-    margin-bottom: 30px;
+  #app {
+    font-size: 14px;
   }
 }
 </style>

@@ -11,6 +11,13 @@ export const day02: LessonContent = {
   estimatedTime: 15,
   tags: ['条件分岐', 'if文', 'switch文', 'JavaScript'],
   prerequisites: [1],
+  hints: [
+    "if文は if (条件) { 処理 } の形で書きます",
+    "比較演算子: >= (以上), <= (以下), === (等しい), !== (等しくない)",
+    "else文でif文の条件が偽の場合の処理を書けます",
+    "三項演算子 (条件 ? 真の値 : 偽の値) で短く書けます",
+    "switch文は複数の値を比較したい時に便利です"
+  ],
   sampleCode: `// 条件分岐と比較演算子
 const age = 20;
 

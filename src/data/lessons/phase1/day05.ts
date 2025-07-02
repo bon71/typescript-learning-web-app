@@ -10,5 +10,12 @@ export const day05: LessonContent = {
   difficulty: 'beginner',
   estimatedTime: 20,
   tags: ['オブジェクト', 'メソッド', 'プロパティ', 'JavaScript'],
-  prerequisites: [1, 2, 3, 4]
+  prerequisites: [1, 2, 3, 4],
+  hints: [
+    "オブジェクトは {} で囲んで作成します",
+    "プロパティはオブジェクトの属性（データ）です",
+    "メソッドはオブジェクトの関数です",
+    "ドット記法 (obj.property) でアクセスできます",
+    "オブジェクトは複数のデータをまとめて管理できます"
+  ]
 } as const

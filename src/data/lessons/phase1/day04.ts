@@ -10,5 +10,12 @@ export const day04: LessonContent = {
   difficulty: 'beginner',
   estimatedTime: 20,
   tags: ['関数', 'アロー関数', '引数', '戻り値', 'JavaScript'],
-  prerequisites: [1, 2, 3]
+  prerequisites: [1, 2, 3],
+  hints: [
+    "function キーワードを使って関数を定義できます",
+    "アロー関数 (=>) はより短い書き方です",
+    "引数は関数に渡すデータです",
+    "return で値を関数から返すことができます",
+    "関数名は動詞で始めると分かりやすいです"
+  ]
 } as const

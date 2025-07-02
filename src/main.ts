@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
+import router from './router'
 
 // Monaco Editorの設定をインポート
 import { 
@@ -34,6 +35,7 @@ async function initializeApp() {
   
   // Vueアプリケーションを作成・マウント
   const app = createApp(App)
+  app.use(router)
   app.mount('#app')
   
   console.log('🎉 TypeScript学習アプリケーションが開始されました')
