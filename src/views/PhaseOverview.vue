@@ -183,6 +183,19 @@ const getPhaseTopics = (phaseId: number): string[] => {
   background: #f8fafc;
 }
 
+/* 強制的にヘッダーの背景色と文字色を適用 */
+.phase-overview .page-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+}
+
+.phase-overview .page-header h1,
+.phase-overview .page-header p,
+.phase-overview .page-header span,
+.phase-overview .page-header div {
+  color: white !important;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -191,10 +204,21 @@ const getPhaseTopics = (phaseId: number): string[] => {
 
 /* Page Header */
 .page-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
   padding: 3rem 0;
   text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.page-header * {
+  color: white !important;
+}
+
+.page-header .container {
+  position: relative;
+  z-index: 2;
 }
 
 .back-button {
@@ -216,14 +240,17 @@ const getPhaseTopics = (phaseId: number): string[] => {
 .page-title {
   font-size: 2.5rem;
   font-weight: 700;
+  color: white !important;
   margin-bottom: 1rem;
 }
 
 .page-subtitle {
   font-size: 1.2rem;
-  opacity: 0.9;
+  color: white !important;
+  opacity: 0.95;
   max-width: 600px;
   margin: 0 auto;
+  line-height: 1.6;
 }
 
 /* Phases Grid */

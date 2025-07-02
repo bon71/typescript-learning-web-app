@@ -264,6 +264,19 @@ const uniqueTopics = computed(() => {
   background: #f8fafc;
 }
 
+/* 強制的にヘッダーの背景色と文字色を適用 */
+.phase-detail .page-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+}
+
+.phase-detail .page-header h1,
+.phase-detail .page-header p,
+.phase-detail .page-header span,
+.phase-detail .page-header div {
+  color: white !important;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -272,9 +285,20 @@ const uniqueTopics = computed(() => {
 
 /* Page Header */
 .page-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
   padding: 3rem 0;
+  position: relative;
+  z-index: 1;
+}
+
+.page-header * {
+  color: white !important;
+}
+
+.page-header .container {
+  position: relative;
+  z-index: 2;
 }
 
 .back-button {
@@ -311,14 +335,17 @@ const uniqueTopics = computed(() => {
 .phase-title {
   font-size: 2.5rem;
   font-weight: 700;
+  color: white !important;
   margin-bottom: 1rem;
 }
 
 .phase-description {
   font-size: 1.2rem;
-  opacity: 0.9;
+  color: white !important;
+  opacity: 0.95;
   max-width: 600px;
   margin: 0 auto;
+  line-height: 1.6;
 }
 
 .phase-stats {
