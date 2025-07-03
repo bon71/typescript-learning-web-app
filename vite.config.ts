@@ -35,6 +35,10 @@ export default defineConfig({
   worker: {
     format: 'es'
   },
+  define: {
+    // Monaco Editorのワーカー設定
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+  },
   // 開発時のパフォーマンス最適化
   esbuild: {
     target: 'es2020'

@@ -30,6 +30,10 @@ export interface LearningDay {
   testCases?: TestCase[] // 🆕 自動評価用テストケース
   hints?: string[]       // 🆕 段階的ヒント
   difficulty?: 'easy' | 'medium' | 'hard' // 🆕 難易度
+  // 自動評価機能対応
+  exercises?: import('@/types/testing').Exercise[]  // 自動評価用演習
+  autoGraderTests?: import('@/types/testing').TestCase[]  // 自動評価用テストケース
+  enableAutoGrader?: boolean  // 自動評価機能を有効にするかどうか
 }
 
 export interface ProgressStats {

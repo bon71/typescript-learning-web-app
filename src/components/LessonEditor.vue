@@ -19,6 +19,7 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import * as monaco from 'monaco-editor'
 import { LearningLevels, type LearningLevel } from '@/utils/monacoConfig'
+import { configureMonacoForPerformance } from '@/utils/monacoWorker'
 
 interface Props {
   value?: string
@@ -58,12 +59,10 @@ const initEditor = async () => {
   if (!editorContainer.value) return
 
   try {
-    // Configure TypeScript compiler options based on learning level
-    const compilerOptions = getCompilerOptions(props.learningLevel)
+    // Monaco Editorのパフォーマンス設定を適用
+    configureMonacoForPerformance()
     
-    monaco.languages.typescript.typescriptDefaults.setCompilerOptions(compilerOptions)
-    
-    // Create editor instance
+    // 軽量化されたエディタ設定で高速起動
     editor = monaco.editor.create(editorContainer.value, {
       value: props.value,
       language: props.language,
@@ -73,37 +72,32 @@ const initEditor = async () => {
       minimap: { enabled: false },
       scrollBeyondLastLine: false,
       fontSize: 14,
-      lineHeight: 21,
-      fontFamily: "'Fira Code', 'Monaco', 'Cascadia Code', monospace",
       tabSize: 2,
       insertSpaces: true,
       wordWrap: 'on',
       lineNumbers: 'on',
-      glyphMargin: true,
-      folding: true,
-      lineDecorationsWidth: 10,
-      renderLineHighlight: 'line',
-      selectOnLineNumbers: true,
-      roundedSelection: false,
-      cursorStyle: 'line',
-      cursorBlinking: 'blink',
-      smoothScrolling: true,
-      contextmenu: true,
+      glyphMargin: false,
+      folding: false,
+      contextmenu: false,
       mouseWheelZoom: false,
+      // IntelliSenseを軽量化
       quickSuggestions: {
-        other: true,
+        other: false,
         comments: false,
         strings: false
       },
-      suggestOnTriggerCharacters: true,
-      acceptSuggestionOnEnter: 'on',
-      tabCompletion: 'on',
+      suggestOnTriggerCharacters: false,
+      acceptSuggestionOnEnter: 'off',
+      tabCompletion: 'off',
       parameterHints: {
-        enabled: true
+        enabled: false
       },
       hover: {
-        enabled: true
-      }
+        enabled: false
+      },
+      // パフォーマンス向上のため無効化
+      renderValidationDecorations: 'off',
+      renderWhitespace: 'none'
     })
 
     // Set up event listeners
@@ -304,7 +298,10 @@ watch(() => props.language, (newLanguage) => {
 
 // Lifecycle
 onMounted(() => {
-  initEditor()
+  // エディタの初期化を遅延させてUI応答性を向上
+  setTimeout(() => {
+    initEditor()
+  }, 100)
 })
 
 onUnmounted(() => {

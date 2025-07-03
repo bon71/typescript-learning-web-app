@@ -46,7 +46,7 @@
 
     <!-- Main Content -->
     <div class="lesson-content">
-      <!-- Learning Content Area (Top 40%) -->
+      <!-- Learning Content Area (Compact Top) -->
       <div class="content-section">
         <div class="content-grid">
           <div class="goal-card">
@@ -103,130 +103,89 @@
         </div>
       </div>
 
-      <!-- Code Editor Area (Bottom 60%) -->
+      <!-- Code Editor & Auto Grader Area (Expanded Bottom) -->
       <div class="editor-section">
         <div class="editor-layout">
-          <!-- Left: Monaco Editor -->
+          <!-- Left: Code Editor & Output -->
           <div class="editor-pane" :style="{ width: editorWidth + '%' }">
-            <div class="editor-header">
-              <div class="editor-title">
-                <span class="editor-icon">💻</span>
-                Code Editor
+            <!-- Code Editor Section -->
+            <div class="code-section">
+              <div class="editor-header">
+                <div class="editor-title">
+                  <span class="editor-icon">💻</span>
+                  Code Editor
+                </div>
+                <div class="editor-controls">
+                  <button @click="runCode" :disabled="isRunning" class="control-btn run">
+                    <span v-if="isRunning">⏳</span>
+                    <span v-else>▶️</span>
+                    実行
+                  </button>
+                  <button @click="formatCode" class="control-btn format">
+                    ✨ Format
+                  </button>
+                  <button @click="resetCode" class="control-btn reset">
+                    🔄 Reset
+                  </button>
+                </div>
               </div>
-              <div class="editor-controls">
-                <button @click="resetCode" class="control-btn reset">
-                  🔄 Reset
-                </button>
-                <button @click="formatCode" class="control-btn format">
-                  ✨ Format
-                </button>
-                <button 
-                  @click="runCode" 
-                  :disabled="isRunning"
-                  :class="['control-btn', 'run', { 'running': isRunning }]"
-                >
-                  {{ isRunning ? '⏳' : '▶️' }} Run
-                </button>
+              
+              <div class="monaco-container">
+                <BasicCodeEditor
+                  ref="lessonEditor"
+                  v-model:value="currentCode"
+                  :height="'600px'"
+                  :initial-code="getInitialCode()"
+                  :show-output="false"
+                  @change="onCodeChange"
+                  @run="onCodeRun"
+                />
               </div>
             </div>
-            
-            <div class="monaco-container">
-              <LessonEditor
-                ref="lessonEditor"
-                v-model:value="code"
-                :height="editorHeight"
-                :language="'typescript'"
-                :theme="editorTheme"
-                @change="onCodeChange"
-                @mount="onEditorMount"
+
+            <!-- Output Section -->
+            <div class="output-section">
+              <div class="output-header">
+                <span>実行結果</span>
+                <button @click="clearOutput" class="clear-output-btn">クリア</button>
+              </div>
+              <div class="output-content">
+                <div 
+                  v-for="(entry, index) in outputEntries"
+                  :key="index"
+                  :class="['output-entry', entry.type]"
+                >
+                  {{ entry.message }}
+                </div>
+                <div v-if="outputEntries.length === 0" class="empty-output">
+                  実行結果がここに表示されます
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- Right: Compact Auto Grader Panel -->
+          <div class="grader-pane compact" :style="{ width: (100 - editorWidth) + '%' }">
+            <div v-if="hasAutoGrader" class="auto-grader-panel compact">
+              <AutoGrader
+                :exercise="autoGraderExercise"
+                :test-cases="autoGraderTestCases"
+                :current-code="currentCode"
+                :show-hints="false"
+                @evaluation-complete="handleEvaluationComplete"
+                @evaluation-start="handleEvaluationStart"
               />
             </div>
-          </div>
-
-          <!-- Resizer -->
-          <div 
-            class="resizer"
-            @mousedown="startResize"
-          ></div>
-
-          <!-- Right: Output Panes -->
-          <div class="output-pane">
-            <div class="output-tabs">
-              <button 
-                v-for="tab in outputTabs"
-                :key="tab.id"
-                :class="['tab-btn', { active: activeTab === tab.id }]"
-                @click="activeTab = tab.id"
-              >
-                {{ tab.icon }} {{ tab.label }}
-                <span v-if="tab.id === 'errors' && errors.length > 0" class="error-count">
-                  {{ errors.length }}
-                </span>
-              </button>
-            </div>
-
-            <div class="tab-content">
-              <!-- Console Output -->
-              <div v-if="activeTab === 'console'" class="console-panel">
-                <div class="console-header">
-                  <span>Console Output</span>
-                  <button @click="clearConsole" class="clear-btn">🗑️ Clear</button>
-                </div>
-                <div class="console-output" ref="consoleOutput">
-                  <div 
-                    v-for="(entry, index) in consoleEntries"
-                    :key="index"
-                    :class="['console-entry', entry.type]"
-                  >
-                    <span class="timestamp">{{ formatTime(entry.timestamp) }}</span>
-                    <span class="message">{{ entry.message }}</span>
-                  </div>
-                  <div v-if="consoleEntries.length === 0" class="empty-state">
-                    Ready to run your code...
-                  </div>
-                </div>
-              </div>
-
-              <!-- Errors Panel -->
-              <div v-if="activeTab === 'errors'" class="errors-panel">
-                <div class="errors-header">
-                  <span>Type Errors</span>
-                </div>
-                <div class="errors-content">
-                  <div 
-                    v-for="error in errors"
-                    :key="`${error.startLineNumber}-${error.startColumn}`"
-                    class="error-item"
-                    @click="goToError(error)"
-                  >
-                    <div class="error-severity">
-                      <span :class="['severity-dot', getSeverityClass(error.severity)]"></span>
-                    </div>
-                    <div class="error-details">
-                      <div class="error-message">{{ error.message }}</div>
-                      <div class="error-location">
-                        Line {{ error.startLineNumber }}, Column {{ error.startColumn }}
-                      </div>
-                    </div>
-                  </div>
-                  <div v-if="errors.length === 0" class="empty-state">
-                    No errors found! 🎉
-                  </div>
-                </div>
-              </div>
-
-              <!-- Explanation Panel -->
-              <div v-if="activeTab === 'explanation'" class="explanation-panel">
-                <div class="explanation-header">
-                  <span class="explanation-icon">💡</span>
-                  <span>解説</span>
-                </div>
-                <div class="explanation-content">
-                  <p>{{ lesson.explanation }}</p>
-                </div>
+            <div v-else class="no-grader-panel compact">
+              <div class="no-grader-content">
+                <div class="no-grader-icon">🎓</div>
+                <h3>学習モード</h3>
+                <p>このレッスンでは自動評価は利用できません。<br>左のエディタでコードを書いて実行してみてください。</p>
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </div>
@@ -250,6 +209,7 @@
           </div>
         </div>
         
+        
         <div class="lesson-actions">
           <button 
             @click="toggleCompletion"
@@ -272,23 +232,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getLessonByDay, allLessons } from '@/data'
 import { useLearningProgress } from '@/composables/useLearningProgress'
-import LessonEditor from '@/components/LessonEditor.vue'
+import BasicCodeEditor from '@/components/BasicCodeEditor.vue'
+import AutoGrader from '@/components/AutoGrader.vue'
+import { getTestSuiteByDay } from '@/data/testCases'
 import type { LessonContent } from '@/types/content'
-import * as monaco from 'monaco-editor'
+import type { EvaluationResult } from '@/types/testing'
 
 interface Props {
   id: number
 }
 
-interface ConsoleEntry {
-  type: 'log' | 'error' | 'warn' | 'info'
-  message: string
-  timestamp: Date
-}
 
 const props = defineProps<Props>()
 const router = useRouter()
@@ -349,11 +306,45 @@ const toggleCompletion = () => {
   toggleLessonCompletion(props.id)
 }
 
+// Auto Grader functionality
+const hasAutoGrader = computed(() => {
+  // Day 1-5 で自動評価機能を有効にする
+  return props.id <= 5
+})
+
+const autoGraderTestSuite = computed(() => {
+  return getTestSuiteByDay(props.id)
+})
+
+const autoGraderExercise = computed(() => {
+  if (!autoGraderTestSuite.value) return null
+  return autoGraderTestSuite.value.exercises[0] || null
+})
+
+const autoGraderTestCases = computed(() => {
+  if (!autoGraderTestSuite.value) return []
+  return autoGraderTestSuite.value.testCases
+})
+
+// Auto Grader event handlers
+const handleEvaluationStart = () => {
+  console.log('Auto grader evaluation started')
+}
+
+const handleEvaluationComplete = (result: EvaluationResult) => {
+  console.log('Auto grader evaluation completed:', result)
+  
+  // 高スコアの場合は自動的に完了状態にする
+  if (result.success && result.score >= 80 && !isCompleted.value) {
+    toggleCompletion()
+  }
+}
+
 // UI state
 const showHints = ref(false)
 const activeTab = ref('console')
-const editorWidth = ref(60) // percentage
-const isResizing = ref(false)
+const editorWidth = ref(65) // percentage - wider for better coding experience
+const isRunning = ref(false)
 
 // Toggle hints visibility
 const toggleHints = () => {
@@ -361,28 +352,41 @@ const toggleHints = () => {
 }
 
 // Editor state
+const currentCode = ref('')
+const outputEntries = ref<Array<{type: string, message: string}>>([])
 const lessonEditor = ref()
-const code = ref('')
-const isRunning = ref(false)
-const errors = ref<monaco.editor.IMarker[]>([])
-const consoleEntries = ref<ConsoleEntry[]>([])
-const consoleOutput = ref<HTMLElement>()
+
+// Output functionality
+const clearOutput = () => {
+  outputEntries.value = []
+}
 
 // Editor settings
-const editorTheme = ref('vs-dark')
-const editorHeight = computed(() => 'calc(100% - 60px)')
-
-// Output tabs
-const outputTabs = [
-  { id: 'console', label: 'Console', icon: '📝' },
-  { id: 'errors', label: 'Errors', icon: '❌' },
-  { id: 'explanation', label: 'Explanation', icon: '💡' }
-]
+const editorHeight = computed(() => 'calc(100vh - 300px)')
 
 // Initialize code with sample
 onMounted(() => {
-  code.value = getInitialCode()
+  currentCode.value = getInitialCode()
 })
+
+// Watch for lesson changes and reset code
+watch(() => props.id, (newId, oldId) => {
+  if (newId !== oldId && newId) {
+    console.log(`Lesson changed from ${oldId} to ${newId}`)
+    // Reset code to new lesson's initial code
+    currentCode.value = getInitialCode()
+    
+    // Also reset the editor component if it exists
+    nextTick(() => {
+      if (lessonEditor.value) {
+        lessonEditor.value.setValue(getInitialCode())
+      }
+    })
+    
+    // Clear output when switching lessons
+    outputEntries.value = []
+  }
+}, { immediate: false })
 
 // Get initial code based on lesson content
 const getInitialCode = (): string => {
@@ -805,9 +809,9 @@ const taskManager = new TaskManager<Task>();
 
 // Editor methods
 const resetCode = () => {
-  code.value = getInitialCode()
-  clearConsole()
-  errors.value = []
+  if (lessonEditor.value) {
+    lessonEditor.value.setValue(getInitialCode())
+  }
 }
 
 const formatCode = () => {
@@ -817,130 +821,56 @@ const formatCode = () => {
 }
 
 const runCode = async () => {
-  if (!lessonEditor.value || isRunning.value) return
+  if (isRunning.value) return
   
   isRunning.value = true
-  clearConsole()
-  
   try {
-    const result = await lessonEditor.value.executeCode()
+    // Clear previous output
+    outputEntries.value = []
     
-    if (result.success) {
-      result.output.forEach((output: string) => {
-        addConsoleEntry('log', output)
-      })
-      
-      if (result.output.length === 0) {
-        addConsoleEntry('info', 'Code executed successfully (no output)')
-      }
-    } else {
-      result.errors.forEach((error: string) => {
-        addConsoleEntry('error', error)
-      })
+    // Execute the code through the editor
+    if (lessonEditor.value) {
+      await lessonEditor.value.runCode()
     }
-    
-    activeTab.value = 'console'
   } catch (error) {
-    addConsoleEntry('error', `Execution failed: ${error}`)
+    console.error('Error running code:', error)
+    outputEntries.value = [{
+      type: 'error',
+      message: `実行エラー: ${error.message || error}`
+    }]
   } finally {
     isRunning.value = false
   }
 }
 
-const clearConsole = () => {
-  consoleEntries.value = []
-}
-
-const addConsoleEntry = (type: ConsoleEntry['type'], message: string) => {
-  consoleEntries.value.push({
-    type,
-    message,
-    timestamp: new Date()
-  })
-  
-  nextTick(() => {
-    if (consoleOutput.value) {
-      consoleOutput.value.scrollTop = consoleOutput.value.scrollHeight
-    }
-  })
-}
 
 // Event handlers
 const onCodeChange = (newCode: string) => {
-  code.value = newCode
+  console.log('Code changed to:', newCode)
+  currentCode.value = newCode
 }
 
-const onEditorMount = (editor: monaco.editor.IStandaloneCodeEditor) => {
-  // Track errors
-  const model = editor.getModel()
-  if (model) {
-    monaco.editor.onDidChangeMarkers(([resource]) => {
-      if (model.uri.toString() === resource.toString()) {
-        errors.value = monaco.editor.getModelMarkers({ resource })
-      }
-    })
-  }
-}
-
-const goToError = (error: monaco.editor.IMarker) => {
-  if (lessonEditor.value && lessonEditor.value.editor) {
-    lessonEditor.value.editor.setPosition({
-      lineNumber: error.startLineNumber,
-      column: error.startColumn
-    })
-    lessonEditor.value.editor.focus()
-  }
-}
-
-const getSeverityClass = (severity: monaco.MarkerSeverity): string => {
-  switch (severity) {
-    case monaco.MarkerSeverity.Error: return 'error'
-    case monaco.MarkerSeverity.Warning: return 'warning'
-    case monaco.MarkerSeverity.Info: return 'info'
-    default: return 'hint'
-  }
-}
-
-const formatTime = (date: Date): string => {
-  return date.toLocaleTimeString('en-US', { 
-    hour12: false,
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  })
-}
-
-// Resizer functionality
-const startResize = (e: MouseEvent) => {
-  isResizing.value = true
-  document.addEventListener('mousemove', onResize)
-  document.addEventListener('mouseup', stopResize)
-  e.preventDefault()
-}
-
-const onResize = (e: MouseEvent) => {
-  if (!isResizing.value) return
+const onCodeRun = (result: any) => {
+  console.log('Code execution result:', result)
   
-  const editorSection = document.querySelector('.editor-layout') as HTMLElement
-  if (editorSection) {
-    const rect = editorSection.getBoundingClientRect()
-    const newWidth = ((e.clientX - rect.left) / rect.width) * 100
-    editorWidth.value = Math.max(30, Math.min(80, newWidth))
+  // 実行結果をoutputEntriesに反映
+  if (result.output && Array.isArray(result.output)) {
+    outputEntries.value = [...result.output]
+  } else if (result.error) {
+    outputEntries.value = [{
+      type: 'error',
+      message: `実行エラー: ${result.error.message || result.error}`
+    }]
+  } else if (!result.success) {
+    outputEntries.value = [{
+      type: 'error',
+      message: '実行に失敗しました'
+    }]
   }
 }
 
-const stopResize = () => {
-  isResizing.value = false
-  document.removeEventListener('mousemove', onResize)
-  document.removeEventListener('mouseup', stopResize)
-}
 
-// Cleanup
-onUnmounted(() => {
-  if (isResizing.value) {
-    stopResize()
-  }
-})
+
 </script>
 
 <style scoped>
@@ -1068,15 +998,13 @@ onUnmounted(() => {
   margin-bottom: 0;
 }
 
-/* Content Section - Auto height based on content */
+/* Content Section - Compact layout */
 .content-section {
   flex-shrink: 0;
-  padding: 1.5rem 2rem;
+  padding: 1rem 2rem;
   background: white;
   border-bottom: 1px solid #e2e8f0;
-  min-height: 320px;
-  max-height: 50vh;
-  overflow-y: auto;
+  min-height: 200px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -1100,8 +1028,6 @@ onUnmounted(() => {
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  max-height: 300px;
-  overflow-y: auto;
 }
 
 .card-header {
@@ -1177,14 +1103,14 @@ onUnmounted(() => {
 }
 
 
-/* Editor Section - Takes remaining space */
+/* Editor Section - Expanded to take more space */
 .editor-section {
   flex: 1;
-  background: #1e293b;
-  min-height: 400px;
+  background: #f8fafc;
+  min-height: 600px;
   display: flex;
   flex-direction: column;
-  padding-bottom: 1rem;
+  padding: 1rem;
   margin-bottom: 0;
 }
 
@@ -1197,8 +1123,9 @@ onUnmounted(() => {
 .editor-pane {
   display: flex;
   flex-direction: column;
-  background: #1e293b;
-  border-right: 1px solid #334155;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .editor-header {
@@ -1250,6 +1177,14 @@ onUnmounted(() => {
   background: #fbbf24;
 }
 
+.control-btn.format {
+  background: #667eea;
+}
+
+.control-btn.format:hover {
+  background: #5a6fd8;
+}
+
 .control-btn.reset:hover {
   background: #ef4444;
 }
@@ -1259,16 +1194,91 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-/* Resizer */
-.resizer {
-  width: 4px;
-  background: #334155;
-  cursor: col-resize;
-  transition: background-color 0.2s;
+/* Output Section */
+.output-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-top: 1px solid #334155;
+  min-height: 200px;
 }
 
-.resizer:hover {
-  background: #667eea;
+.output-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.clear-output-btn {
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.clear-output-btn:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.output-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+  font-family: 'Fira Code', 'Monaco', monospace;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  background: #ffffff;
+}
+
+.output-entry {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.125rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.output-entry.log {
+  color: #1e293b;
+}
+
+.output-entry.error {
+  background: #fef2f2;
+  color: #dc2626;
+  border-left: 3px solid #dc2626;
+}
+
+.output-entry.warn {
+  background: #fffbeb;
+  color: #d97706;
+  border-left: 3px solid #d97706;
+}
+
+.output-entry.info {
+  background: #eff6ff;
+  color: #2563eb;
+  border-left: 3px solid #2563eb;
+}
+
+.empty-output {
+  color: #94a3b8;
+  font-style: italic;
+  text-align: center;
+  padding: 2rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin: 1rem;
 }
 
 /* Output Pane */
@@ -1626,9 +1636,6 @@ onUnmounted(() => {
     gap: 1rem;
   }
   
-  .content-section {
-    max-height: 60vh;
-  }
   
   .editor-layout {
     flex-direction: column;
@@ -1638,11 +1645,15 @@ onUnmounted(() => {
     width: 100% !important;
     height: 50%;
     border-right: none;
-    border-bottom: 1px solid #334155;
+    border-bottom: 1px solid #e2e8f0;
+    border-radius: 8px 8px 0 0;
   }
   
-  .resizer {
-    display: none;
+  .grader-pane {
+    width: 100% !important;
+    border-left: none;
+    border-top: 1px solid #e2e8f0;
+    border-radius: 0 0 8px 8px;
   }
   
   .output-pane {
@@ -1691,12 +1702,22 @@ onUnmounted(() => {
   .content-section {
     padding: 1rem;
     min-height: 280px;
-    max-height: 70vh;
   }
   
   .editor-section {
     min-height: 350px;
     padding-bottom: 0.75rem;
+  }
+  
+  .grader-pane {
+    width: 100% !important;
+    border-left: none;
+    border-top: 1px solid #e2e8f0;
+    border-radius: 0 0 8px 8px;
+  }
+  
+  .auto-grader-panel.compact {
+    padding: 0.5rem;
   }
   
   .lesson-footer {
@@ -1718,4 +1739,169 @@ onUnmounted(() => {
     justify-content: center;
   }
 }
+
+/* Grader Panel */
+.grader-pane {
+  background: white;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.auto-grader-panel {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.no-grader-panel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.no-grader-content {
+  text-align: center;
+  color: #64748b;
+}
+
+.no-grader-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.no-grader-content h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.75rem;
+}
+
+.no-grader-content p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Code and Output Section Styles */
+.code-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  min-height: 300px;
+}
+
+.output-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  min-height: 200px;
+}
+
+.output-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.output-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+  font-family: 'Fira Code', 'Monaco', monospace;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  background: #ffffff;
+}
+
+.output-entry {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.125rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.output-entry.log {
+  color: #1e293b;
+}
+
+.output-entry.error {
+  background: #fef2f2;
+  color: #dc2626;
+  border-left: 3px solid #dc2626;
+}
+
+.output-entry.warn {
+  background: #fffbeb;
+  color: #d97706;
+  border-left: 3px solid #d97706;
+}
+
+.output-entry.info {
+  background: #eff6ff;
+  color: #2563eb;
+  border-left: 3px solid #2563eb;
+}
+
+.clear-output-btn {
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.clear-output-btn:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.empty-output {
+  color: #94a3b8;
+  font-style: italic;
+  text-align: center;
+  padding: 2rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin: 1rem;
+}
+
+/* Compact Grader Panel Styles */
+.grader-pane.compact {
+  background: white;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.auto-grader-panel.compact {
+  flex: 1;
+  padding: 0.75rem;
+  overflow-y: auto;
+}
+
+.no-grader-panel.compact {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
 </style>
