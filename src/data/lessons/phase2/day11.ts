@@ -18,6 +18,32 @@ export const day11: LessonContent = {
     "オプション引数は「引数名?: 型」で定義し、デフォルト値も設定できます",
     "アロー関数でも同様に型を指定できます"
   ],
+  initialCode: `// 基本的な関数の型定義を学ぼう
+// TODO: 2つの数を受け取り加算する関数を作成してください
+
+// 1. 基本的な関数を定義してみよう
+function add(a: number, b: number): number {
+  // ここに加算の処理を書いてください
+  return 0; // この行を修正してください
+}
+
+// 2. 戻り値がない関数を定義してみよう
+function greet(name: string): void {
+  // ここに挨拶を出力する処理を書いてください
+}
+
+// 3. オプション引数を持つ関数を定義してみよう
+function createMessage(text: string, prefix?: string): string {
+  // prefixがある場合は前に付けて返す
+  // ない場合はそのまま返す
+  return text;
+}
+
+// 4. 使用例
+console.log(add(5, 3)); // 8 が出力されるはずです
+greet("田中"); // "こんにちは、田中さん！" が出力されるはずです
+console.log(createMessage("こんにちは")); // "こんにちは" が出力されるはずです
+console.log(createMessage("こんにちは", "【お知らせ】")); // "【お知らせ】こんにちは" が出力されるはずです`,
   sampleCode: `// 基本的な関数の型定義
 function add(a: number, b: number): number {
   return a + b;

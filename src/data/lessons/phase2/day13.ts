@@ -18,6 +18,63 @@ export const day13: LessonContent = {
     "オプションプロパティ（?）や読み取り専用プロパティ（readonly）も定義できます",
     "interfaceはオブジェクト指向プログラミングの設計原則を型レベルで実現します"
   ],
+  initialCode: `// Interfaceと継承を学ぼう
+// TODO: Person → Employee を継承してオブジェクト作成
+
+// 1. 基本的なInterface定義
+interface Person {
+  name: string;
+  age: number;
+  email?: string; // オプションプロパティ
+}
+
+// 2. Interfaceの継承 - Person を拡張して Employee を作成
+interface Employee extends Person {
+  employeeId: string;
+  department: string;
+  // TODO: salary プロパティを追加してください（number型）
+}
+
+// 3. Interface を実装するオブジェクトを作成してみよう
+const person: Person = {
+  name: "田中太郎",
+  age: 30,
+  email: "tanaka@example.com"
+};
+
+// 4. Employee オブジェクトを作成してみよう
+const employee: Employee = {
+  name: "佐藤花子",
+  age: 28,
+  employeeId: "EMP001",
+  department: "開発部",
+  // TODO: salary プロパティを追加してください
+};
+
+// 5. メソッドを含むInterface
+interface Calculator {
+  add(a: number, b: number): number;
+  subtract(a: number, b: number): number;
+}
+
+// 6. Interface を実装するクラスを作成してみよう
+class BasicCalculator implements Calculator {
+  add(a: number, b: number): number {
+    return a + b;
+  }
+  
+  subtract(a: number, b: number): number {
+    // TODO: 引き算の処理を実装してください
+    return 0;
+  }
+}
+
+// 7. 使用例
+console.log(\`従業員: \${employee.name}, 部署: \${employee.department}\`);
+
+const calc = new BasicCalculator();
+console.log(calc.add(10, 5)); // 15
+console.log(calc.subtract(10, 5)); // 5 が出力されるはずです`,
   sampleCode: `// 基本的なInterface定義
 interface Person {
   name: string;

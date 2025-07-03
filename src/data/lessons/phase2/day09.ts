@@ -18,6 +18,18 @@ export const day09: LessonContent = {
     "booleanは true または false の2つの値のみを持ちます",
     "型推論により、初期値から型が自動的に決まることも多いです"
   ],
+  initialCode: `// 基本型を使ってユーザー情報を定義してみましょう
+// 氏名、年齢、ログイン中かどうかのフラグを定義してください
+
+// 型注釈を使った明示的な型指定
+let userName: string = ""; // ここに名前を入力
+let userAge: number = 0; // ここに年齢を入力
+let isLoggedIn: boolean = false; // ログイン状態を設定
+
+// コンソールに表示
+console.log("氏名:", userName);
+console.log("年齢:", userAge);
+console.log("ログイン中:", isLoggedIn);`,
   sampleCode: `// 基本のプリミティブ型
 let userName: string = "田中太郎";
 let userAge: number = 25;

@@ -308,8 +308,8 @@ const toggleCompletion = () => {
 
 // Auto Grader functionality
 const hasAutoGrader = computed(() => {
-  // Day 1-5 で自動評価機能を有効にする
-  return props.id <= 5
+  // Day 1-20 で自動評価機能を有効にする
+  return props.id <= 20
 })
 
 const autoGraderTestSuite = computed(() => {
@@ -390,6 +390,11 @@ watch(() => props.id, (newId, oldId) => {
 
 // Get initial code based on lesson content
 const getInitialCode = (): string => {
+  // 新しいinitialCodeプロパティを優先して使用
+  if (lesson.value.initialCode) {
+    return lesson.value.initialCode
+  }
+  
   if (lesson.value.sampleCode) {
     return lesson.value.sampleCode
   }

@@ -18,6 +18,168 @@ export const day19: LessonContent = {
     "リクエスト・レスポンスの変換層を作ることで、API仕様の変更に柔軟に対応できます",
     "型ガードを使ってランタイムでの型チェックも行い、完全な型安全性を実現します"
   ],
+  initialCode: `// API設計を学ぼう
+// TODO: データ取得関数とレスポンス型を分けて記述
+
+// 1. API レスポンスの基本型定義
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
+
+interface ApiError {
+  success: false;
+  error: {
+    code: string;
+    message: string;
+  };
+}
+
+// 2. エンティティの型定義
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: string;
+}
+
+interface Post {
+  id: string;
+  title: string;
+  content: string;
+  authorId: string;
+  createdAt: string;
+}
+
+// 3. HTTP クライアントの基底クラス
+class HttpClient {
+  constructor(private baseUrl: string) {}
+
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const url = \`\${this.baseUrl}\${endpoint}\`;
+    
+    // TODO: fetchを使ってAPIを呼び出し、レスポンスをJSONとして返してください
+    const response = await fetch(url, {
+      headers: { 'Content-Type': 'application/json' },
+      ...options,
+    });
+
+    if (!response.ok) {
+      throw new Error(\`HTTP \${response.status}: \${response.statusText}\`);
+    }
+
+    return response.json();
+  }
+
+  protected get<T>(endpoint: string): Promise<T> {
+    return this.request<T>(endpoint);
+  }
+
+  protected post<T>(endpoint: string, data?: any): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'POST',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+}
+
+// 4. 具体的なAPIクライアント
+class ApiClient extends HttpClient {
+  constructor(baseUrl: string) {
+    super(baseUrl);
+  }
+
+  // TODO: getUsers メソッドを実装してください
+  async getUsers(): Promise<ApiResponse<User[]>> {
+    // '/users' エンドポイントからユーザー一覧を取得
+    return this.get<ApiResponse<User[]>>('/users');
+  }
+
+  // TODO: getUser メソッドを実装してください
+  async getUser(id: string): Promise<ApiResponse<User>> {
+    // '/users/{id}' エンドポイントから特定のユーザーを取得
+    return this.get<ApiResponse<User>>(\`/users/\${id}\`);
+  }
+
+  // TODO: createUser メソッドを実装してください
+  async createUser(userData: { name: string; email: string }): Promise<ApiResponse<User>> {
+    // '/users' エンドポイントに新しいユーザーを作成
+    return this.post<ApiResponse<User>>('/users', userData);
+  }
+
+  async getPosts(): Promise<ApiResponse<Post[]>> {
+    return this.get<ApiResponse<Post[]>>('/posts');
+  }
+}
+
+// 5. サービス層 - APIクライアントをラップして使いやすくする
+class UserService {
+  constructor(private apiClient: ApiClient) {}
+
+  async getAllUsers(): Promise<User[]> {
+    try {
+      const response = await this.apiClient.getUsers();
+      return response.success ? response.data : [];
+    } catch (error) {
+      console.error('ユーザー取得エラー:', error);
+      return [];
+    }
+  }
+
+  async getUserById(id: string): Promise<User | null> {
+    try {
+      const response = await this.apiClient.getUser(id);
+      return response.success ? response.data : null;
+    } catch (error) {
+      console.error('ユーザー取得エラー:', error);
+      return null;
+    }
+  }
+
+  // TODO: createNewUser メソッドを実装してください
+  async createNewUser(name: string, email: string): Promise<User | null> {
+    try {
+      // apiClient.createUser を呼び出して新しいユーザーを作成
+      const response = await this.apiClient.createUser({ name, email });
+      return response.success ? response.data : null;
+    } catch (error) {
+      console.error('ユーザー作成エラー:', error);
+      return null;
+    }
+  }
+}
+
+// 6. 使用例
+async function main() {
+  // APIクライアントとサービスを初期化
+  const apiClient = new ApiClient('https://jsonplaceholder.typicode.com');
+  const userService = new UserService(apiClient);
+
+  try {
+    console.log('ユーザー一覧を取得中...');
+    const users = await userService.getAllUsers();
+    console.log(\`\${users.length}人のユーザーを取得しました\`);
+
+    if (users.length > 0) {
+      console.log('最初のユーザー:', users[0]);
+      
+      // 特定のユーザーを取得
+      const firstUser = await userService.getUserById(users[0].id);
+      console.log('取得したユーザー詳細:', firstUser);
+    }
+
+    // 新しいユーザーを作成（テスト用）
+    const newUser = await userService.createNewUser('田中太郎', 'tanaka@example.com');
+    console.log('作成されたユーザー:', newUser);
+
+  } catch (error) {
+    console.error('エラーが発生しました:', error);
+  }
+}
+
+// 実行
+main().catch(console.error);`,
   sampleCode: `// API レスポンスの基本型定義
 interface ApiResponse<T> {
   success: boolean;

@@ -18,6 +18,49 @@ export const day12: LessonContent = {
     "Literal型はEnumの代替として使うことができ、より軽量です",
     "Union型とLiteral型を組み合わせることで柔軟な型定義が可能になります"
   ],
+  initialCode: `// Union型とLiteral型を学ぼう
+// TODO: "admin" | "user" を受け取る関数を定義してください
+
+// 1. Union型の基本 - 複数の型を組み合わせる
+function formatId(id: string | number): string {
+  // typeof を使って型を判定し、適切な処理を行う
+  if (typeof id === "string") {
+    return \`ID: \${id}\`;
+  } else {
+    return \`ID: \${id.toString()}\`;
+  }
+}
+
+// 2. Literal型の定義 - 特定の文字列のみを許可
+type UserRole = 'admin' | 'user' | 'guest';
+
+// 3. Literal型を使った関数を定義してみよう
+function checkPermission(role: UserRole): boolean {
+  // TODO: roleに応じて権限の有無を返すswitch文を書いてください
+  switch (role) {
+    case 'admin':
+      return true; // 管理者は全ての権限を持つ
+    case 'user':
+      return true; // ユーザーは基本的な権限を持つ
+    case 'guest':
+      return false; // ゲストは権限なし
+    default:
+      // すべてのケースを網羅していることを確認
+      const exhaustiveCheck: never = role;
+      return exhaustiveCheck;
+  }
+}
+
+// 4. 使用例
+console.log(formatId("ABC123")); // "ID: ABC123"
+console.log(formatId(42)); // "ID: 42"
+
+const userRole: UserRole = 'admin';
+console.log(checkPermission(userRole)); // true
+
+// 5. 試してみよう
+// 以下のコードを実行して、型エラーが発生することを確認してください
+// const invalidRole: UserRole = 'manager'; // エラー: 'manager' は 'admin' | 'user' | 'guest' に割り当てできません`,
   sampleCode: `// Union型の基本
 function formatId(id: string | number): string {
   // 型ガードを使って分岐

@@ -18,6 +18,89 @@ export const day16: LessonContent = {
     "in演算子はオブジェクトに特定のプロパティが存在するかを判定します",
     "カスタム型ガード関数（user-defined type guards）でより複雑な型判定が可能です"
   ],
+  initialCode: `// 型ガードを学ぼう
+// TODO: 型に応じて処理が変わる関数を定義
+
+// 1. typeof型ガード - プリミティブ型の判定
+function processValue(value: string | number | boolean): string {
+  // TODO: 型に応じて適切な処理を実装してください
+  if (typeof value === "string") {
+    return value.toUpperCase();
+  } else if (typeof value === "number") {
+    return value.toFixed(2);
+  } else {
+    // boolean の場合
+    return value ? "true" : "false";
+  }
+}
+
+// 2. instanceof型ガード - クラスのインスタンス判定
+class Dog {
+  constructor(public name: string) {}
+  bark(): string {
+    return \`\${this.name} is barking\`;
+  }
+}
+
+class Cat {
+  constructor(public name: string) {}
+  meow(): string {
+    return \`\${this.name} is meowing\`;
+  }
+}
+
+function makeSound(animal: Dog | Cat): string {
+  // TODO: instanceof を使って型を判定し、適切なメソッドを呼び出してください
+  if (animal instanceof Dog) {
+    return animal.bark();
+  } else {
+    return animal.meow();
+  }
+}
+
+// 3. in演算子による型ガード - プロパティの存在確認
+interface Bird {
+  type: "bird";
+  fly(): void;
+}
+
+interface Fish {
+  type: "fish";
+  swim(): void;
+}
+
+function move(animal: Bird | Fish): void {
+  // TODO: in演算子を使って型を判定し、適切なメソッドを呼び出してください
+  if ("fly" in animal) {
+    animal.fly();
+  } else {
+    animal.swim();
+  }
+}
+
+// 4. 使用例
+console.log(processValue("hello")); // "HELLO"
+console.log(processValue(3.14159)); // "3.14"
+console.log(processValue(true)); // "true"
+
+const dog = new Dog("ポチ");
+const cat = new Cat("ミケ");
+
+console.log(makeSound(dog)); // "ポチ is barking"
+console.log(makeSound(cat)); // "ミケ is meowing"
+
+const bird: Bird = {
+  type: "bird",
+  fly: () => console.log("Flying high!")
+};
+
+const fish: Fish = {
+  type: "fish",
+  swim: () => console.log("Swimming deep!")
+};
+
+move(bird); // "Flying high!"
+move(fish); // "Swimming deep!"`,
   sampleCode: `// typeof型ガード
 function processValue(value: string | number | boolean): string {
   if (typeof value === "string") {

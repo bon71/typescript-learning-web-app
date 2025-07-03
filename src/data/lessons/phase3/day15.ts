@@ -18,6 +18,61 @@ export const day15: LessonContent = {
     "複数の型パラメータや、デフォルト型パラメータも定義できます",
     "条件型（Conditional Types）と組み合わせることで、非常に柔軟な型定義が可能になります"
   ],
+  initialCode: `// ジェネリクスを学ぼう
+// TODO: 任意の配列の先頭要素を返す getFirst<T>() を作成
+
+// 1. 基本的なジェネリック関数
+function getFirst<T>(array: T[]): T | undefined {
+  // TODO: 配列の先頭要素を返す処理を実装してください
+  // 配列が空の場合は undefined を返す
+  return undefined; // この行を修正してください
+}
+
+// 2. 複数の型パラメータを持つジェネリック関数
+function swap<T, U>(tuple: [T, U]): [U, T] {
+  // TODO: タプルの要素を入れ替えて返す処理を実装してください
+  return [tuple[1], tuple[0]];
+}
+
+// 3. 基本的なジェネリッククラス
+class Stack<T> {
+  private items: T[] = [];
+
+  push(item: T): void {
+    this.items.push(item);
+  }
+
+  pop(): T | undefined {
+    return this.items.pop();
+  }
+
+  // TODO: peek メソッドを実装してください
+  // スタックの一番上の要素を削除せずに返す
+  peek(): T | undefined {
+    return undefined; // この行を修正してください
+  }
+
+  isEmpty(): boolean {
+    return this.items.length === 0;
+  }
+}
+
+// 4. 使用例
+const numbers = [1, 2, 3, 4, 5];
+const strings = ["apple", "banana", "cherry"];
+
+console.log(getFirst(numbers)); // 1 が出力されるはずです
+console.log(getFirst(strings)); // "apple" が出力されるはずです
+
+const swapped = swap(["hello", 42]);
+console.log(swapped); // [42, "hello"] が出力されるはずです
+
+const numberStack = new Stack<number>();
+numberStack.push(1);
+numberStack.push(2);
+console.log(numberStack.peek()); // 2 が出力されるはずです
+console.log(numberStack.pop()); // 2 が出力されるはずです
+console.log(numberStack.peek()); // 1 が出力されるはずです`,
   sampleCode: `// 基本的なジェネリック関数
 function getFirst<T>(array: T[]): T | undefined {
   return array.length > 0 ? array[0] : undefined;

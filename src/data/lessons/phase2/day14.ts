@@ -18,6 +18,75 @@ export const day14: LessonContent = {
     "staticメソッドやプロパティはクラス名から直接アクセスできます",
     "interfaceをimplementsして、クラスが特定の構造を満たすことを保証できます"
   ],
+  initialCode: `// クラスとTypeScriptを学ぼう
+// TODO: User クラスを作り、名前とログインメソッドを実装
+
+// 1. 基本的なクラス定義
+class User {
+  // プロパティの型定義
+  public name: string;
+  private isLoggedIn: boolean = false;
+
+  // コンストラクタ
+  constructor(name: string) {
+    this.name = name;
+  }
+
+  // メソッド
+  login(): void {
+    this.isLoggedIn = true;
+    console.log(\`\${this.name}がログインしました\`);
+  }
+
+  logout(): void {
+    this.isLoggedIn = false;
+    console.log(\`\${this.name}がログアウトしました\`);
+  }
+
+  // TODO: getStatus メソッドを実装してください
+  // ログイン状態を文字列で返す（"ログイン中" or "ログアウト"）
+  getStatus(): string {
+    return ""; // この行を修正してください
+  }
+}
+
+// 2. パラメータプロパティを使った簡潔な書き方
+class Employee {
+  constructor(
+    private readonly id: string,
+    public name: string,
+    private department: string
+  ) {}
+
+  getInfo(): string {
+    return \`ID: \${this.id}, 名前: \${this.name}, 部署: \${this.department}\`;
+  }
+}
+
+// 3. 継承の例
+class Manager extends Employee {
+  constructor(id: string, name: string, department: string) {
+    super(id, name, department);
+  }
+
+  // TODO: conduct メソッドを追加してください
+  // "会議を開催します" というメッセージを出力
+  conduct(): void {
+    // ここに実装してください
+  }
+}
+
+// 4. 使用例
+const user = new User("田中太郎");
+user.login();
+console.log(user.getStatus()); // "ログイン中" が出力されるはずです
+
+const employee = new Employee("e001", "佐藤花子", "開発部");
+console.log(employee.getInfo());
+
+const manager = new Manager("m001", "山田次郎", "開発部");
+console.log(manager.getInfo());
+manager.conduct(); // "会議を開催します" が出力されるはずです`,
   sampleCode: `// 基本的なクラス定義
 class User {
   // プロパティの型定義

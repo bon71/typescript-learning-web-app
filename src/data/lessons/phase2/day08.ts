@@ -18,6 +18,24 @@ export const day08: LessonContent = {
     "型推論により、明示的に型を書かなくても自動で型が決まることがあります",
     "開発時のIDE支援（自動補完、リファクタリング）が大幅に向上します"
   ],
+  initialCode: `// TypeScriptの基本を体験してみましょう
+// 型注釈を使って変数の型を明示的に指定
+let message: string = "Hello, TypeScript!";
+let count: number = 10;
+let isComplete: boolean = false;
+
+// 型推論（自動的に型が決まる）
+let autoString = "自動推論";
+let autoNumber = 42;
+
+// 関数に型注釈を追加
+function greet(name: string): string {
+  return "こんにちは、" + name + "さん！";
+}
+
+// 実行してみましょう
+console.log(message);
+console.log(greet("太郎"));`,
   sampleCode: `// JavaScriptの問題点
 let message = "Hello";
 message = 42; // 型が変わってしまう！

@@ -6,6 +6,7 @@ export interface LessonContent {
   readonly completion: string
   readonly task: string
   readonly phase: number
+  readonly initialCode?: string // BasicCodeEditor用の初期コード
   readonly sampleCode?: string
   readonly explanation?: string
   readonly difficulty?: 'beginner' | 'intermediate' | 'advanced'

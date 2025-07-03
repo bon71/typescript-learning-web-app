@@ -18,6 +18,103 @@ export const day17: LessonContent = {
     "複数の非同期処理を並列実行する場合はPromise.allを使用します",
     "APIのレスポンス型を明確に定義することで、型安全なデータ取得が可能になります"
   ],
+  initialCode: `// Promiseと非同期処理を学ぼう
+// TODO: APIから取得したデータの型を定義して取得関数を実装
+
+// 1. 基本的なPromise型定義
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// 2. データを返すPromise関数
+function fetchUserData(): Promise<{ name: string; age: number }> {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      // 成功時のデータ
+      resolve({ name: "田中太郎", age: 30 });
+    }, 1000);
+  });
+}
+
+// 3. async/await を使用した関数
+async function getUserInfo(): Promise<string> {
+  try {
+    // TODO: fetchUserData() を呼び出して結果を取得してください
+    const user = await fetchUserData();
+    return \`ユーザー: \${user.name}, 年齢: \${user.age}\`;
+  } catch (error) {
+    return "ユーザー情報の取得に失敗しました";
+  }
+}
+
+// 4. API レスポンスの型定義
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
+
+// 5. 型安全なAPI関数
+async function fetchUser(id: number): Promise<ApiResponse<User>> {
+  // TODO: 実際のAPI呼び出しをシミュレート
+  await delay(500);
+  
+  // モックデータを返す
+  return {
+    success: true,
+    data: {
+      id: id,
+      name: "佐藤花子",
+      email: "sato@example.com"
+    },
+    message: "ユーザー情報を取得しました"
+  };
+}
+
+// 6. 複数の非同期処理を並列実行
+async function fetchMultipleUsers(): Promise<User[]> {
+  try {
+    // TODO: Promise.all を使って複数のユーザーを同時に取得してください
+    const responses = await Promise.all([
+      fetchUser(1),
+      fetchUser(2),
+      fetchUser(3)
+    ]);
+    
+    return responses.map(response => response.data);
+  } catch (error) {
+    console.error("ユーザー取得エラー:", error);
+    return [];
+  }
+}
+
+// 7. 使用例
+async function main() {
+  console.log("非同期処理を開始します...");
+  
+  // 基本的な非同期処理
+  const userInfo = await getUserInfo();
+  console.log(userInfo);
+  
+  // 単一ユーザーの取得
+  const userResponse = await fetchUser(1);
+  if (userResponse.success) {
+    console.log("取得したユーザー:", userResponse.data);
+  }
+  
+  // 複数ユーザーの並列取得
+  const users = await fetchMultipleUsers();
+  console.log("取得したユーザー一覧:", users);
+}
+
+// 実行
+main().catch(console.error);`,
   sampleCode: `// 基本的なPromise型定義
 function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));

@@ -18,6 +18,30 @@ export const day10: LessonContent = {
     "配列の要素やオブジェクトのプロパティにアクセスする際も型チェックが働きます",
     "複雑な構造になる場合は、後で学ぶinterfaceやtype aliasを使うと管理しやすくなります"
   ],
+  initialCode: `// 配列とオブジェクトの型を使ってみましょう
+// ユーザーリストを作成し、出力してください
+
+// ユーザーオブジェクトの型を定義
+let user1: { name: string; age: number; isActive: boolean } = {
+  name: "田中花子",
+  age: 25,
+  isActive: true
+};
+
+let user2: { name: string; age: number; isActive: boolean } = {
+  name: "佐藤次郎",
+  age: 35,
+  isActive: false
+};
+
+// ユーザー配列を作成
+let users: { name: string; age: number; isActive: boolean }[] = [user1, user2];
+
+// ユーザー情報を表示
+console.log("ユーザー一覧:");
+for (let user of users) {
+  console.log(\`名前: \${user.name}, 年齢: \${user.age}, アクティブ: \${user.isActive}\`);
+}`,
   sampleCode: `// 配列の型定義
 let numbers: number[] = [1, 2, 3, 4, 5];
 let names: string[] = ["田中", "佐藤", "鈴木"];

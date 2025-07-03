@@ -18,6 +18,109 @@ export const day18: LessonContent = {
     "Recordは動的なキーを持つオブジェクトの型を定義するのに便利です",
     "これらを組み合わせることで、非常に柔軟で再利用可能な型定義が可能になります"
   ],
+  initialCode: `// Utility Typesを学ぼう
+// TODO: User から一部のプロパティだけを抽出して使う
+
+// 1. 基本的な型定義
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  age: number;
+  isActive: boolean;
+  createdAt: Date;
+}
+
+// 2. Partial<T> - すべてのプロパティをオプションにする
+type PartialUser = Partial<User>;
+
+function updateUser(userId: string, updates: PartialUser): void {
+  console.log('ユーザー ' + userId + ' を更新:', updates);
+}
+
+// 3. Pick<T, K> - 特定のプロパティのみを抽出
+type UserSummary = Pick<User, 'id' | 'name' | 'email'>;
+
+function displayUserSummary(user: UserSummary): string {
+  return user.name + ' (' + user.email + ')';
+}
+
+// 4. Omit<T, K> - 特定のプロパティを除外
+type UserCreateInput = Omit<User, 'id' | 'createdAt'>;
+
+function createUser(input: UserCreateInput): User {
+  return {
+    ...input,
+    id: Math.random().toString(36),
+    createdAt: new Date()
+  };
+}
+
+// 5. Record<K, T> - 動的なキーを持つオブジェクト
+type UserRole = 'admin' | 'editor' | 'viewer';
+type RolePermissions = Record<UserRole, string[]>;
+
+const permissions: RolePermissions = {
+  admin: ['read', 'write', 'delete'],
+  editor: ['read', 'write'],
+  viewer: ['read']
+};
+
+// TODO: getPermissions 関数を実装してください
+function getPermissions(role: UserRole): string[] {
+  // permissions オブジェクトから指定されたロールの権限を返す
+  return []; // この行を修正してください
+}
+
+// 6. Required<T> - すべてのプロパティを必須にする
+interface OptionalConfig {
+  apiUrl?: string;
+  timeout?: number;
+}
+
+type RequiredConfig = Required<OptionalConfig>;
+
+// TODO: createApiClient 関数を実装してください
+function createApiClient(config: RequiredConfig): string {
+  // config.apiUrl と config.timeout を使って文字列を返す
+  return ""; // この行を修正してください
+}
+
+// 7. 使用例
+const userUpdates: PartialUser = {
+  name: "佐藤花子",
+  age: 25
+};
+
+updateUser("user123", userUpdates);
+
+const userSummary: UserSummary = {
+  id: "user123",
+  name: "佐藤花子",
+  email: "sato@example.com"
+};
+
+console.log(displayUserSummary(userSummary));
+
+const createInput: UserCreateInput = {
+  name: "鈴木次郎",
+  email: "suzuki@example.com",
+  age: 28,
+  isActive: true
+};
+
+const newUser = createUser(createInput);
+console.log("新しいユーザー:", newUser);
+
+console.log("管理者の権限:", getPermissions('admin'));
+console.log("閲覧者の権限:", getPermissions('viewer'));
+
+const config: RequiredConfig = {
+  apiUrl: "https://api.example.com",
+  timeout: 5000
+};
+
+console.log(createApiClient(config));`,
   sampleCode: `// 基本的な型定義
 interface User {
   id: string;
