@@ -4,7 +4,7 @@
     <div class="editor-main">
       <div class="editor-content">
         <!-- 行番号表示 -->
-        <div class="line-numbers">
+        <div ref="lineNumbers" class="line-numbers">
           <div 
             v-for="lineNum in lineCount" 
             :key="lineNum"
@@ -23,6 +23,7 @@
           v-model="localValue"
           @input="onInput"
           @scroll="syncScroll"
+          @wheel="onWheel"
           class="code-textarea"
           spellcheck="false"
           autocomplete="off"
@@ -175,11 +176,34 @@ function highlightCode(code: string): string {
 
 // スクロール同期
 const syntaxHighlight = ref<HTMLElement>()
+const lineNumbers = ref<HTMLElement>()
 
 function syncScroll() {
   if (syntaxHighlight.value && codeTextarea.value) {
     syntaxHighlight.value.scrollTop = codeTextarea.value.scrollTop
     syntaxHighlight.value.scrollLeft = codeTextarea.value.scrollLeft
+  }
+  
+  // 行番号も縦スクロールに同期
+  if (lineNumbers.value && codeTextarea.value) {
+    lineNumbers.value.scrollTop = codeTextarea.value.scrollTop
+  }
+}
+
+// マウスホイールイベント処理
+function onWheel(event: WheelEvent) {
+  // デフォルトのスクロール動作を確実に実行
+  event.stopPropagation()
+  
+  if (codeTextarea.value) {
+    // スクロール量を調整（スムーズなスクロール）
+    const scrollAmount = event.deltaY
+    codeTextarea.value.scrollTop += scrollAmount
+    
+    // シンタックスハイライトも同期
+    nextTick(() => {
+      syncScroll()
+    })
   }
 }
 
@@ -401,6 +425,8 @@ defineExpose({
   display: flex;
   position: relative;
   overflow: hidden;
+  /* スクロール領域を明確にする */
+  isolation: isolate;
 }
 
 .line-numbers {
@@ -415,6 +441,16 @@ defineExpose({
   min-width: 3rem;
   border-right: 1px solid #3e3e42;
   overflow: hidden;
+  /* 縦スクロールのみ有効 */
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* スクロールバーを非表示 */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.line-numbers::-webkit-scrollbar {
+  display: none;
 }
 
 .line-number {
@@ -436,7 +472,7 @@ defineExpose({
   font-size: 14px;
   line-height: 1.5;
   white-space: pre-wrap;
-  overflow: auto;
+  overflow: hidden; /* シンタックスハイライトはスクロールしない */
   pointer-events: none;
   z-index: 1;
   background: #1e1e1e;
@@ -466,6 +502,34 @@ defineExpose({
   z-index: 2;
   caret-color: #ffffff;
   selection-color: #264f78;
+  /* スムーズスクロールを有効にする */
+  scroll-behavior: smooth;
+  /* スクロールバーのスタイルを整える */
+  scrollbar-width: thin;
+  scrollbar-color: #424242 #1e1e1e;
+}
+
+/* WebKitブラウザ用スクロールバースタイル */
+.code-textarea::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.code-textarea::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+
+.code-textarea::-webkit-scrollbar-thumb {
+  background: #424242;
+  border-radius: 4px;
+}
+
+.code-textarea::-webkit-scrollbar-thumb:hover {
+  background: #525252;
+}
+
+.code-textarea::-webkit-scrollbar-corner {
+  background: #1e1e1e;
 }
 
 .code-textarea:focus {
