@@ -22,20 +22,23 @@ export const day10: LessonContent = {
 // ユーザーリストを作成し、出力してください
 
 // ユーザーオブジェクトの型を定義
-let user1: { name: string; age: number; isActive: boolean } = {
+// TypeScriptでは: let user1: { name: string; age: number; isActive: boolean } = {
+let user1 = {
   name: "田中花子",
   age: 25,
   isActive: true
 };
 
-let user2: { name: string; age: number; isActive: boolean } = {
+// TypeScriptでは: let user2: { name: string; age: number; isActive: boolean } = {
+let user2 = {
   name: "佐藤次郎",
   age: 35,
   isActive: false
 };
 
 // ユーザー配列を作成
-let users: { name: string; age: number; isActive: boolean }[] = [user1, user2];
+// TypeScriptでは: let users: { name: string; age: number; isActive: boolean }[] = [user1, user2];
+let users = [user1, user2];
 
 // ユーザー情報を表示
 console.log("ユーザー一覧:");

@@ -22,12 +22,14 @@ export const day17: LessonContent = {
 // TODO: APIから取得したデータの型を定義して取得関数を実装
 
 // 1. 基本的なPromise型定義
-function delay(ms: number): Promise<void> {
+// TypeScriptでは: function delay(ms: number): Promise<void> {
+function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // 2. データを返すPromise関数
-function fetchUserData(): Promise<{ name: string; age: number }> {
+// TypeScriptでは: function fetchUserData(): Promise<{ name: string; age: number }> {
+function fetchUserData() {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       // 成功時のデータ
@@ -37,7 +39,8 @@ function fetchUserData(): Promise<{ name: string; age: number }> {
 }
 
 // 3. async/await を使用した関数
-async function getUserInfo(): Promise<string> {
+// TypeScriptでは: async function getUserInfo(): Promise<string> {
+async function getUserInfo() {
   try {
     // TODO: fetchUserData() を呼び出して結果を取得してください
     const user = await fetchUserData();
@@ -48,20 +51,15 @@ async function getUserInfo(): Promise<string> {
 }
 
 // 4. API レスポンスの型定義
-interface User {
-  id: number;
-  name: string;
-  email: string;
-}
+// TypeScriptでは: interface User { id: number; name: string; email: string; }
+// User構造: { id: number, name: string, email: string }
 
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-}
+// TypeScriptでは: interface ApiResponse<T> { success: boolean; data: T; message?: string; }
+// ApiResponse構造: { success: boolean, data: any, message?: string }
 
 // 5. 型安全なAPI関数
-async function fetchUser(id: number): Promise<ApiResponse<User>> {
+// TypeScriptでは: async function fetchUser(id: number): Promise<ApiResponse<User>> {
+async function fetchUser(id) {
   // TODO: 実際のAPI呼び出しをシミュレート
   await delay(500);
   
@@ -78,7 +76,8 @@ async function fetchUser(id: number): Promise<ApiResponse<User>> {
 }
 
 // 6. 複数の非同期処理を並列実行
-async function fetchMultipleUsers(): Promise<User[]> {
+// TypeScriptでは: async function fetchMultipleUsers(): Promise<User[]> {
+async function fetchMultipleUsers() {
   try {
     // TODO: Promise.all を使って複数のユーザーを同時に取得してください
     const responses = await Promise.all([

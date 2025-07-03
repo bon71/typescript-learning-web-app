@@ -21,15 +21,20 @@ export const day09: LessonContent = {
   initialCode: `// 基本型を使ってユーザー情報を定義してみましょう
 // 氏名、年齢、ログイン中かどうかのフラグを定義してください
 
-// 型注釈を使った明示的な型指定
-let userName: string = ""; // ここに名前を入力
-let userAge: number = 0; // ここに年齢を入力
-let isLoggedIn: boolean = false; // ログイン状態を設定
+// 基本型の変数定義（本来はTypeScriptで型注釈を付けます）
+let userName = "田中太郎"; // string型（本来: let userName: string）
+let userAge = 30; // number型（本来: let userAge: number）
+let isLoggedIn = true; // boolean型（本来: let isLoggedIn: boolean）
 
 // コンソールに表示
 console.log("氏名:", userName);
 console.log("年齢:", userAge);
-console.log("ログイン中:", isLoggedIn);`,
+console.log("ログイン中:", isLoggedIn);
+
+// TypeScriptでは以下のように型注釈を付けます：
+// let userName: string = "田中太郎";
+// let userAge: number = 30;
+// let isLoggedIn: boolean = true;`,
   sampleCode: `// 基本のプリミティブ型
 let userName: string = "田中太郎";
 let userAge: number = 25;

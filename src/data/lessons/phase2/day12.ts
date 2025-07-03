@@ -22,7 +22,8 @@ export const day12: LessonContent = {
 // TODO: "admin" | "user" を受け取る関数を定義してください
 
 // 1. Union型の基本 - 複数の型を組み合わせる
-function formatId(id: string | number): string {
+// TypeScriptでは: function formatId(id: string | number): string {
+function formatId(id) {
   // typeof を使って型を判定し、適切な処理を行う
   if (typeof id === "string") {
     return \`ID: \${id}\`;
@@ -32,10 +33,12 @@ function formatId(id: string | number): string {
 }
 
 // 2. Literal型の定義 - 特定の文字列のみを許可
-type UserRole = 'admin' | 'user' | 'guest';
+// TypeScriptでは: type UserRole = 'admin' | 'user' | 'guest';
+// JavaScriptでは型は定義しませんが、'admin' | 'user' | 'guest' のいずれかの値を使用
 
 // 3. Literal型を使った関数を定義してみよう
-function checkPermission(role: UserRole): boolean {
+// TypeScriptでは: function checkPermission(role: UserRole): boolean {
+function checkPermission(role) {
   // TODO: roleに応じて権限の有無を返すswitch文を書いてください
   switch (role) {
     case 'admin':
@@ -46,8 +49,9 @@ function checkPermission(role: UserRole): boolean {
       return false; // ゲストは権限なし
     default:
       // すべてのケースを網羅していることを確認
-      const exhaustiveCheck: never = role;
-      return exhaustiveCheck;
+      // TypeScriptでは: const exhaustiveCheck: never = role;
+      console.error("予期しないrole:", role);
+      return false;
   }
 }
 
@@ -55,12 +59,13 @@ function checkPermission(role: UserRole): boolean {
 console.log(formatId("ABC123")); // "ID: ABC123"
 console.log(formatId(42)); // "ID: 42"
 
-const userRole: UserRole = 'admin';
+// TypeScriptでは: const userRole: UserRole = 'admin';
+const userRole = 'admin';
 console.log(checkPermission(userRole)); // true
 
 // 5. 試してみよう
-// 以下のコードを実行して、型エラーが発生することを確認してください
-// const invalidRole: UserRole = 'manager'; // エラー: 'manager' は 'admin' | 'user' | 'guest' に割り当てできません`,
+// TypeScriptでは以下はエラーになりますが、JavaScriptでは実行時エラーになります
+// const invalidRole = 'manager'; // 'admin' | 'user' | 'guest' 以外の値`,
   sampleCode: `// Union型の基本
 function formatId(id: string | number): string {
   // 型ガードを使って分岐

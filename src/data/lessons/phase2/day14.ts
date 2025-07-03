@@ -24,54 +24,61 @@ export const day14: LessonContent = {
 // 1. 基本的なクラス定義
 class User {
   // プロパティの型定義
-  public name: string;
-  private isLoggedIn: boolean = false;
+  // TypeScriptでは: public name: string; private isLoggedIn: boolean = false;
+  // JavaScriptではアクセス修飾子は使用できませんが、#で private を表現可能
 
-  // コンストラクタ
-  constructor(name: string) {
+  constructor(name) {
     this.name = name;
+    this.isLoggedIn = false; // private プロパティ（慣例的に_を付ける場合もあります）
   }
 
   // メソッド
-  login(): void {
+  // TypeScriptでは: login(): void {
+  login() {
     this.isLoggedIn = true;
     console.log(\`\${this.name}がログインしました\`);
   }
 
-  logout(): void {
+  // TypeScriptでは: logout(): void {
+  logout() {
     this.isLoggedIn = false;
     console.log(\`\${this.name}がログアウトしました\`);
   }
 
   // TODO: getStatus メソッドを実装してください
   // ログイン状態を文字列で返す（"ログイン中" or "ログアウト"）
-  getStatus(): string {
+  // TypeScriptでは: getStatus(): string {
+  getStatus() {
     return ""; // この行を修正してください
   }
 }
 
 // 2. パラメータプロパティを使った簡潔な書き方
+// TypeScriptのパラメータプロパティはJavaScriptでは使用できません
 class Employee {
-  constructor(
-    private readonly id: string,
-    public name: string,
-    private department: string
-  ) {}
+  // TypeScriptでは: constructor(private readonly id: string, public name: string, private department: string) {}
+  constructor(id, name, department) {
+    this.id = id;        // readonly相当（変更しない約束）
+    this.name = name;    // public相当
+    this.department = department; // private相当
+  }
 
-  getInfo(): string {
+  // TypeScriptでは: getInfo(): string {
+  getInfo() {
     return \`ID: \${this.id}, 名前: \${this.name}, 部署: \${this.department}\`;
   }
 }
 
 // 3. 継承の例
 class Manager extends Employee {
-  constructor(id: string, name: string, department: string) {
+  constructor(id, name, department) {
     super(id, name, department);
   }
 
   // TODO: conduct メソッドを追加してください
   // "会議を開催します" というメッセージを出力
-  conduct(): void {
+  // TypeScriptでは: conduct(): void {
+  conduct() {
     // ここに実装してください
   }
 }

@@ -22,28 +22,26 @@ export const day13: LessonContent = {
 // TODO: Person → Employee を継承してオブジェクト作成
 
 // 1. 基本的なInterface定義
-interface Person {
-  name: string;
-  age: number;
-  email?: string; // オプションプロパティ
-}
+// TypeScriptでは: interface Person { name: string; age: number; email?: string; }
+// JavaScriptでは型定義の代わりにコメントで構造を示します
+// Person構造: { name: string, age: number, email?: string }
 
 // 2. Interfaceの継承 - Person を拡張して Employee を作成
-interface Employee extends Person {
-  employeeId: string;
-  department: string;
-  // TODO: salary プロパティを追加してください（number型）
-}
+// TypeScriptでは: interface Employee extends Person { employeeId: string; department: string; }
+// Employee構造: Person の全プロパティ + { employeeId: string, department: string }
+// TODO: salary プロパティを追加してください（number型）
 
 // 3. Interface を実装するオブジェクトを作成してみよう
-const person: Person = {
+// TypeScriptでは: const person: Person = {
+const person = {
   name: "田中太郎",
   age: 30,
   email: "tanaka@example.com"
 };
 
 // 4. Employee オブジェクトを作成してみよう
-const employee: Employee = {
+// TypeScriptでは: const employee: Employee = {
+const employee = {
   name: "佐藤花子",
   age: 28,
   employeeId: "EMP001",
@@ -52,18 +50,19 @@ const employee: Employee = {
 };
 
 // 5. メソッドを含むInterface
-interface Calculator {
-  add(a: number, b: number): number;
-  subtract(a: number, b: number): number;
-}
+// TypeScriptでは: interface Calculator { add(a: number, b: number): number; subtract(a: number, b: number): number; }
+// Calculator構造: { add: function, subtract: function }
 
 // 6. Interface を実装するクラスを作成してみよう
-class BasicCalculator implements Calculator {
-  add(a: number, b: number): number {
+// TypeScriptでは: class BasicCalculator implements Calculator {
+class BasicCalculator {
+  // TypeScriptでは: add(a: number, b: number): number {
+  add(a, b) {
     return a + b;
   }
   
-  subtract(a: number, b: number): number {
+  // TypeScriptでは: subtract(a: number, b: number): number {
+  subtract(a, b) {
     // TODO: 引き算の処理を実装してください
     return 0;
   }

@@ -22,7 +22,8 @@ export const day16: LessonContent = {
 // TODO: 型に応じて処理が変わる関数を定義
 
 // 1. typeof型ガード - プリミティブ型の判定
-function processValue(value: string | number | boolean): string {
+// TypeScriptでは: function processValue(value: string | number | boolean): string {
+function processValue(value) {
   // TODO: 型に応じて適切な処理を実装してください
   if (typeof value === "string") {
     return value.toUpperCase();
@@ -36,20 +37,31 @@ function processValue(value: string | number | boolean): string {
 
 // 2. instanceof型ガード - クラスのインスタンス判定
 class Dog {
-  constructor(public name: string) {}
-  bark(): string {
+  // TypeScriptでは: constructor(public name: string) {}
+  constructor(name) {
+    this.name = name;
+  }
+  
+  // TypeScriptでは: bark(): string {
+  bark() {
     return \`\${this.name} is barking\`;
   }
 }
 
 class Cat {
-  constructor(public name: string) {}
-  meow(): string {
+  // TypeScriptでは: constructor(public name: string) {}
+  constructor(name) {
+    this.name = name;
+  }
+  
+  // TypeScriptでは: meow(): string {
+  meow() {
     return \`\${this.name} is meowing\`;
   }
 }
 
-function makeSound(animal: Dog | Cat): string {
+// TypeScriptでは: function makeSound(animal: Dog | Cat): string {
+function makeSound(animal) {
   // TODO: instanceof を使って型を判定し、適切なメソッドを呼び出してください
   if (animal instanceof Dog) {
     return animal.bark();
@@ -59,17 +71,14 @@ function makeSound(animal: Dog | Cat): string {
 }
 
 // 3. in演算子による型ガード - プロパティの存在確認
-interface Bird {
-  type: "bird";
-  fly(): void;
-}
+// TypeScriptでは: interface Bird { type: "bird"; fly(): void; }
+// Bird構造: { type: "bird", fly: function }
 
-interface Fish {
-  type: "fish";
-  swim(): void;
-}
+// TypeScriptでは: interface Fish { type: "fish"; swim(): void; }
+// Fish構造: { type: "fish", swim: function }
 
-function move(animal: Bird | Fish): void {
+// TypeScriptでは: function move(animal: Bird | Fish): void {
+function move(animal) {
   // TODO: in演算子を使って型を判定し、適切なメソッドを呼び出してください
   if ("fly" in animal) {
     animal.fly();
@@ -89,12 +98,14 @@ const cat = new Cat("ミケ");
 console.log(makeSound(dog)); // "ポチ is barking"
 console.log(makeSound(cat)); // "ミケ is meowing"
 
-const bird: Bird = {
+// TypeScriptでは: const bird: Bird = {
+const bird = {
   type: "bird",
   fly: () => console.log("Flying high!")
 };
 
-const fish: Fish = {
+// TypeScriptでは: const fish: Fish = {
+const fish = {
   type: "fish",
   swim: () => console.log("Swimming deep!")
 };

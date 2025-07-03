@@ -22,37 +22,49 @@ export const day15: LessonContent = {
 // TODO: 任意の配列の先頭要素を返す getFirst<T>() を作成
 
 // 1. 基本的なジェネリック関数
-function getFirst<T>(array: T[]): T | undefined {
+// TypeScriptでは: function getFirst<T>(array: T[]): T | undefined {
+// JavaScriptではジェネリクスは使用できませんが、同じ動作を実現できます
+function getFirst(array) {
   // TODO: 配列の先頭要素を返す処理を実装してください
   // 配列が空の場合は undefined を返す
   return undefined; // この行を修正してください
 }
 
 // 2. 複数の型パラメータを持つジェネリック関数
-function swap<T, U>(tuple: [T, U]): [U, T] {
+// TypeScriptでは: function swap<T, U>(tuple: [T, U]): [U, T] {
+// JavaScriptでは型パラメータなしで同じ動作を実装
+function swap(tuple) {
   // TODO: タプルの要素を入れ替えて返す処理を実装してください
   return [tuple[1], tuple[0]];
 }
 
 // 3. 基本的なジェネリッククラス
-class Stack<T> {
-  private items: T[] = [];
+// TypeScriptでは: class Stack<T> { private items: T[] = []; ... }
+// JavaScriptではジェネリクスなしで同等の機能を実装
+class Stack {
+  constructor() {
+    this.items = []; // private items: T[] 相当
+  }
 
-  push(item: T): void {
+  // TypeScriptでは: push(item: T): void {
+  push(item) {
     this.items.push(item);
   }
 
-  pop(): T | undefined {
+  // TypeScriptでは: pop(): T | undefined {
+  pop() {
     return this.items.pop();
   }
 
   // TODO: peek メソッドを実装してください
   // スタックの一番上の要素を削除せずに返す
-  peek(): T | undefined {
+  // TypeScriptでは: peek(): T | undefined {
+  peek() {
     return undefined; // この行を修正してください
   }
 
-  isEmpty(): boolean {
+  // TypeScriptでは: isEmpty(): boolean {
+  isEmpty() {
     return this.items.length === 0;
   }
 }
@@ -67,7 +79,8 @@ console.log(getFirst(strings)); // "apple" が出力されるはずです
 const swapped = swap(["hello", 42]);
 console.log(swapped); // [42, "hello"] が出力されるはずです
 
-const numberStack = new Stack<number>();
+// TypeScriptでは: const numberStack = new Stack<number>();
+const numberStack = new Stack(); // 数値用のスタックとして使用
 numberStack.push(1);
 numberStack.push(2);
 console.log(numberStack.peek()); // 2 が出力されるはずです

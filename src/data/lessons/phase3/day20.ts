@@ -24,47 +24,40 @@ export const day20: LessonContent = {
 // ===== 基本的な型定義 =====
 
 // ユーザー情報の型
-interface User {
-  id: string;
-  name: string;
-  age: number;
-  email?: string;
-  createdAt: Date;
-}
+// TypeScriptでは: interface User { id: string; name: string; age: number; email?: string; createdAt: Date; }
+// User構造: { id: string, name: string, age: number, email?: string, createdAt: Date }
 
 // フォームデータの型
-interface UserFormData {
-  name: string;
-  age: number;
-  email?: string;
-}
+// TypeScriptでは: interface UserFormData { name: string; age: number; email?: string; }
+// UserFormData構造: { name: string, age: number, email?: string }
 
 // API レスポンスの型
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-}
+// TypeScriptでは: interface ApiResponse<T> { success: boolean; data: T; message?: string; }
+// ApiResponse構造: { success: boolean, data: any, message?: string }
 
 // ===== バリデーション機能 =====
 
 // バリデーションルールの型
-type ValidationRule<T> = (value: T) => string | null;
+// TypeScriptでは: type ValidationRule<T> = (value: T) => string | null;
+// ValidationRule構造: (value: any) => string | null
 
 // バリデーション関数
-function validateName(name: string): string | null {
+// TypeScriptでは: function validateName(name: string): string | null {
+function validateName(name) {
   if (name.trim().length === 0) return "名前は必須です";
   if (name.length < 2) return "名前は2文字以上で入力してください";
   return null;
 }
 
-function validateAge(age: number): string | null {
+// TypeScriptでは: function validateAge(age: number): string | null {
+function validateAge(age) {
   if (age < 0) return "年齢は0以上で入力してください";
   if (age > 150) return "年齢は150以下で入力してください";
   return null;
 }
 
-function validateEmail(email?: string): string | null {
+// TypeScriptでは: function validateEmail(email?: string): string | null {
+function validateEmail(email) {
   if (!email) return null; // オプショナルなのでOK
   const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
   return emailRegex.test(email) ? null : "有効なメールアドレスを入力してください";
@@ -73,11 +66,16 @@ function validateEmail(email?: string): string | null {
 // ===== User管理クラス =====
 
 class UserManager {
-  private users: User[] = [];
-  private nextId: number = 1;
+  constructor() {
+    // TypeScriptでは: private users: User[] = [];
+    this.users = [];
+    // TypeScriptでは: private nextId: number = 1;
+    this.nextId = 1;
+  }
 
   // TODO: ユーザーを追加するメソッドを実装してください
-  addUser(formData: UserFormData): ApiResponse<User> {
+  // TypeScriptでは: addUser(formData: UserFormData): ApiResponse<User> {
+  addUser(formData) {
     // 1. バリデーションを実行
     const nameError = validateName(formData.name);
     const ageError = validateAge(formData.age);
@@ -93,7 +91,8 @@ class UserManager {
     }
 
     // 2. 新しいユーザーを作成
-    const newUser: User = {
+    // TypeScriptでは: const newUser: User = {
+    const newUser = {
       id: this.nextId.toString(),
       name: formData.name,
       age: formData.age,
@@ -113,7 +112,8 @@ class UserManager {
   }
 
   // TODO: 全ユーザーを取得するメソッドを実装してください
-  getAllUsers(): ApiResponse<User[]> {
+  // TypeScriptでは: getAllUsers(): ApiResponse<User[]> {
+  getAllUsers() {
     return {
       success: true,
       data: [...this.users], // 配列のコピーを返す
@@ -122,7 +122,8 @@ class UserManager {
   }
 
   // TODO: IDでユーザーを検索するメソッドを実装してください
-  getUserById(id: string): ApiResponse<User> | null {
+  // TypeScriptでは: getUserById(id: string): ApiResponse<User> | null {
+  getUserById(id) {
     const user = this.users.find(u => u.id === id);
     
     if (!user) {
@@ -140,27 +141,30 @@ class UserManager {
 // ===== フォーム処理クラス =====
 
 class UserForm {
-  private formData: UserFormData = {
-    name: "",
-    age: 0,
-    email: ""
-  };
+  constructor() {
+    // TypeScriptでは: private formData: UserFormData = {
+    this.formData = {
+      name: "",
+      age: 0,
+      email: ""
+    };
+  }
 
   // フォームデータを更新
-  updateField<K extends keyof UserFormData>(
-    field: K,
-    value: UserFormData[K]
-  ): void {
+  // TypeScriptでは: updateField<K extends keyof UserFormData>(field: K, value: UserFormData[K]): void {
+  updateField(field, value) {
     this.formData[field] = value;
   }
 
   // フォームデータを取得
-  getFormData(): UserFormData {
+  // TypeScriptでは: getFormData(): UserFormData {
+  getFormData() {
     return { ...this.formData };
   }
 
   // フォームをリセット
-  reset(): void {
+  // TypeScriptでは: reset(): void {
+  reset() {
     this.formData = {
       name: "",
       age: 0,
@@ -169,8 +173,10 @@ class UserForm {
   }
 
   // フォームの全体バリデーション
-  validate(): string[] {
-    const errors: string[] = [];
+  // TypeScriptでは: validate(): string[] {
+  validate() {
+    // TypeScriptでは: const errors: string[] = [];
+    const errors = [];
     
     const nameError = validateName(this.formData.name);
     const ageError = validateAge(this.formData.age);
@@ -187,16 +193,16 @@ class UserForm {
 // ===== メインアプリケーション =====
 
 class UserApp {
-  private userManager: UserManager;
-  private userForm: UserForm;
-
   constructor() {
+    // TypeScriptでは: private userManager: UserManager;
+    // TypeScriptでは: private userForm: UserForm;
     this.userManager = new UserManager();
     this.userForm = new UserForm();
   }
 
   // ユーザー作成のデモ
-  async createUserDemo(): Promise<void> {
+  // TypeScriptでは: async createUserDemo(): Promise<void> {
+  async createUserDemo() {
     console.log("=== ユーザー作成デモ ===");
 
     // フォームにサンプルデータを設定
@@ -225,7 +231,8 @@ class UserApp {
   }
 
   // 全ユーザー表示のデモ
-  displayAllUsers(): void {
+  // TypeScriptでは: displayAllUsers(): void {
+  displayAllUsers() {
     console.log("\\n=== 全ユーザー一覧 ===");
     
     const result = this.userManager.getAllUsers();
@@ -244,10 +251,12 @@ class UserApp {
   }
 
   // TODO: 複数のユーザーを作成するメソッドを実装してください
-  async createMultipleUsers(): Promise<void> {
+  // TypeScriptでは: async createMultipleUsers(): Promise<void> {
+  async createMultipleUsers() {
     console.log("\\n=== 複数ユーザー作成デモ ===");
     
-    const sampleUsers: UserFormData[] = [
+    // TypeScriptでは: const sampleUsers: UserFormData[] = [
+    const sampleUsers = [
       { name: "佐藤花子", age: 25, email: "sato@example.com" },
       { name: "鈴木次郎", age: 32, email: "suzuki@example.com" },
       { name: "田中三郎", age: 28 } // メールなし

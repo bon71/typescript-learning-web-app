@@ -22,41 +22,27 @@ export const day19: LessonContent = {
 // TODO: データ取得関数とレスポンス型を分けて記述
 
 // 1. API レスポンスの基本型定義
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-}
+// TypeScriptでは: interface ApiResponse<T> { success: boolean; data: T; message?: string; }
+// ApiResponse構造: { success: boolean, data: any, message?: string }
 
-interface ApiError {
-  success: false;
-  error: {
-    code: string;
-    message: string;
-  };
-}
+// TypeScriptでは: interface ApiError { success: false; error: { code: string; message: string; }; }
+// ApiError構造: { success: false, error: { code: string, message: string } }
 
 // 2. エンティティの型定義
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  createdAt: string;
-}
+// TypeScriptでは: interface User { id: string; name: string; email: string; createdAt: string; }
+// User構造: { id: string, name: string, email: string, createdAt: string }
 
-interface Post {
-  id: string;
-  title: string;
-  content: string;
-  authorId: string;
-  createdAt: string;
-}
+// TypeScriptでは: interface Post { id: string; title: string; content: string; authorId: string; createdAt: string; }
+// Post構造: { id: string, title: string, content: string, authorId: string, createdAt: string }
 
 // 3. HTTP クライアントの基底クラス
 class HttpClient {
-  constructor(private baseUrl: string) {}
+  constructor(baseUrl) {
+    this.baseUrl = baseUrl;
+  }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  // TypeScriptでは: private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  async request(endpoint, options = {}) {
     const url = \`\${this.baseUrl}\${endpoint}\`;
     
     // TODO: fetchを使ってAPIを呼び出し、レスポンスをJSONとして返してください
@@ -72,12 +58,14 @@ class HttpClient {
     return response.json();
   }
 
-  protected get<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint);
+  // TypeScriptでは: protected get<T>(endpoint: string): Promise<T> {
+  get(endpoint) {
+    return this.request(endpoint);
   }
 
-  protected post<T>(endpoint: string, data?: any): Promise<T> {
-    return this.request<T>(endpoint, {
+  // TypeScriptでは: protected post<T>(endpoint: string, data?: any): Promise<T> {
+  post(endpoint, data) {
+    return this.request(endpoint, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
     });
@@ -86,38 +74,45 @@ class HttpClient {
 
 // 4. 具体的なAPIクライアント
 class ApiClient extends HttpClient {
-  constructor(baseUrl: string) {
+  constructor(baseUrl) {
     super(baseUrl);
   }
 
   // TODO: getUsers メソッドを実装してください
-  async getUsers(): Promise<ApiResponse<User[]>> {
+  // TypeScriptでは: async getUsers(): Promise<ApiResponse<User[]>> {
+  async getUsers() {
     // '/users' エンドポイントからユーザー一覧を取得
-    return this.get<ApiResponse<User[]>>('/users');
+    return this.get('/users');
   }
 
   // TODO: getUser メソッドを実装してください
-  async getUser(id: string): Promise<ApiResponse<User>> {
+  // TypeScriptでは: async getUser(id: string): Promise<ApiResponse<User>> {
+  async getUser(id) {
     // '/users/{id}' エンドポイントから特定のユーザーを取得
-    return this.get<ApiResponse<User>>(\`/users/\${id}\`);
+    return this.get(\`/users/\${id}\`);
   }
 
   // TODO: createUser メソッドを実装してください
-  async createUser(userData: { name: string; email: string }): Promise<ApiResponse<User>> {
+  // TypeScriptでは: async createUser(userData: { name: string; email: string }): Promise<ApiResponse<User>> {
+  async createUser(userData) {
     // '/users' エンドポイントに新しいユーザーを作成
-    return this.post<ApiResponse<User>>('/users', userData);
+    return this.post('/users', userData);
   }
 
-  async getPosts(): Promise<ApiResponse<Post[]>> {
-    return this.get<ApiResponse<Post[]>>('/posts');
+  // TypeScriptでは: async getPosts(): Promise<ApiResponse<Post[]>> {
+  async getPosts() {
+    return this.get('/posts');
   }
 }
 
 // 5. サービス層 - APIクライアントをラップして使いやすくする
 class UserService {
-  constructor(private apiClient: ApiClient) {}
+  constructor(apiClient) {
+    this.apiClient = apiClient;
+  }
 
-  async getAllUsers(): Promise<User[]> {
+  // TypeScriptでは: async getAllUsers(): Promise<User[]> {
+  async getAllUsers() {
     try {
       const response = await this.apiClient.getUsers();
       return response.success ? response.data : [];
@@ -127,7 +122,8 @@ class UserService {
     }
   }
 
-  async getUserById(id: string): Promise<User | null> {
+  // TypeScriptでは: async getUserById(id: string): Promise<User | null> {
+  async getUserById(id) {
     try {
       const response = await this.apiClient.getUser(id);
       return response.success ? response.data : null;
@@ -138,7 +134,8 @@ class UserService {
   }
 
   // TODO: createNewUser メソッドを実装してください
-  async createNewUser(name: string, email: string): Promise<User | null> {
+  // TypeScriptでは: async createNewUser(name: string, email: string): Promise<User | null> {
+  async createNewUser(name, email) {
     try {
       // apiClient.createUser を呼び出して新しいユーザーを作成
       const response = await this.apiClient.createUser({ name, email });

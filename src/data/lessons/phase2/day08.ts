@@ -19,23 +19,31 @@ export const day08: LessonContent = {
     "開発時のIDE支援（自動補完、リファクタリング）が大幅に向上します"
   ],
   initialCode: `// TypeScriptの基本を体験してみましょう
-// 型注釈を使って変数の型を明示的に指定
-let message: string = "Hello, TypeScript!";
-let count: number = 10;
-let isComplete: boolean = false;
+// 注意: このCode EditorではJavaScriptとして実行されます
+// TypeScriptの型注釈はコメントで示しています
 
-// 型推論（自動的に型が決まる）
-let autoString = "自動推論";
-let autoNumber = 42;
+// 変数の定義（本来はlet message: string = "Hello, TypeScript!"）
+let message = "Hello, TypeScript!"; // string型
+let count = 10; // number型
+let isComplete = false; // boolean型
 
-// 関数に型注釈を追加
-function greet(name: string): string {
+// 型推論の例
+let autoString = "自動推論"; // 自動的にstring型として推論
+let autoNumber = 42; // 自動的にnumber型として推論
+
+// 関数の定義（本来はfunction greet(name: string): string）
+function greet(name) {
+  // 引数nameはstring型、戻り値もstring型
   return "こんにちは、" + name + "さん！";
 }
 
 // 実行してみましょう
 console.log(message);
-console.log(greet("太郎"));`,
+console.log(greet("太郎"));
+
+// TypeScriptでは以下のように型注釈を付けます：
+// let message: string = "Hello, TypeScript!";
+// function greet(name: string): string { ... }`,
   sampleCode: `// JavaScriptの問題点
 let message = "Hello";
 message = 42; // 型が変わってしまう！

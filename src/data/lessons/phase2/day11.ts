@@ -22,18 +22,21 @@ export const day11: LessonContent = {
 // TODO: 2つの数を受け取り加算する関数を作成してください
 
 // 1. 基本的な関数を定義してみよう
-function add(a: number, b: number): number {
+// TypeScriptでは: function add(a: number, b: number): number {
+function add(a, b) {
   // ここに加算の処理を書いてください
   return 0; // この行を修正してください
 }
 
 // 2. 戻り値がない関数を定義してみよう
-function greet(name: string): void {
+// TypeScriptでは: function greet(name: string): void {
+function greet(name) {
   // ここに挨拶を出力する処理を書いてください
 }
 
 // 3. オプション引数を持つ関数を定義してみよう
-function createMessage(text: string, prefix?: string): string {
+// TypeScriptでは: function createMessage(text: string, prefix?: string): string {
+function createMessage(text, prefix) {
   // prefixがある場合は前に付けて返す
   // ない場合はそのまま返す
   return text;

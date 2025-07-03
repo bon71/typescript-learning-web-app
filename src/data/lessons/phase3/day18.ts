@@ -22,33 +22,32 @@ export const day18: LessonContent = {
 // TODO: User から一部のプロパティだけを抽出して使う
 
 // 1. 基本的な型定義
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  age: number;
-  isActive: boolean;
-  createdAt: Date;
-}
+// TypeScriptでは: interface User { id: string; name: string; email: string; age: number; isActive: boolean; createdAt: Date; }
+// User構造: { id: string, name: string, email: string, age: number, isActive: boolean, createdAt: Date }
 
 // 2. Partial<T> - すべてのプロパティをオプションにする
-type PartialUser = Partial<User>;
+// TypeScriptでは: type PartialUser = Partial<User>;
+// PartialUser構造: { id?: string, name?: string, email?: string, age?: number, isActive?: boolean, createdAt?: Date }
 
-function updateUser(userId: string, updates: PartialUser): void {
+function updateUser(userId, updates) {
   console.log('ユーザー ' + userId + ' を更新:', updates);
 }
 
 // 3. Pick<T, K> - 特定のプロパティのみを抽出
-type UserSummary = Pick<User, 'id' | 'name' | 'email'>;
+// TypeScriptでは: type UserSummary = Pick<User, 'id' | 'name' | 'email'>;
+// UserSummary構造: { id: string, name: string, email: string }
 
-function displayUserSummary(user: UserSummary): string {
+// TypeScriptでは: function displayUserSummary(user: UserSummary): string {
+function displayUserSummary(user) {
   return user.name + ' (' + user.email + ')';
 }
 
 // 4. Omit<T, K> - 特定のプロパティを除外
-type UserCreateInput = Omit<User, 'id' | 'createdAt'>;
+// TypeScriptでは: type UserCreateInput = Omit<User, 'id' | 'createdAt'>;
+// UserCreateInput構造: { name: string, email: string, age: number, isActive: boolean }
 
-function createUser(input: UserCreateInput): User {
+// TypeScriptでは: function createUser(input: UserCreateInput): User {
+function createUser(input) {
   return {
     ...input,
     id: Math.random().toString(36),
@@ -57,44 +56,48 @@ function createUser(input: UserCreateInput): User {
 }
 
 // 5. Record<K, T> - 動的なキーを持つオブジェクト
-type UserRole = 'admin' | 'editor' | 'viewer';
-type RolePermissions = Record<UserRole, string[]>;
+// TypeScriptでは: type UserRole = 'admin' | 'editor' | 'viewer';
+// TypeScriptでは: type RolePermissions = Record<UserRole, string[]>;
+// RolePermissions構造: { admin: string[], editor: string[], viewer: string[] }
 
-const permissions: RolePermissions = {
+const permissions = {
   admin: ['read', 'write', 'delete'],
   editor: ['read', 'write'],
   viewer: ['read']
 };
 
 // TODO: getPermissions 関数を実装してください
-function getPermissions(role: UserRole): string[] {
+// TypeScriptでは: function getPermissions(role: UserRole): string[] {
+function getPermissions(role) {
   // permissions オブジェクトから指定されたロールの権限を返す
   return []; // この行を修正してください
 }
 
 // 6. Required<T> - すべてのプロパティを必須にする
-interface OptionalConfig {
-  apiUrl?: string;
-  timeout?: number;
-}
+// TypeScriptでは: interface OptionalConfig { apiUrl?: string; timeout?: number; }
+// OptionalConfig構造: { apiUrl?: string, timeout?: number }
 
-type RequiredConfig = Required<OptionalConfig>;
+// TypeScriptでは: type RequiredConfig = Required<OptionalConfig>;
+// RequiredConfig構造: { apiUrl: string, timeout: number }
 
 // TODO: createApiClient 関数を実装してください
-function createApiClient(config: RequiredConfig): string {
+// TypeScriptでは: function createApiClient(config: RequiredConfig): string {
+function createApiClient(config) {
   // config.apiUrl と config.timeout を使って文字列を返す
   return ""; // この行を修正してください
 }
 
 // 7. 使用例
-const userUpdates: PartialUser = {
+// TypeScriptでは: const userUpdates: PartialUser = {
+const userUpdates = {
   name: "佐藤花子",
   age: 25
 };
 
 updateUser("user123", userUpdates);
 
-const userSummary: UserSummary = {
+// TypeScriptでは: const userSummary: UserSummary = {
+const userSummary = {
   id: "user123",
   name: "佐藤花子",
   email: "sato@example.com"
@@ -102,7 +105,8 @@ const userSummary: UserSummary = {
 
 console.log(displayUserSummary(userSummary));
 
-const createInput: UserCreateInput = {
+// TypeScriptでは: const createInput: UserCreateInput = {
+const createInput = {
   name: "鈴木次郎",
   email: "suzuki@example.com",
   age: 28,
@@ -115,7 +119,8 @@ console.log("新しいユーザー:", newUser);
 console.log("管理者の権限:", getPermissions('admin'));
 console.log("閲覧者の権限:", getPermissions('viewer'));
 
-const config: RequiredConfig = {
+// TypeScriptでは: const config: RequiredConfig = {
+const config = {
   apiUrl: "https://api.example.com",
   timeout: 5000
 };
