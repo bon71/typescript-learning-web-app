@@ -2,7 +2,10 @@
   <div class="basic-code-editor" :style="{ height: height }">
     
     <div class="editor-main">
-      <div class="editor-content">
+      <div 
+        ref="editorContainer"
+        class="editor-content"
+      >
         <!-- 行番号表示 -->
         <div ref="lineNumbers" class="line-numbers">
           <div 
@@ -23,10 +26,6 @@
           v-model="localValue"
           @input="onInput"
           @scroll="syncScroll"
-          @wheel="onWheel"
-          @touchstart="onTouchStart"
-          @touchmove="onTouchMove"
-          @touchend="onTouchEnd"
           class="code-textarea"
           spellcheck="false"
           autocomplete="off"
@@ -180,6 +179,7 @@ function highlightCode(code: string): string {
 // スクロール同期
 const syntaxHighlight = ref<HTMLElement>()
 const lineNumbers = ref<HTMLElement>()
+const editorContainer = ref<HTMLElement>()
 
 function syncScroll() {
   if (syntaxHighlight.value && codeTextarea.value) {
@@ -193,69 +193,29 @@ function syncScroll() {
   }
 }
 
-// マウスホイールイベント処理
-function onWheel(event: WheelEvent) {
-  // デフォルトのスクロール動作を確実に実行
+// Code Editor領域でのスクロールイベント処理
+function onEditorWheel(event: WheelEvent) {
+  // ページスクロールを阻止
+  event.preventDefault()
   event.stopPropagation()
   
   if (codeTextarea.value) {
-    // スクロール量を調整（スムーズなスクロール）
-    const scrollAmount = event.deltaY
-    codeTextarea.value.scrollTop += scrollAmount
+    // スクロール量を調整（トラックパッドとマウスホイールの両方に対応）
+    const deltaY = event.deltaY
+    const deltaX = event.deltaX
     
-    // シンタックスハイライトも同期
-    nextTick(() => {
-      syncScroll()
-    })
-  }
-}
-
-// トラックパッドスクロール用の状態管理
-let touchStartY = 0
-let touchStartX = 0
-let initialScrollTop = 0
-let initialScrollLeft = 0
-let isScrolling = false
-
-// トラックパッドタッチ開始
-function onTouchStart(event: TouchEvent) {
-  if (event.touches.length === 1) {
-    const touch = event.touches[0]
-    touchStartY = touch.clientY
-    touchStartX = touch.clientX
-    
-    if (codeTextarea.value) {
-      initialScrollTop = codeTextarea.value.scrollTop
-      initialScrollLeft = codeTextarea.value.scrollLeft
+    // 縦スクロール
+    if (Math.abs(deltaY) > Math.abs(deltaX)) {
+      codeTextarea.value.scrollTop += deltaY
+    }
+    // 横スクロール
+    else if (Math.abs(deltaX) > 0) {
+      codeTextarea.value.scrollLeft += deltaX
     }
     
-    isScrolling = true
-  }
-}
-
-// トラックパッドスクロール中
-function onTouchMove(event: TouchEvent) {
-  if (isScrolling && event.touches.length === 1 && codeTextarea.value) {
-    event.preventDefault() // ブラウザのデフォルトスクロールを防ぐ
-    
-    const touch = event.touches[0]
-    const deltaY = touchStartY - touch.clientY
-    const deltaX = touchStartX - touch.clientX
-    
-    // スクロール位置を更新
-    codeTextarea.value.scrollTop = initialScrollTop + deltaY
-    codeTextarea.value.scrollLeft = initialScrollLeft + deltaX
-    
-    // シンタックスハイライトも同期
+    // シンタックスハイライトと行番号を同期
     syncScroll()
   }
-}
-
-// トラックパッドタッチ終了
-function onTouchEnd(event: TouchEvent) {
-  isScrolling = false
-  touchStartY = 0
-  touchStartX = 0
 }
 
 const onInput = () => {
@@ -265,16 +225,16 @@ const onInput = () => {
 
 // コンポーネントマウント時の初期化
 onMounted(() => {
-  // textareaにpassive: falseでイベントリスナーを追加（preventDefaultを使用するため）
-  if (codeTextarea.value) {
-    codeTextarea.value.addEventListener('touchmove', onTouchMove, { passive: false })
+  // エディタコンテナにホイールイベントリスナーを追加（passive: falseでpreventDefault有効）
+  if (editorContainer.value) {
+    editorContainer.value.addEventListener('wheel', onEditorWheel, { passive: false })
   }
 })
 
 // コンポーネントアンマウント時のクリーンアップ
 onUnmounted(() => {
-  if (codeTextarea.value) {
-    codeTextarea.value.removeEventListener('touchmove', onTouchMove)
+  if (editorContainer.value) {
+    editorContainer.value.removeEventListener('wheel', onEditorWheel)
   }
 })
 
@@ -493,8 +453,8 @@ defineExpose({
   overflow: hidden;
   /* スクロール領域を明確にする */
   isolation: isolate;
-  /* トラックパッドスクロール対応 */
-  touch-action: none;
+  /* マウスカーソルが上にある時のスクロール制御 */
+  cursor: text;
 }
 
 .line-numbers {
@@ -570,14 +530,9 @@ defineExpose({
   z-index: 2;
   caret-color: #ffffff;
   selection-color: #264f78;
-  /* スムーズスクロールを有効にする */
-  scroll-behavior: smooth;
   /* スクロールバーのスタイルを整える */
   scrollbar-width: thin;
   scrollbar-color: #424242 #1e1e1e;
-  /* トラックパッドスクロール対応 */
-  touch-action: pan-x pan-y;
-  -webkit-overflow-scrolling: touch;
 }
 
 /* WebKitブラウザ用スクロールバースタイル */
