@@ -24,6 +24,9 @@
           @input="onInput"
           @scroll="syncScroll"
           @wheel="onWheel"
+          @touchstart="onTouchStart"
+          @touchmove="onTouchMove"
+          @touchend="onTouchEnd"
           class="code-textarea"
           spellcheck="false"
           autocomplete="off"
@@ -37,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 
 interface Props {
   value?: string
@@ -207,10 +210,73 @@ function onWheel(event: WheelEvent) {
   }
 }
 
+// トラックパッドスクロール用の状態管理
+let touchStartY = 0
+let touchStartX = 0
+let initialScrollTop = 0
+let initialScrollLeft = 0
+let isScrolling = false
+
+// トラックパッドタッチ開始
+function onTouchStart(event: TouchEvent) {
+  if (event.touches.length === 1) {
+    const touch = event.touches[0]
+    touchStartY = touch.clientY
+    touchStartX = touch.clientX
+    
+    if (codeTextarea.value) {
+      initialScrollTop = codeTextarea.value.scrollTop
+      initialScrollLeft = codeTextarea.value.scrollLeft
+    }
+    
+    isScrolling = true
+  }
+}
+
+// トラックパッドスクロール中
+function onTouchMove(event: TouchEvent) {
+  if (isScrolling && event.touches.length === 1 && codeTextarea.value) {
+    event.preventDefault() // ブラウザのデフォルトスクロールを防ぐ
+    
+    const touch = event.touches[0]
+    const deltaY = touchStartY - touch.clientY
+    const deltaX = touchStartX - touch.clientX
+    
+    // スクロール位置を更新
+    codeTextarea.value.scrollTop = initialScrollTop + deltaY
+    codeTextarea.value.scrollLeft = initialScrollLeft + deltaX
+    
+    // シンタックスハイライトも同期
+    syncScroll()
+  }
+}
+
+// トラックパッドタッチ終了
+function onTouchEnd(event: TouchEvent) {
+  isScrolling = false
+  touchStartY = 0
+  touchStartX = 0
+}
+
 const onInput = () => {
   emit('update:value', localValue.value)
   emit('change', localValue.value)
 }
+
+// コンポーネントマウント時の初期化
+onMounted(() => {
+  // textareaにpassive: falseでイベントリスナーを追加（preventDefaultを使用するため）
+  if (codeTextarea.value) {
+    codeTextarea.value.addEventListener('touchmove', onTouchMove, { passive: false })
+  }
+})
+
+// コンポーネントアンマウント時のクリーンアップ
+onUnmounted(() => {
+  if (codeTextarea.value) {
+    codeTextarea.value.removeEventListener('touchmove', onTouchMove)
+  }
+})
 
 const runCode = async () => {
   console.log('runCode called', { isRunning: isRunning.value, codeLength: localValue.value.trim().length })
@@ -427,6 +493,8 @@ defineExpose({
   overflow: hidden;
   /* スクロール領域を明確にする */
   isolation: isolate;
+  /* トラックパッドスクロール対応 */
+  touch-action: none;
 }
 
 .line-numbers {
@@ -507,6 +575,9 @@ defineExpose({
   /* スクロールバーのスタイルを整える */
   scrollbar-width: thin;
   scrollbar-color: #424242 #1e1e1e;
+  /* トラックパッドスクロール対応 */
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* WebKitブラウザ用スクロールバースタイル */
