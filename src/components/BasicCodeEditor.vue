@@ -195,27 +195,74 @@ function syncScroll() {
 
 // Code Editor領域でのスクロールイベント処理
 function onEditorWheel(event: WheelEvent) {
-  // ページスクロールを阻止
-  event.preventDefault()
-  event.stopPropagation()
+  if (!codeTextarea.value) {
+    return
+  }
   
-  if (codeTextarea.value) {
-    // スクロール量を調整（トラックパッドとマウスホイールの両方に対応）
-    const deltaY = event.deltaY
-    const deltaX = event.deltaX
+  const textarea = codeTextarea.value
+  const deltaY = event.deltaY
+  const deltaX = event.deltaX
+  
+  let shouldPreventDefault = false
+  
+  // 縦スクロールの処理
+  if (Math.abs(deltaY) > Math.abs(deltaX)) {
+    const currentScrollTop = textarea.scrollTop
+    const maxScrollTop = textarea.scrollHeight - textarea.clientHeight
     
-    // 縦スクロール
-    if (Math.abs(deltaY) > Math.abs(deltaX)) {
-      codeTextarea.value.scrollTop += deltaY
+    // 上方向スクロール（deltaY < 0）
+    if (deltaY < 0) {
+      if (currentScrollTop > 0) {
+        // エディタ内でスクロール可能
+        shouldPreventDefault = true
+        textarea.scrollTop = Math.max(0, currentScrollTop + deltaY)
+      }
+      // currentScrollTop === 0 の場合はページスクロールを許可
     }
-    // 横スクロール
-    else if (Math.abs(deltaX) > 0) {
-      codeTextarea.value.scrollLeft += deltaX
+    // 下方向スクロール（deltaY > 0）
+    else if (deltaY > 0) {
+      if (currentScrollTop < maxScrollTop) {
+        // エディタ内でスクロール可能
+        shouldPreventDefault = true
+        textarea.scrollTop = Math.min(maxScrollTop, currentScrollTop + deltaY)
+      }
+      // currentScrollTop === maxScrollTop の場合はページスクロールを許可
     }
+  }
+  // 横スクロールの処理
+  else if (Math.abs(deltaX) > 0) {
+    const currentScrollLeft = textarea.scrollLeft
+    const maxScrollLeft = textarea.scrollWidth - textarea.clientWidth
+    
+    // 左方向スクロール（deltaX < 0）
+    if (deltaX < 0) {
+      if (currentScrollLeft > 0) {
+        shouldPreventDefault = true
+        textarea.scrollLeft = Math.max(0, currentScrollLeft + deltaX)
+      }
+    }
+    // 右方向スクロール（deltaX > 0）
+    else if (deltaX > 0) {
+      if (currentScrollLeft < maxScrollLeft) {
+        shouldPreventDefault = true
+        textarea.scrollLeft = Math.min(maxScrollLeft, currentScrollLeft + deltaX)
+      }
+    }
+  }
+  
+  // エディタ内でスクロールした場合のみページスクロールを阻止
+  if (shouldPreventDefault) {
+    event.preventDefault()
+    event.stopPropagation()
     
     // シンタックスハイライトと行番号を同期
     syncScroll()
+    
+    // console.log('Editor scroll:', textarea.scrollTop, '/', textarea.scrollHeight - textarea.clientHeight)
+  } else {
+    // console.log('Page scroll allowed:', textarea.scrollTop, '/', textarea.scrollHeight - textarea.clientHeight)
   }
+  // shouldPreventDefault === false の場合、ページスクロールが自然に発生
 }
 
 const onInput = () => {
@@ -228,6 +275,11 @@ onMounted(() => {
   // エディタコンテナにホイールイベントリスナーを追加（passive: falseでpreventDefault有効）
   if (editorContainer.value) {
     editorContainer.value.addEventListener('wheel', onEditorWheel, { passive: false })
+  }
+  
+  // textareaの初期設定を確認
+  if (codeTextarea.value) {
+    // console.log('Textarea initial state')
   }
 })
 
@@ -401,6 +453,15 @@ watch(() => props.value, (newValue) => {
   if (localValue.value !== newValue) {
     localValue.value = newValue
   }
+})
+
+// localValueの変更を監視してスクロール状態をチェック
+watch(localValue, () => {
+  nextTick(() => {
+    if (codeTextarea.value) {
+      // console.log('Content changed')
+    }
+  })
 })
 
 // メソッドを公開
