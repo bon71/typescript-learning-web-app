@@ -270,5 +270,242 @@ console.log(rectangle.getInfo());
 const character = GameCharacter.createCharacter("勇者");
 character.move(10, 20);
 character.draw();`,
-  explanation: "TypeScriptのクラスは、アクセス修飾子、型注釈、パラメータプロパティなど多くの機能を提供します。継承、抽象クラス、インターフェースの実装により、オブジェクト指向プログラミングの原則を型安全に実現できます。これらの機能を適切に使うことで、保守性が高く、拡張しやすいコードを書くことができます。"
+  explanation: "TypeScriptのクラスは、アクセス修飾子、型注釈、パラメータプロパティなど多くの機能を提供します。継承、抽象クラス、インターフェースの実装により、オブジェクト指向プログラミングの原則を型安全に実現できます。これらの機能を適切に使うことで、保守性が高く、拡張しやすいコードを書くことができます。",
+
+  // 演習機能追加
+  exerciseCode: `// 演習: 図書館管理システムをクラスで実装しよう
+// TypeScriptのクラス機能を使って図書館の本とユーザーを管理するシステムを作成してください
+
+// TODO: 1. 基本のBookクラスを作成してください
+class Book {
+  // TypeScriptでは: 
+  // private id: string;
+  // public title: string;
+  // public author: string;
+  // protected publishedYear: number;
+  // private isAvailable: boolean = true;
+  
+  constructor(id, title, author, publishedYear) {
+    // TypeScriptでは: constructor(id: string, title: string, author: string, publishedYear: number)
+    this.id = id;
+    this.title = title;
+    this.author = author;
+    this.publishedYear = publishedYear;
+    this.isAvailable = true; // 初期状態は貸出可能
+  }
+  
+  // TODO: 本を借りるメソッドを実装してください
+  borrow() {
+    // TypeScriptでは: borrow(): boolean
+    if (this.isAvailable) {
+      this.isAvailable = false;
+      return true;
+    } else {
+      return false;
+    }
+  }
+  
+  // TODO: 本を返すメソッドを実装してください
+  returnBook() {
+    // TypeScriptでは: returnBook(): void
+    this.isAvailable = true;
+  }
+  
+  // TODO: 本の情報を取得するメソッドを実装してください
+  getInfo() {
+    // TypeScriptでは: getInfo(): string
+    let status = this.isAvailable ? "貸出可能" : "貸出中";
+    return "『" + this.title + "』 著者: " + this.author + 
+           " (" + this.publishedYear + "年) - " + status;
+  }
+  
+  // TODO: 貸出状況を確認するメソッドを実装してください
+  checkAvailability() {
+    // TypeScriptでは: checkAvailability(): boolean
+    return this.isAvailable;
+  }
+}
+
+// TODO: 2. Userクラスを作成してください
+class User {
+  // TypeScriptでは:
+  // private id: string;
+  // public name: string;
+  // private borrowedBooks: Book[] = [];
+  
+  constructor(id, name) {
+    // TypeScriptでは: constructor(id: string, name: string)
+    this.id = id;
+    this.name = name;
+    this.borrowedBooks = [];
+  }
+  
+  // TODO: 本を借りるメソッドを実装してください
+  borrowBook(book) {
+    // TypeScriptでは: borrowBook(book: Book): boolean
+    if (book.checkAvailability()) {
+      if (book.borrow()) {
+        this.borrowedBooks.push(book);
+        console.log(this.name + "が『" + book.title + "』を借りました");
+        return true;
+      }
+    }
+    console.log("『" + book.title + "』は現在貸出中です");
+    return false;
+  }
+  
+  // TODO: 本を返すメソッドを実装してください
+  returnBook(book) {
+    // TypeScriptでは: returnBook(book: Book): boolean
+    let bookIndex = this.borrowedBooks.indexOf(book);
+    if (bookIndex !== -1) {
+      book.returnBook();
+      this.borrowedBooks.splice(bookIndex, 1);
+      console.log(this.name + "が『" + book.title + "』を返却しました");
+      return true;
+    } else {
+      console.log(this.name + "は『" + book.title + "』を借りていません");
+      return false;
+    }
+  }
+  
+  // TODO: 借りている本の一覧を取得するメソッドを実装してください
+  getBorrowedBooks() {
+    // TypeScriptでは: getBorrowedBooks(): string[]
+    return this.borrowedBooks.map(book => book.title);
+  }
+  
+  // TODO: ユーザー情報を取得するメソッドを実装してください
+  getUserInfo() {
+    // TypeScriptでは: getUserInfo(): string
+    let borrowedCount = this.borrowedBooks.length;
+    return this.name + " (借りている本: " + borrowedCount + "冊)";
+  }
+}
+
+// TODO: 3. Libraryクラスを作成してください（本とユーザーを管理）
+class Library {
+  constructor() {
+    this.books = [];
+    this.users = [];
+  }
+  
+  // TODO: 本を追加するメソッドを実装してください
+  addBook(book) {
+    // TypeScriptでは: addBook(book: Book): void
+    this.books.push(book);
+    console.log("図書館に『" + book.title + "』を追加しました");
+  }
+  
+  // TODO: ユーザーを登録するメソッドを実装してください
+  registerUser(user) {
+    // TypeScriptでは: registerUser(user: User): void
+    this.users.push(user);
+    console.log("ユーザー『" + user.name + "』を登録しました");
+  }
+  
+  // TODO: 利用可能な本の一覧を取得するメソッドを実装してください
+  getAvailableBooks() {
+    // TypeScriptでは: getAvailableBooks(): Book[]
+    return this.books.filter(book => book.checkAvailability());
+  }
+  
+  // TODO: 図書館の状況を表示するメソッドを実装してください
+  getLibraryStatus() {
+    // TypeScriptでは: getLibraryStatus(): string
+    let totalBooks = this.books.length;
+    let availableBooks = this.getAvailableBooks().length;
+    let borrowedBooks = totalBooks - availableBooks;
+    
+    return "図書館の状況: 総蔵書" + totalBooks + "冊 / 貸出可能" + availableBooks + "冊 / 貸出中" + borrowedBooks + "冊";
+  }
+}
+
+// TODO: 4. システムをテストしてください
+
+// 図書館の作成
+let library = new Library();
+
+// 本の作成と追加
+let book1 = new Book("B001", "TypeScript入門", "山田太郎", 2023);
+let book2 = new Book("B002", "JavaScript完全ガイド", "佐藤花子", 2022);
+let book3 = new Book("B003", "Web開発の基礎", "鈴木次郎", 2024);
+
+library.addBook(book1);
+library.addBook(book2);
+library.addBook(book3);
+
+// ユーザーの作成と登録
+let user1 = new User("U001", "田中一郎");
+let user2 = new User("U002", "高橋二郎");
+
+library.registerUser(user1);
+library.registerUser(user2);
+
+// 貸出テスト
+console.log("\\n=== 貸出テスト ===");
+console.log(library.getLibraryStatus());
+
+user1.borrowBook(book1);
+user1.borrowBook(book2);
+user2.borrowBook(book1); // すでに貸出中
+
+console.log("\\n" + library.getLibraryStatus());
+
+// ユーザー情報の確認
+console.log("\\n=== ユーザー情報 ===");
+console.log(user1.getUserInfo());
+console.log("借りている本:", user1.getBorrowedBooks());
+
+// 返却テスト
+console.log("\\n=== 返却テスト ===");
+user1.returnBook(book1);
+user2.borrowBook(book1); // 返却されたので借りることができる
+
+console.log("\\n" + library.getLibraryStatus());
+
+// 利用可能な本の一覧
+console.log("\\n=== 利用可能な本 ===");
+let availableBooks = library.getAvailableBooks();
+availableBooks.forEach(book => {
+  console.log(book.getInfo());
+});`,
+
+  exerciseHints: [
+    "クラスのコンストラクタで初期値を設定します",
+    "メソッドはクラス内で function キーワードなしで定義します",
+    "this キーワードでクラスのプロパティにアクセスします",
+    "配列のfilter()メソッドで条件に合う要素を抽出できます",
+    "map()メソッドで配列の各要素を変換できます"
+  ],
+
+  testCases: [
+    {
+      id: "test1",
+      description: "Bookクラスが正しく動作する",
+      testFunction: "() => { let book = new Book('test', 'Test Book', 'Test Author', 2023); return book.checkAvailability() === true; }"
+    },
+    {
+      id: "test2",
+      description: "本の貸出が正しく動作する",
+      testFunction: "() => { let book = new Book('test', 'Test Book', 'Test Author', 2023); book.borrow(); return book.checkAvailability() === false; }"
+    },
+    {
+      id: "test3",
+      description: "Userクラスが正しく動作する",
+      testFunction: "() => { let user = new User('U001', 'Test User'); return user.getBorrowedBooks().length === 0; }"
+    },
+    {
+      id: "test4",
+      description: "ユーザーが本を借りることができる",
+      testFunction: "() => { let book = new Book('test', 'Test Book', 'Test Author', 2023); let user = new User('U001', 'Test User'); user.borrowBook(book); return user.getBorrowedBooks().length === 1; }"
+    },
+    {
+      id: "test5",
+      description: "Libraryクラスが正しく動作する",
+      testFunction: "() => { let library = new Library(); let book = new Book('test', 'Test Book', 'Test Author', 2023); library.addBook(book); return library.getAvailableBooks().length === 1; }"
+    }
+  ],
+
+  exerciseDifficulty: 'hard'
 } as const

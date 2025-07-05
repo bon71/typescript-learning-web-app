@@ -628,5 +628,565 @@ async function main() {
 }
 
 main().catch(console.error);`,
-  explanation: "型安全なAPI設計では、リクエスト・レスポンスの型定義、エラーハンドリング、ページネーション、フィルタリングを包括的にカバーします。HTTPクライアントの基底クラス、具体的なAPIクライアント、型ガード、レスポンス変換層、サービス層を適切に分離することで、保守性が高く拡張しやすいアーキテクチャを実現できます。実際のプロダクション環境で必要な要素を全て含んだ実践的な設計パターンです。"
+  explanation: "型安全なAPI設計では、リクエスト・レスポンスの型定義、エラーハンドリング、ページネーション、フィルタリングを包括的にカバーします。HTTPクライアントの基底クラス、具体的なAPIクライアント、型ガード、レスポンス変換層、サービス層を適切に分離することで、保守性が高く拡張しやすいアーキテクチャを実現できます。実際のプロダクション環境で必要な要素を全て含んだ実践的な設計パターンです。",
+
+  // 演習機能追加
+  exerciseCode: `// 演習: 型安全なブログAPIクライアントを作成しよう
+// API設計のベストプラクティスを使って、包括的なブログシステムを実装してください
+
+// TODO: 1. API レスポンスとエラーの基本型を定義してください
+
+// API レスポンスの型
+// TypeScriptでは以下のような定義
+// interface ApiResponse<T> { success: boolean; data: T; message?: string; timestamp: string; }
+// interface ApiError { success: false; error: { code: string; message: string; details?: any; }; timestamp: string; }
+
+// TODO: 2. ブログエンティティの型を定義してください
+
+// ブログ記事の型
+// TypeScriptでは以下のような定義
+// interface BlogPost { id: string; title: string; content: string; excerpt: string; authorId: string; author?: User; tags: string[]; publishedAt: string | null; createdAt: string; updatedAt: string; }
+
+// ユーザーの型
+// TypeScriptでは以下のような定義
+// interface User { id: string; name: string; email: string; avatar?: string; bio?: string; createdAt: string; }
+
+// コメントの型
+// TypeScriptでは以下のような定義
+// interface Comment { id: string; postId: string; authorId: string; author?: User; content: string; createdAt: string; }
+
+// TODO: 3. HTTP クライアントの基底クラスを実装してください
+
+class HttpClient {
+  constructor(baseUrl, defaultHeaders = {}) {
+    // TypeScriptでは: constructor(private baseUrl: string, private defaultHeaders: Record<string, string> = {})
+    this.baseUrl = baseUrl;
+    this.defaultHeaders = defaultHeaders;
+  }
+  
+  // プライベートリクエストメソッド
+  async request(endpoint, options = {}) {
+    // TypeScriptでは: private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T>
+    
+    let url = this.baseUrl + endpoint;
+    
+    try {
+      let response = await fetch(url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...this.defaultHeaders,
+          ...options.headers,
+        },
+      });
+      
+      let data = await response.json();
+      
+      if (!response.ok) {
+        throw {
+          status: response.status,
+          code: data.error?.code || 'UNKNOWN_ERROR',
+          message: data.error?.message || response.statusText,
+          details: data.error?.details
+        };
+      }
+      
+      return data;
+    } catch (error) {
+      // ネットワークエラーなどの場合はモック処理
+      if (error.status) {
+        throw error;
+      }
+      
+      // fetch失敗の場合はモックレスポンスを返す
+      return this.getMockResponse(endpoint, options);
+    }
+  }
+  
+  // モックレスポンス（fetchが利用できない環境用）
+  getMockResponse(endpoint, options) {
+    // TypeScriptでは: private getMockResponse(endpoint: string, options: RequestInit): any
+    
+    console.log("モック API 呼び出し:", options.method || 'GET', endpoint);
+    
+    // 簡単なモックデータを返す
+    return {
+      success: true,
+      data: { message: "モックレスポンス: " + endpoint },
+      timestamp: new Date().toISOString()
+    };
+  }
+  
+  // protected HTTP メソッド
+  get(endpoint, params) {
+    // TypeScriptでは: protected get<T>(endpoint: string, params?: Record<string, any>): Promise<T>
+    let url = endpoint;
+    if (params) {
+      let searchParams = new URLSearchParams();
+      Object.keys(params).forEach(key => {
+        if (params[key] !== undefined && params[key] !== null) {
+          searchParams.append(key, params[key].toString());
+        }
+      });
+      url += "?" + searchParams.toString();
+    }
+    return this.request(url);
+  }
+  
+  post(endpoint, data) {
+    // TypeScriptでは: protected post<T>(endpoint: string, data?: any): Promise<T>
+    return this.request(endpoint, {
+      method: 'POST',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+  
+  put(endpoint, data) {
+    // TypeScriptでは: protected put<T>(endpoint: string, data?: any): Promise<T>
+    return this.request(endpoint, {
+      method: 'PUT',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+  
+  patch(endpoint, data) {
+    // TypeScriptでは: protected patch<T>(endpoint: string, data?: any): Promise<T>
+    return this.request(endpoint, {
+      method: 'PATCH',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+  
+  delete(endpoint) {
+    // TypeScriptでは: protected delete<T>(endpoint: string): Promise<T>
+    return this.request(endpoint, { method: 'DELETE' });
+  }
+}
+
+// TODO: 4. ブログAPIクライアントを実装してください
+
+class BlogApiClient extends HttpClient {
+  constructor(baseUrl, authToken) {
+    // TypeScriptでは: constructor(baseUrl: string, authToken?: string)
+    let headers = {};
+    if (authToken) {
+      headers.Authorization = "Bearer " + authToken;
+    }
+    super(baseUrl, headers);
+  }
+  
+  // ブログ記事関連のAPI
+  async getPosts(filters = {}) {
+    // TypeScriptでは: async getPosts(filters?: { authorId?: string; tags?: string[]; search?: string; page?: number; limit?: number; }): Promise<ApiResponse<BlogPost[]>>
+    return this.get('/posts', filters);
+  }
+  
+  async getPost(id) {
+    // TypeScriptでは: async getPost(id: string): Promise<ApiResponse<BlogPost>>
+    return this.get("/posts/" + id);
+  }
+  
+  async createPost(postData) {
+    // TypeScriptでは: async createPost(postData: { title: string; content: string; excerpt?: string; tags?: string[]; }): Promise<ApiResponse<BlogPost>>
+    return this.post('/posts', postData);
+  }
+  
+  async updatePost(id, updateData) {
+    // TypeScriptでは: async updatePost(id: string, updateData: { title?: string; content?: string; excerpt?: string; tags?: string[]; }): Promise<ApiResponse<BlogPost>>
+    return this.patch("/posts/" + id, updateData);
+  }
+  
+  async publishPost(id) {
+    // TypeScriptでは: async publishPost(id: string): Promise<ApiResponse<BlogPost>>
+    return this.post("/posts/" + id + "/publish");
+  }
+  
+  async unpublishPost(id) {
+    // TypeScriptでは: async unpublishPost(id: string): Promise<ApiResponse<BlogPost>>
+    return this.post("/posts/" + id + "/unpublish");
+  }
+  
+  async deletePost(id) {
+    // TypeScriptでは: async deletePost(id: string): Promise<ApiResponse<void>>
+    return this.delete("/posts/" + id);
+  }
+  
+  // ユーザー関連のAPI
+  async getUsers() {
+    // TypeScriptでは: async getUsers(): Promise<ApiResponse<User[]>>
+    return this.get('/users');
+  }
+  
+  async getUser(id) {
+    // TypeScriptでは: async getUser(id: string): Promise<ApiResponse<User>>
+    return this.get("/users/" + id);
+  }
+  
+  async createUser(userData) {
+    // TypeScriptでは: async createUser(userData: { name: string; email: string; bio?: string; }): Promise<ApiResponse<User>>
+    return this.post('/users', userData);
+  }
+  
+  // コメント関連のAPI
+  async getPostComments(postId) {
+    // TypeScriptでは: async getPostComments(postId: string): Promise<ApiResponse<Comment[]>>
+    return this.get("/posts/" + postId + "/comments");
+  }
+  
+  async createComment(postId, content) {
+    // TypeScriptでは: async createComment(postId: string, content: string): Promise<ApiResponse<Comment>>
+    return this.post("/posts/" + postId + "/comments", { content });
+  }
+  
+  async deleteComment(commentId) {
+    // TypeScriptでは: async deleteComment(commentId: string): Promise<ApiResponse<void>>
+    return this.delete("/comments/" + commentId);
+  }
+}
+
+// TODO: 5. サービス層を実装してください
+
+class BlogService {
+  constructor(apiClient) {
+    // TypeScriptでは: constructor(private apiClient: BlogApiClient)
+    this.apiClient = apiClient;
+  }
+  
+  // 公開済み記事を取得
+  async getPublishedPosts(page = 1, limit = 10) {
+    // TypeScriptでは: async getPublishedPosts(page: number = 1, limit: number = 10): Promise<BlogPost[]>
+    try {
+      let response = await this.apiClient.getPosts({
+        published: true,
+        page: page,
+        limit: limit
+      });
+      
+      return response.success ? response.data : [];
+    } catch (error) {
+      console.error('公開記事取得エラー:', error);
+      return [];
+    }
+  }
+  
+  // 記事を検索
+  async searchPosts(query, tags = []) {
+    // TypeScriptでは: async searchPosts(query: string, tags: string[] = []): Promise<BlogPost[]>
+    try {
+      let filters = { search: query };
+      if (tags.length > 0) {
+        filters.tags = tags;
+      }
+      
+      let response = await this.apiClient.getPosts(filters);
+      return response.success ? response.data : [];
+    } catch (error) {
+      console.error('記事検索エラー:', error);
+      return [];
+    }
+  }
+  
+  // 下書きを作成
+  async createDraft(title, content, tags = []) {
+    // TypeScriptでは: async createDraft(title: string, content: string, tags: string[] = []): Promise<BlogPost | null>
+    try {
+      let postData = {
+        title: title,
+        content: content,
+        excerpt: content.substring(0, 100) + "...",
+        tags: tags
+      };
+      
+      let response = await this.apiClient.createPost(postData);
+      return response.success ? response.data : null;
+    } catch (error) {
+      console.error('下書き作成エラー:', error);
+      return null;
+    }
+  }
+  
+  // 記事を公開
+  async publishDraft(postId) {
+    // TypeScriptでは: async publishDraft(postId: string): Promise<boolean>
+    try {
+      let response = await this.apiClient.publishPost(postId);
+      return response.success;
+    } catch (error) {
+      console.error('記事公開エラー:', error);
+      return false;
+    }
+  }
+}
+
+class UserService {
+  constructor(apiClient) {
+    // TypeScriptでは: constructor(private apiClient: BlogApiClient)
+    this.apiClient = apiClient;
+  }
+  
+  // 全ユーザーを取得
+  async getAllUsers() {
+    // TypeScriptでは: async getAllUsers(): Promise<User[]>
+    try {
+      let response = await this.apiClient.getUsers();
+      return response.success ? response.data : [];
+    } catch (error) {
+      console.error('ユーザー取得エラー:', error);
+      return [];
+    }
+  }
+  
+  // ユーザーを作成
+  async createUser(name, email, bio = '') {
+    // TypeScriptでは: async createUser(name: string, email: string, bio: string = ''): Promise<User | null>
+    try {
+      let userData = { name, email, bio };
+      let response = await this.apiClient.createUser(userData);
+      return response.success ? response.data : null;
+    } catch (error) {
+      console.error('ユーザー作成エラー:', error);
+      return null;
+    }
+  }
+  
+  // ユーザープロフィールを取得
+  async getUserProfile(userId) {
+    // TypeScriptでは: async getUserProfile(userId: string): Promise<User | null>
+    try {
+      let response = await this.apiClient.getUser(userId);
+      return response.success ? response.data : null;
+    } catch (error) {
+      console.error('ユーザープロフィール取得エラー:', error);
+      return null;
+    }
+  }
+}
+
+class CommentService {
+  constructor(apiClient) {
+    // TypeScriptでは: constructor(private apiClient: BlogApiClient)
+    this.apiClient = apiClient;
+  }
+  
+  // 記事のコメントを取得
+  async getPostComments(postId) {
+    // TypeScriptでは: async getPostComments(postId: string): Promise<Comment[]>
+    try {
+      let response = await this.apiClient.getPostComments(postId);
+      return response.success ? response.data : [];
+    } catch (error) {
+      console.error('コメント取得エラー:', error);
+      return [];
+    }
+  }
+  
+  // コメントを追加
+  async addComment(postId, content) {
+    // TypeScriptでは: async addComment(postId: string, content: string): Promise<Comment | null>
+    try {
+      let response = await this.apiClient.createComment(postId, content);
+      return response.success ? response.data : null;
+    } catch (error) {
+      console.error('コメント追加エラー:', error);
+      return null;
+    }
+  }
+}
+
+// TODO: 6. ブログアプリケーションクラスを作成してください
+
+class BlogApp {
+  constructor(apiBaseUrl, authToken) {
+    // TypeScriptでは: constructor(apiBaseUrl: string, authToken?: string)
+    this.apiClient = new BlogApiClient(apiBaseUrl, authToken);
+    this.blogService = new BlogService(this.apiClient);
+    this.userService = new UserService(this.apiClient);
+    this.commentService = new CommentService(this.apiClient);
+  }
+  
+  // アプリケーションの初期化
+  async initialize() {
+    console.log("=== ブログアプリケーション初期化 ===");
+    
+    try {
+      // ユーザー一覧を取得
+      let users = await this.userService.getAllUsers();
+      console.log("登録ユーザー数:", users.length);
+      
+      // 公開記事を取得
+      let posts = await this.blogService.getPublishedPosts(1, 5);
+      console.log("公開記事数:", posts.length);
+      
+      return true;
+    } catch (error) {
+      console.error("初期化エラー:", error);
+      return false;
+    }
+  }
+  
+  // 記事作成のデモ
+  async createPostDemo() {
+    console.log("\\n=== 記事作成デモ ===");
+    
+    // 新しい記事を作成
+    let newPost = await this.blogService.createDraft(
+      "TypeScriptで型安全なAPIクライアントを作る方法",
+      "この記事では、TypeScriptを使って型安全なAPIクライアントを作成する方法について詳しく解説します。まず、API レスポンスの型定義から始めて、HTTPクライアントの実装、エラーハンドリング、そしてサービス層の設計まで、実践的なアプローチで学んでいきます。",
+      ["TypeScript", "API", "型安全性", "ウェブ開発"]
+    );
+    
+    if (newPost) {
+      console.log("✅ 下書きを作成しました:", newPost.title);
+      
+      // 作成した記事を公開
+      let published = await this.blogService.publishDraft(newPost.id);
+      if (published) {
+        console.log("✅ 記事を公開しました");
+      } else {
+        console.log("❌ 記事の公開に失敗しました");
+      }
+    } else {
+      console.log("❌ 下書きの作成に失敗しました");
+    }
+  }
+  
+  // 記事検索のデモ
+  async searchPostsDemo() {
+    console.log("\\n=== 記事検索デモ ===");
+    
+    // キーワード検索
+    let searchResults = await this.blogService.searchPosts("TypeScript");
+    console.log("'TypeScript'の検索結果:", searchResults.length + "件");
+    
+    // タグ検索
+    let tagResults = await this.blogService.searchPosts("", ["API", "型安全性"]);
+    console.log("タグ検索結果:", tagResults.length + "件");
+  }
+  
+  // ユーザー作成のデモ
+  async createUserDemo() {
+    console.log("\\n=== ユーザー作成デモ ===");
+    
+    let newUser = await this.userService.createUser(
+      "田中太郎",
+      "tanaka@example.com",
+      "TypeScriptとReactが好きなフロントエンドエンジニアです"
+    );
+    
+    if (newUser) {
+      console.log("✅ ユーザーを作成しました:", newUser.name);
+      
+      // 作成したユーザーのプロフィールを取得
+      let profile = await this.userService.getUserProfile(newUser.id);
+      if (profile) {
+        console.log("ユーザープロフィール:", profile.name, "-", profile.bio);
+      }
+    } else {
+      console.log("❌ ユーザーの作成に失敗しました");
+    }
+  }
+  
+  // コメント機能のデモ
+  async commentDemo() {
+    console.log("\\n=== コメント機能デモ ===");
+    
+    // 記事一覧を取得
+    let posts = await this.blogService.getPublishedPosts(1, 1);
+    
+    if (posts.length > 0) {
+      let post = posts[0];
+      console.log("記事:", post.title);
+      
+      // コメントを追加
+      let newComment = await this.commentService.addComment(
+        post.id,
+        "素晴らしい記事ですね！TypeScriptの型安全性についてとても勉強になりました。"
+      );
+      
+      if (newComment) {
+        console.log("✅ コメントを追加しました");
+        
+        // 記事のコメント一覧を取得
+        let comments = await this.commentService.getPostComments(post.id);
+        console.log("この記事のコメント数:", comments.length);
+      } else {
+        console.log("❌ コメントの追加に失敗しました");
+      }
+    } else {
+      console.log("記事が見つかりません");
+    }
+  }
+}
+
+// TODO: 7. アプリケーションをテストしてください
+
+console.log("=== ブログAPI設計演習を開始します ===");
+
+async function runBlogAppDemo() {
+  // ブログアプリケーションを初期化
+  let app = new BlogApp("https://api.blog.example.com", "demo-auth-token");
+  
+  // 初期化
+  let initialized = await app.initialize();
+  if (!initialized) {
+    console.log("❌ アプリケーションの初期化に失敗しました");
+    return;
+  }
+  
+  // 各機能のデモを実行
+  await app.createUserDemo();
+  await app.createPostDemo();
+  await app.searchPostsDemo();
+  await app.commentDemo();
+  
+  console.log("\\n=== すべてのデモが完了しました ===");
+  console.log("学習したAPI設計の要素:");
+  console.log("- HTTPクライアントの基底クラス設計");
+  console.log("- API レスポンス・エラーの型定義");
+  console.log("- エンティティ型の設計");
+  console.log("- サービス層による抽象化");
+  console.log("- エラーハンドリングとログ出力");
+  console.log("- RESTful APIの設計パターン");
+}
+
+// デモを実行
+runBlogAppDemo().catch(console.error);`,
+
+  exerciseHints: [
+    "API レスポンスの型定義では、成功・失敗の両方のケースを考慮しましょう",
+    "HTTPクライアントの基底クラスで共通処理をまとめることで再利用性が向上します",
+    "サービス層でAPIクライアントをラップすることでビジネスロジックを分離できます",
+    "エラーハンドリングは各層で適切に行い、ユーザーにとって有用な情報を提供しましょう",
+    "実際のAPIが利用できない環境ではモックデータを使って動作を確認できます"
+  ],
+
+  testCases: [
+    {
+      id: "test1",
+      description: "HttpClientクラスが正しく動作する",
+      testFunction: "() => { let client = new HttpClient('https://api.example.com'); return typeof client.get === 'function' && typeof client.post === 'function'; }"
+    },
+    {
+      id: "test2",
+      description: "BlogApiClientクラスが正しく動作する",
+      testFunction: "() => { let client = new BlogApiClient('https://api.example.com'); return typeof client.getPosts === 'function' && typeof client.createPost === 'function'; }"
+    },
+    {
+      id: "test3",
+      description: "BlogServiceクラスが正しく動作する",
+      testFunction: "() => { let apiClient = new BlogApiClient('https://api.example.com'); let service = new BlogService(apiClient); return typeof service.getPublishedPosts === 'function'; }"
+    },
+    {
+      id: "test4",
+      description: "UserServiceクラスが正しく動作する",
+      testFunction: "() => { let apiClient = new BlogApiClient('https://api.example.com'); let service = new UserService(apiClient); return typeof service.getAllUsers === 'function'; }"
+    },
+    {
+      id: "test5",
+      description: "BlogAppクラスが正しく動作する",
+      testFunction: "() => { let app = new BlogApp('https://api.example.com'); return typeof app.initialize === 'function' && app.blogService && app.userService; }"
+    }
+  ],
+
+  exerciseDifficulty: 'hard'
 } as const

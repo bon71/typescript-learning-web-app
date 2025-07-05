@@ -377,5 +377,416 @@ function hasPermission(role: UserRole, permission: string): boolean {
 
 console.log(hasPermission('admin', 'delete')); // true
 console.log(hasPermission('viewer', 'write')); // false`,
-  explanation: "Utility Typesは既存の型を変換して新しい型を作る強力な機能です。Partial、Required、Pick、Omit、Record、Exclude、Extract、NonNullable、ReturnType、Parametersなど多様な変換が可能で、これらを組み合わることで柔軟で再利用可能な型定義が実現できます。フォームやAPI、コンポーネントの型定義において威力を発揮し、型安全性を保ちながらコードの保守性を大幅に向上させます。"
+  explanation: "Utility Typesは既存の型を変換して新しい型を作る強力な機能です。Partial、Required、Pick、Omit、Record、Exclude、Extract、NonNullable、ReturnType、Parametersなど多様な変換が可能で、これらを組み合わることで柔軟で再利用可能な型定義が実現できます。フォームやAPI、コンポーネントの型定義において威力を発揮し、型安全性を保ちながらコードの保守性を大幅に向上させます。",
+
+  // 演習機能追加
+  exerciseCode: `// 演習: ユーザー管理システムを作成しよう
+// Utility Typesを使って柔軟で型安全なユーザー管理システムを実装してください
+
+// TODO: 1. 基本的なユーザー型を定義してください
+// TypeScriptでは以下のようなインターフェースを定義
+// interface User {
+//   id: string;
+//   name: string;
+//   email: string;
+//   age: number;
+//   role: 'admin' | 'user' | 'guest';
+//   isActive: boolean;
+//   createdAt: Date;
+//   updatedAt: Date;
+//   profile?: {
+//     avatar?: string;
+//     bio?: string;
+//     location?: string;
+//   };
+// }
+
+// JavaScriptでは型情報なしでユーザーオブジェクトを作成
+
+// TODO: 2. Partial を使った更新機能を実装してください
+function updateUser(userId, updates) {
+  // TypeScriptでは: function updateUser(userId: string, updates: Partial<User>): User
+  
+  // 既存のユーザー情報を取得（モック）
+  let existingUser = getUserById(userId);
+  
+  if (!existingUser) {
+    throw new Error("ユーザーが見つかりません: " + userId);
+  }
+  
+  // 部分的な更新を適用
+  let updatedUser = {
+    ...existingUser,
+    ...updates,
+    updatedAt: new Date()
+  };
+  
+  console.log("ユーザー更新:", updatedUser.name);
+  return updatedUser;
+}
+
+// TODO: 3. Pick を使った公開プロフィール機能を実装してください
+function getPublicProfile(user) {
+  // TypeScriptでは: function getPublicProfile(user: User): Pick<User, 'id' | 'name' | 'profile'>
+  
+  return {
+    id: user.id,
+    name: user.name,
+    profile: user.profile || {}
+  };
+}
+
+// TODO: 4. Omit を使った新規作成機能を実装してください
+function createUser(userData) {
+  // TypeScriptでは: function createUser(userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): User
+  
+  let newUser = {
+    ...userData,
+    id: "user_" + Math.random().toString(36).substr(2, 9),
+    createdAt: new Date(),
+    updatedAt: new Date()
+  };
+  
+  console.log("新規ユーザー作成:", newUser.name);
+  return newUser;
+}
+
+// TODO: 5. Record を使った権限管理システムを実装してください
+
+// 権限の定義
+let permissions = {
+  admin: ["read", "write", "delete", "manage_users", "manage_system"],
+  user: ["read", "write"],
+  guest: ["read"]
+};
+// TypeScriptでは: const permissions: Record<'admin' | 'user' | 'guest', string[]>
+
+// ユーザーの権限を確認する関数
+function hasPermission(user, permission) {
+  // TypeScriptでは: function hasPermission(user: User, permission: string): boolean
+  
+  let userPermissions = permissions[user.role] || [];
+  return userPermissions.includes(permission);
+}
+
+// TODO: 6. Required を使った設定管理機能を実装してください
+
+// オプションの設定
+let defaultConfig = {
+  theme: "light",
+  language: "ja",
+  notifications: true,
+  autoSave: true
+};
+// TypeScriptでは: interface Config { theme?: string; language?: string; notifications?: boolean; autoSave?: boolean; }
+
+// 設定を検証する関数
+function validateConfig(config) {
+  // TypeScriptでは: function validateConfig(config: Required<Config>): boolean
+  
+  let requiredFields = ["theme", "language", "notifications", "autoSave"];
+  
+  for (let field of requiredFields) {
+    if (config[field] === undefined) {
+      console.log("必須フィールドが不足:", field);
+      return false;
+    }
+  }
+  
+  return true;
+}
+
+// TODO: 7. ユーザー検索・フィルタリング機能を実装してください
+
+// ユーザー検索の条件
+function searchUsers(users, criteria) {
+  // TypeScriptでは: function searchUsers(users: User[], criteria: Partial<Pick<User, 'name' | 'email' | 'role' | 'isActive'>>): User[]
+  
+  return users.filter(user => {
+    // 名前での検索
+    if (criteria.name && !user.name.toLowerCase().includes(criteria.name.toLowerCase())) {
+      return false;
+    }
+    
+    // メールでの検索
+    if (criteria.email && !user.email.toLowerCase().includes(criteria.email.toLowerCase())) {
+      return false;
+    }
+    
+    // ロールでの検索
+    if (criteria.role && user.role !== criteria.role) {
+      return false;
+    }
+    
+    // アクティブ状態での検索
+    if (criteria.isActive !== undefined && user.isActive !== criteria.isActive) {
+      return false;
+    }
+    
+    return true;
+  });
+}
+
+// TODO: 8. 統計情報を計算する機能を実装してください
+
+// ユーザー統計の型定義
+// TypeScriptでは: interface UserStats { totalUsers: number; activeUsers: number; roleDistribution: Record<string, number>; }
+
+function calculateUserStats(users) {
+  // TypeScriptでは: function calculateUserStats(users: User[]): UserStats
+  
+  let stats = {
+    totalUsers: users.length,
+    activeUsers: users.filter(user => user.isActive).length,
+    roleDistribution: {}
+  };
+  
+  // ロール別の分布を計算
+  users.forEach(user => {
+    if (stats.roleDistribution[user.role]) {
+      stats.roleDistribution[user.role]++;
+    } else {
+      stats.roleDistribution[user.role] = 1;
+    }
+  });
+  
+  return stats;
+}
+
+// TODO: 9. ユーザー管理クラスを実装してください
+
+class UserManager {
+  constructor() {
+    this.users = [];
+  }
+  
+  // ユーザー追加
+  addUser(userData) {
+    // TypeScriptでは: addUser(userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): User
+    let newUser = createUser(userData);
+    this.users.push(newUser);
+    return newUser;
+  }
+  
+  // ユーザー更新
+  updateUser(userId, updates) {
+    // TypeScriptでは: updateUser(userId: string, updates: Partial<User>): User | null
+    let index = this.users.findIndex(user => user.id === userId);
+    if (index === -1) {
+      return null;
+    }
+    
+    this.users[index] = updateUser(userId, updates);
+    return this.users[index];
+  }
+  
+  // ユーザー削除
+  deleteUser(userId) {
+    // TypeScriptでは: deleteUser(userId: string): boolean
+    let index = this.users.findIndex(user => user.id === userId);
+    if (index === -1) {
+      return false;
+    }
+    
+    this.users.splice(index, 1);
+    return true;
+  }
+  
+  // ユーザー検索
+  searchUsers(criteria) {
+    // TypeScriptでは: searchUsers(criteria: Partial<Pick<User, 'name' | 'email' | 'role' | 'isActive'>>): User[]
+    return searchUsers(this.users, criteria);
+  }
+  
+  // 統計情報取得
+  getStats() {
+    // TypeScriptでは: getStats(): UserStats
+    return calculateUserStats(this.users);
+  }
+  
+  // 全ユーザー取得
+  getAllUsers() {
+    // TypeScriptでは: getAllUsers(): User[]
+    return [...this.users];
+  }
+  
+  // 公開プロフィール取得
+  getPublicProfile(userId) {
+    // TypeScriptでは: getPublicProfile(userId: string): Pick<User, 'id' | 'name' | 'profile'> | null
+    let user = this.users.find(user => user.id === userId);
+    if (!user) {
+      return null;
+    }
+    
+    return getPublicProfile(user);
+  }
+}
+
+// TODO: 10. ヘルパー関数を実装してください
+
+// ユーザーを取得する関数（モック）
+function getUserById(userId) {
+  // TypeScriptでは: function getUserById(userId: string): User | null
+  // 実際の実装では、データベースから取得
+  let mockUsers = [
+    {
+      id: "user_001",
+      name: "田中太郎",
+      email: "tanaka@example.com",
+      age: 30,
+      role: "admin",
+      isActive: true,
+      createdAt: new Date("2023-01-01"),
+      updatedAt: new Date("2023-01-01"),
+      profile: {
+        avatar: "https://example.com/avatar1.jpg",
+        bio: "システム管理者です",
+        location: "東京"
+      }
+    },
+    {
+      id: "user_002",
+      name: "佐藤花子",
+      email: "sato@example.com",
+      age: 25,
+      role: "user",
+      isActive: true,
+      createdAt: new Date("2023-01-02"),
+      updatedAt: new Date("2023-01-02")
+    }
+  ];
+  
+  return mockUsers.find(user => user.id === userId) || null;
+}
+
+// TODO: 11. 実装をテストしてください
+
+console.log("=== Utility Types ユーザー管理システムテスト ===");
+
+// UserManagerのテスト
+let userManager = new UserManager();
+
+// 新規ユーザー作成
+console.log("\\n--- 新規ユーザー作成テスト ---");
+let newUser1 = userManager.addUser({
+  name: "鈴木次郎",
+  email: "suzuki@example.com",
+  age: 28,
+  role: "user",
+  isActive: true,
+  profile: {
+    bio: "フロントエンドエンジニアです"
+  }
+});
+
+let newUser2 = userManager.addUser({
+  name: "山田三郎",
+  email: "yamada@example.com",
+  age: 35,
+  role: "admin",
+  isActive: true
+});
+
+console.log("作成されたユーザー1:", newUser1.name);
+console.log("作成されたユーザー2:", newUser2.name);
+
+// ユーザー更新テスト
+console.log("\\n--- ユーザー更新テスト ---");
+let updatedUser = userManager.updateUser(newUser1.id, {
+  age: 29,
+  profile: {
+    bio: "シニアフロントエンドエンジニアです",
+    location: "大阪"
+  }
+});
+
+if (updatedUser) {
+  console.log("更新されたユーザー:", updatedUser.name, "年齢:", updatedUser.age);
+}
+
+// 検索テスト
+console.log("\\n--- ユーザー検索テスト ---");
+let adminUsers = userManager.searchUsers({ role: "admin" });
+console.log("管理者ユーザー:", adminUsers.map(u => u.name));
+
+let suzukiUsers = userManager.searchUsers({ name: "鈴木" });
+console.log("鈴木を含むユーザー:", suzukiUsers.map(u => u.name));
+
+// 統計情報テスト
+console.log("\\n--- 統計情報テスト ---");
+let stats = userManager.getStats();
+console.log("統計情報:");
+console.log("- 総ユーザー数:", stats.totalUsers);
+console.log("- アクティブユーザー数:", stats.activeUsers);
+console.log("- ロール分布:", stats.roleDistribution);
+
+// 公開プロフィールテスト
+console.log("\\n--- 公開プロフィールテスト ---");
+let publicProfile = userManager.getPublicProfile(newUser1.id);
+if (publicProfile) {
+  console.log("公開プロフィール:", publicProfile.name);
+  console.log("プロフィール情報:", publicProfile.profile);
+}
+
+// 権限テスト
+console.log("\\n--- 権限管理テスト ---");
+console.log("管理者の削除権限:", hasPermission(newUser2, "delete"));
+console.log("一般ユーザーの削除権限:", hasPermission(newUser1, "delete"));
+
+// 設定テスト
+console.log("\\n--- 設定管理テスト ---");
+let completeConfig = {
+  theme: "dark",
+  language: "en",
+  notifications: false,
+  autoSave: true
+};
+
+let incompleteConfig = {
+  theme: "light",
+  language: "ja"
+};
+
+console.log("完全な設定の検証:", validateConfig(completeConfig));
+console.log("不完全な設定の検証:", validateConfig(incompleteConfig));
+
+console.log("\\n=== すべてのテストが完了しました ===");`,
+
+  exerciseHints: [
+    "Partial<T>は全てのプロパティをオプションにします",
+    "Pick<T, K>は特定のプロパティのみを選択します",
+    "Omit<T, K>は特定のプロパティを除外します",
+    "Record<K, T>は動的なキーを持つオブジェクトを定義します",
+    "Required<T>は全てのプロパティを必須にします"
+  ],
+
+  testCases: [
+    {
+      id: "test1",
+      description: "updateUser関数が正しく動作する",
+      testFunction: "() => { let user = {id: '1', name: 'test', email: 'test@example.com', age: 30, role: 'user', isActive: true, createdAt: new Date(), updatedAt: new Date()}; let result = updateUser('1', {age: 31}); return result && result.age === 31; }"
+    },
+    {
+      id: "test2",
+      description: "getPublicProfile関数が正しく動作する",
+      testFunction: "() => { let user = {id: '1', name: 'test', email: 'test@example.com', profile: {bio: 'test'}}; let result = getPublicProfile(user); return result && result.id === '1' && result.name === 'test' && !result.email; }"
+    },
+    {
+      id: "test3",
+      description: "hasPermission関数が正しく動作する",
+      testFunction: "() => { let user = {role: 'admin'}; return hasPermission(user, 'delete') === true; }"
+    },
+    {
+      id: "test4",
+      description: "UserManagerクラスが正しく動作する",
+      testFunction: "() => { let manager = new UserManager(); let user = manager.addUser({name: 'test', email: 'test@example.com', age: 30, role: 'user', isActive: true}); return manager.getAllUsers().length === 1 && user.name === 'test'; }"
+    },
+    {
+      id: "test5",
+      description: "searchUsers関数が正しく動作する",
+      testFunction: "() => { let users = [{name: 'John', role: 'admin'}, {name: 'Jane', role: 'user'}]; let result = searchUsers(users, {role: 'admin'}); return result.length === 1 && result[0].name === 'John'; }"
+    }
+  ],
+
+  exerciseDifficulty: 'hard'
 } as const

@@ -1,382 +1,525 @@
 <template>
   <div class="exercise-panel">
-    <div class="exercise-header">
-      <div class="exercise-title">
-        <span class="exercise-icon">🎯</span>
-        <span>実践演習</span>
-      </div>
-      <div class="exercise-status">
-        <span v-if="isCompleted" class="status-completed">✅ 完了</span>
-        <span v-else-if="hasAttempted" class="status-attempted">📝 挑戦中</span>
-        <span v-else class="status-not-started">🏁 未開始</span>
-      </div>
+    <!-- モード切り替えタブ -->
+    <div class="mode-toggle">
+      <button
+        :class="{ active: mode === 'learn' }"
+        @click="mode = 'learn'"
+        class="mode-button"
+      >
+        📚 学習モード
+      </button>
+      <button
+        :class="{ active: mode === 'exercise' }"
+        @click="mode = 'exercise'"
+        class="mode-button"
+      >
+        💻 演習モード
+      </button>
     </div>
 
-    <div class="exercise-content">
-      <!-- 問題説明 -->
-      <div class="exercise-description">
-        <h4>📋 問題</h4>
-        <p>{{ exercise.description }}</p>
-      </div>
-
-      <!-- ヒント機能 -->
-      <div v-if="exercise.hints.length > 0" class="hints-section">
-        <button 
-          @click="toggleHints" 
-          class="hints-toggle"
-          :class="{ 'active': showHints }"
-        >
-          💡 ヒント ({{ exercise.hints.length }}個)
-          <span class="toggle-icon">{{ showHints ? '▼' : '▶' }}</span>
-        </button>
-        
-        <Transition name="slide-down">
-          <div v-if="showHints" class="hints-list">
-            <div 
-              v-for="(hint, index) in visibleHints" 
-              :key="index"
-              class="hint-item"
-            >
-              <span class="hint-number">{{ index + 1 }}.</span>
-              <span class="hint-text">{{ hint }}</span>
-            </div>
-            
-            <button 
-              v-if="visibleHints.length < exercise.hints.length"
-              @click="showMoreHints"
-              class="show-more-hints"
-            >
-              + さらにヒントを表示 ({{ exercise.hints.length - visibleHints.length }}個)
-            </button>
-          </div>
-        </Transition>
-      </div>
-
-      <!-- エディタエリア -->
-      <div class="exercise-editor">
-        <div class="editor-header">
-          <span class="editor-title">💻 あなたの解答</span>
-          <div class="editor-controls">
-            <button @click="resetToStartCode" class="control-btn reset-btn">
-              🔄 初期コードに戻す
-            </button>
-            <button @click="formatCode" class="control-btn format-btn">
-              ✨ フォーマット
-            </button>
-            <button @click="runTests" :disabled="isRunning" class="control-btn test-btn">
-              {{ isRunning ? '⏳ 実行中...' : '🧪 テスト実行' }}
-            </button>
-          </div>
+    <!-- 学習モード（既存コンテンツ） -->
+    <div v-if="mode === 'learn'" class="learn-content">
+      <div class="content-header">
+        <h3>{{ lesson.title }}</h3>
+        <div class="difficulty-badge" :class="lesson.difficulty">
+          {{ getDifficultyLabel(lesson.difficulty) }}
         </div>
+      </div>
+      
+      <div class="goal-section">
+        <p><strong>目標:</strong> {{ lesson.goal }}</p>
+        <p><strong>タスク:</strong> {{ lesson.task }}</p>
+      </div>
 
-        <MonacoCodeEditor
-          v-model:value="userCode"
-          language="typescript"
-          theme="vs-dark"
-          height="300px"
-          @change="onCodeChange"
-          @mount="onEditorMount"
-          ref="exerciseEditor"
+      <!-- 既存のBasicCodeEditor（学習用） -->
+      <div class="code-editor">
+        <BasicCodeEditor
+          :value="lesson.sampleCode || ''"
+          :height="'400px'"
         />
       </div>
 
-      <!-- テスト結果表示 -->
-      <Transition name="fade">
-        <div v-if="testResults" class="test-results">
-          <div class="results-header">
-            <span v-if="testResults.allPassed" class="results-success">
-              ✅ すべてのテストに合格！
-            </span>
-            <span v-else class="results-partial">
-              📊 {{ testResults.passedCount }}/{{ testResults.totalCount }} テスト合格
-            </span>
-            <span class="execution-time">({{ testResults.executionTime }}ms)</span>
+      <div class="explanation">
+        <h4>解説</h4>
+        <p>{{ lesson.explanation }}</p>
+      </div>
+    </div>
+
+    <!-- 演習モード -->
+    <div v-if="mode === 'exercise' && lesson.exerciseCode" class="exercise-content">
+      <div class="exercise-header">
+        <div class="exercise-title">
+          <span class="exercise-icon">🎯</span>
+          <span>{{ lesson.title }} - 実践演習</span>
+        </div>
+        <div class="exercise-status">
+          <span v-if="isCompleted" class="status-completed">✅ 完了</span>
+          <span v-else-if="hasAttempted" class="status-attempted">📝 挑戦中</span>
+          <span v-else class="status-not-started">🏁 未開始</span>
+        </div>
+      </div>
+
+      <div class="exercise-layout">
+        <!-- メインエディタエリア -->
+        <div class="editor-area" :class="{ 'fullscreen': isFullscreen }">
+          <div class="exercise-editor" :class="{ 'fullscreen-editor': isFullscreen }">
+            <div class="editor-header">
+              <span class="editor-title">💻 あなたの解答</span>
+              <div class="editor-controls">
+                <button @click="resetToStartCode" class="control-btn reset-btn">
+                  🔄 初期コードに戻す
+                </button>
+                <button @click="runTests" :disabled="isRunning" class="control-btn test-btn">
+                  {{ isRunning ? '⏳ 実行中...' : '🧪 テスト実行' }}
+                </button>
+                <button @click="toggleFullscreen" class="control-btn fullscreen-btn">
+                  {{ isFullscreen ? '🗗 通常表示' : '🗖 拡大表示' }}
+                </button>
+              </div>
+            </div>
+
+            <BasicCodeEditor
+              v-model:value="userCode"
+              :height="isFullscreen ? 'calc(100vh - 120px)' : '400px'"
+              @run="handleCodeExecution"
+            />
           </div>
 
-          <div class="test-cases">
-            <div 
-              v-for="(result, index) in testResults.results" 
-              :key="index"
-              :class="['test-case', { 'passed': result.passed, 'failed': !result.passed }]"
-            >
-              <div class="test-case-header">
-                <span class="test-status">{{ result.passed ? '✅' : '❌' }}</span>
-                <span class="test-description">{{ result.description }}</span>
+          <!-- 実行結果表示 -->
+          <div v-if="exerciseResult && !isFullscreen" class="exercise-result">
+            <h4>実行結果</h4>
+            <div class="output-section">
+              <div v-for="(output, index) in exerciseResult.output" :key="index" class="output-line">
+                {{ output }}
               </div>
-              
-              <div v-if="!result.passed" class="test-details">
-                <div class="test-input">
-                  <strong>入力:</strong> {{ formatTestValue(result.input) }}
-                </div>
-                <div class="test-expected">
-                  <strong>期待値:</strong> {{ formatTestValue(result.expected) }}
-                </div>
-                <div class="test-actual">
-                  <strong>実際の値:</strong> {{ formatTestValue(result.actual) }}
-                </div>
-                <div v-if="result.error" class="test-error">
-                  <strong>エラー:</strong> {{ result.error }}
-                </div>
+              <div v-for="(error, index) in exerciseResult.errors" :key="index" class="error-line">
+                ❌ {{ error }}
               </div>
             </div>
           </div>
 
-          <!-- 実行エラー表示 -->
-          <div v-if="testResults.executionError" class="execution-error">
-            <div class="error-header">❌ 実行エラー</div>
-            <div class="error-message">{{ testResults.executionError }}</div>
+          <!-- テスト結果表示 -->
+          <div v-if="testResults.length > 0 && !isFullscreen" class="test-results">
+            <h4>テスト結果</h4>
+            <div class="test-list">
+              <div 
+                v-for="result in testResults" 
+                :key="result.testId"
+                class="test-item"
+                :class="{ passed: result.passed, failed: !result.passed }"
+              >
+                <span class="test-icon">{{ result.passed ? '✅' : '❌' }}</span>
+                <span class="test-description">{{ result.description }}</span>
+                <div v-if="result.errorMessage" class="test-error">
+                  {{ result.errorMessage }}
+                </div>
+              </div>
+            </div>
+            
+            <!-- 成功メッセージ -->
+            <div v-if="isCompleted" class="success-message">
+              🎉 すべてのテストに合格しました！素晴らしい実装です！
+            </div>
           </div>
         </div>
-      </Transition>
 
-      <!-- 解答例表示 -->
-      <div v-if="isCompleted || showSolution" class="solution-section">
-        <div class="solution-header">
-          <span class="solution-title">💡 解答例</span>
-          <button 
-            v-if="!isCompleted && !showSolution"
-            @click="showSolution = true"
-            class="show-solution-btn"
-          >
-            解答を見る
+        <!-- サイドバー（ヒント） -->
+        <div class="sidebar" v-show="!isFullscreen">
+          <HintSystem 
+            v-if="lesson.exerciseHints" 
+            :hints="lesson.exerciseHints"
+            :maxRevealed="revealedHints"
+            @reveal-hint="revealNextHint"
+          />
+        </div>
+      </div>
+
+      <!-- フルスクリーンモード時の結果表示 -->
+      <div v-if="isFullscreen" class="fullscreen-results">
+        <div class="fullscreen-results-header">
+          <h3>📊 実行結果とテスト</h3>
+          <button @click="toggleFullscreen" class="close-fullscreen-btn">
+            ❌ フルスクリーンを閉じる
           </button>
         </div>
         
-        <div v-if="isCompleted || showSolution" class="solution-content">
-          <pre class="solution-code"><code>{{ exercise.solution }}</code></pre>
+        <div class="fullscreen-results-content">
+          <!-- 実行結果 -->
+          <div v-if="exerciseResult" class="fullscreen-exercise-result">
+            <h4>🖥️ 実行結果</h4>
+            <div class="output-section">
+              <div v-for="(output, index) in exerciseResult.output" :key="index" class="output-line">
+                {{ output }}
+              </div>
+              <div v-for="(error, index) in exerciseResult.errors" :key="index" class="error-line">
+                ❌ {{ error }}
+              </div>
+            </div>
+          </div>
+
+          <!-- テスト結果 -->
+          <div v-if="testResults.length > 0" class="fullscreen-test-results">
+            <h4>🧪 テスト結果</h4>
+            <div class="test-list">
+              <div 
+                v-for="result in testResults" 
+                :key="result.testId"
+                class="test-item"
+                :class="{ passed: result.passed, failed: !result.passed }"
+              >
+                <span class="test-icon">{{ result.passed ? '✅' : '❌' }}</span>
+                <span class="test-description">{{ result.description }}</span>
+                <div v-if="result.errorMessage" class="test-error">
+                  {{ result.errorMessage }}
+                </div>
+              </div>
+            </div>
+            
+            <!-- 成功メッセージ -->
+            <div v-if="isCompleted" class="success-message">
+              🎉 すべてのテストに合格しました！素晴らしい実装です！
+            </div>
+          </div>
+
+          <!-- ヒント表示 -->
+          <div v-if="lesson.exerciseHints" class="fullscreen-hints">
+            <h4>💡 ヒント</h4>
+            <HintSystem 
+              :hints="lesson.exerciseHints"
+              :maxRevealed="revealedHints"
+              @reveal-hint="revealNextHint"
+            />
+          </div>
         </div>
+      </div>
+    </div>
+
+    <!-- 演習モードがない場合の表示 -->
+    <div v-if="mode === 'exercise' && !lesson.exerciseCode" class="no-exercise">
+      <div class="no-exercise-content">
+        <h3>💡 演習問題準備中</h3>
+        <p>このレッスンの演習問題は現在準備中です。</p>
+        <p>学習モードで内容を確認してください。</p>
+        <button @click="mode = 'learn'" class="back-to-learn">
+          📚 学習モードに戻る
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import MonacoCodeEditor from './MonacoCodeEditor.vue'
-import type { ExerciseProblem, TestCase } from '@/types/learning'
-import type * as monaco from 'monaco-editor'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import type { LessonContent, TestResult, ExerciseResult } from '@/types/content'
+import BasicCodeEditor from './BasicCodeEditor.vue'
+import HintSystem from './HintSystem.vue'
 
 interface Props {
-  exercise: ExerciseProblem
-  isCompleted: boolean
+  lesson: LessonContent
 }
 
 interface Emits {
-  (e: 'exercise-completed'): void
-  (e: 'exercise-attempted'): void
+  (e: 'exercise-completed', day: number): void
+  (e: 'exercise-attempted', day: number): void
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 // 状態管理
-const userCode = ref(props.exercise.startCode)
+const mode = ref<'learn' | 'exercise'>('learn')
+const userCode = ref(props.lesson.exerciseCode || '')
 const isRunning = ref(false)
-const testResults = ref<TestResults | null>(null)
-const showHints = ref(false)
-const visibleHints = ref<string[]>([])
-const showSolution = ref(false)
+const testResults = ref<TestResult[]>([])
+const exerciseResult = ref<ExerciseResult | null>(null)
 const hasAttempted = ref(false)
-const exerciseEditor = ref<InstanceType<typeof MonacoCodeEditor> | null>(null)
-
-// テスト結果の型定義
-interface TestResults {
-  allPassed: boolean
-  passedCount: number
-  totalCount: number
-  executionTime: number
-  results: TestCaseResult[]
-  executionError?: string
-}
-
-interface TestCaseResult {
-  passed: boolean
-  description: string
-  input: any
-  expected: any
-  actual: any
-  error?: string
-}
+const revealedHints = ref(0)
+const isFullscreen = ref(false)
 
 // 計算プロパティ
 const isCompleted = computed(() => {
-  return testResults.value?.allPassed === true
+  return testResults.value.length > 0 && testResults.value.every(test => test.passed)
 })
 
-// メソッド
-const toggleHints = () => {
-  showHints.value = !showHints.value
-  if (showHints.value && visibleHints.value.length === 0) {
-    visibleHints.value = [props.exercise.hints[0]]
+// レッスンが変更されたときの処理
+watch(() => props.lesson, (newLesson) => {
+  userCode.value = newLesson.exerciseCode || ''
+  exerciseResult.value = null
+  testResults.value = []
+  revealedHints.value = 0
+  mode.value = 'learn'
+  hasAttempted.value = false
+  isFullscreen.value = false
+}, { immediate: true })
+
+// 難易度ラベルを取得する関数
+function getDifficultyLabel(difficulty?: string): string {
+  const labels = {
+    'beginner': '初級',
+    'intermediate': '中級', 
+    'advanced': '上級',
+    'easy': '簡単',
+    'medium': '普通',
+    'hard': '難しい'
+  }
+  return labels[difficulty as keyof typeof labels] || '不明'
+}
+
+// 演習リセット機能
+function resetToStartCode() {
+  userCode.value = props.lesson.exerciseCode || ''
+  exerciseResult.value = null
+  testResults.value = []
+  hasAttempted.value = false
+}
+
+// ヒント表示機能
+function revealNextHint() {
+  if (props.lesson.exerciseHints && revealedHints.value < props.lesson.exerciseHints.length) {
+    revealedHints.value++
   }
 }
 
-const showMoreHints = () => {
-  const nextIndex = visibleHints.value.length
-  if (nextIndex < props.exercise.hints.length) {
-    visibleHints.value.push(props.exercise.hints[nextIndex])
+// フルスクリーンモード切り替え機能
+function toggleFullscreen() {
+  isFullscreen.value = !isFullscreen.value
+  
+  // フルスクリーンの状態に応じてbodyのスクロールを制御
+  if (isFullscreen.value) {
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
   }
 }
 
-const resetToStartCode = () => {
-  userCode.value = props.exercise.startCode
-  testResults.value = null
+// BasicCodeEditorからのイベントハンドラ
+function handleCodeExecution(result: any) {
+  console.log('Code execution result:', result)
 }
 
-const formatCode = () => {
-  if (exerciseEditor.value) {
-    exerciseEditor.value.formatCode()
-  }
-}
-
-const onEditorMount = (editor: monaco.editor.IStandaloneCodeEditor) => {
-  setTimeout(() => editor.focus(), 100)
-}
-
-const onCodeChange = () => {
-  if (testResults.value) {
-    testResults.value = null
-  }
-}
-
-// 深い等価性チェック
-const deepEqual = (a: any, b: any): boolean => {
-  if (a === b) return true
-  if (a == null || b == null) return false
-  if (Array.isArray(a) && Array.isArray(b)) {
-    if (a.length !== b.length) return false
-    for (let i = 0; i < a.length; i++) {
-      if (!deepEqual(a[i], b[i])) return false
-    }
-    return true
-  }
-  if (typeof a === 'object' && typeof b === 'object') {
-    const keysA = Object.keys(a)
-    const keysB = Object.keys(b)
-    if (keysA.length !== keysB.length) return false
-    for (const key of keysA) {
-      if (!keysB.includes(key)) return false
-      if (!deepEqual(a[key], b[key])) return false
-    }
-    return true
-  }
-  return false
-}
-
-// 値のフォーマット
-const formatTestValue = (value: any): string => {
-  if (value === null) return 'null'
-  if (value === undefined) return 'undefined'
-  if (typeof value === 'string') return `"${value}"`
-  if (typeof value === 'object') return JSON.stringify(value, null, 2)
-  return String(value)
-}
-
-// テスト実行機能（簡略化版）
-const runTests = async () => {
-  if (!userCode.value.trim()) {
-    testResults.value = {
-      allPassed: false,
-      passedCount: 0,
-      totalCount: props.exercise.testCases.length,
-      executionTime: 0,
-      results: [],
-      executionError: 'コードが入力されていません'
-    }
-    return
-  }
-
+// 演習を実行する関数
+async function runTests() {
+  if (!props.lesson.testCases || isRunning.value) return
+  
   isRunning.value = true
   hasAttempted.value = true
-  emit('exercise-attempted')
+  exerciseResult.value = null
+  testResults.value = []
 
-  const startTime = performance.now()
-  
   try {
-    const results: TestCaseResult[] = []
-    
-    for (const testCase of props.exercise.testCases) {
-      try {
-        // 簡単な関数実行テスト
-        const func = new Function('input', `
-          ${userCode.value}
-          if (typeof main === 'function') {
-            return main(input);
-          } else {
-            throw new Error('main関数が定義されていません');
-          }
-        `)
-        
-        const actual = func(testCase.input)
-        const passed = deepEqual(actual, testCase.expected)
-        
-        results.push({
-          passed,
-          description: testCase.description,
-          input: testCase.input,
-          expected: testCase.expected,
-          actual
-        })
-      } catch (error) {
-        results.push({
-          passed: false,
-          description: testCase.description,
-          input: testCase.input,
-          expected: testCase.expected,
-          actual: null,
-          error: error instanceof Error ? error.message : '不明なエラー'
-        })
+    // コード実行と結果取得
+    const result = await executeExerciseCode(userCode.value)
+    exerciseResult.value = result
+
+    // テストケース実行
+    if (result.success) {
+      const tests = await runTestCases(userCode.value, props.lesson.testCases)
+      testResults.value = tests
+      
+      // すべてのテストに合格した場合
+      if (tests.every(test => test.passed)) {
+        emit('exercise-completed', props.lesson.day)
       }
     }
     
-    const executionTime = Math.round(performance.now() - startTime)
-    const passedCount = results.filter(r => r.passed).length
-    const allPassed = passedCount === results.length
-
-    testResults.value = {
-      allPassed,
-      passedCount,
-      totalCount: results.length,
-      executionTime,
-      results
-    }
-
-    if (allPassed) {
-      emit('exercise-completed')
-    }
-
+    emit('exercise-attempted', props.lesson.day)
   } catch (error) {
-    const executionTime = Math.round(performance.now() - startTime)
-    testResults.value = {
-      allPassed: false,
-      passedCount: 0,
-      totalCount: props.exercise.testCases.length,
-      executionTime,
-      results: [],
-      executionError: error instanceof Error ? error.message : '不明なエラー'
+    exerciseResult.value = {
+      success: false,
+      output: [],
+      errors: [error instanceof Error ? error.message : String(error)],
+      testResults: [],
+      executionTime: 0
     }
   } finally {
     isRunning.value = false
   }
 }
+
+// コード実行機能
+async function executeExerciseCode(code: string): Promise<ExerciseResult> {
+  return new Promise((resolve) => {
+    const startTime = Date.now()
+    const capturedOutput: string[] = []
+    const capturedErrors: string[] = []
+
+    // console.logをキャプチャ
+    const originalLog = console.log
+    console.log = (...args: any[]) => {
+      capturedOutput.push(args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+      ).join(' '))
+      originalLog(...args)
+    }
+
+    try {
+      // 安全なコード実行
+      eval(code)
+      
+      const executionTime = Date.now() - startTime
+      resolve({
+        success: true,
+        output: capturedOutput,
+        errors: capturedErrors,
+        testResults: [],
+        executionTime
+      })
+    } catch (error) {
+      const executionTime = Date.now() - startTime
+      capturedErrors.push(error instanceof Error ? error.message : String(error))
+      
+      resolve({
+        success: false,
+        output: capturedOutput,
+        errors: capturedErrors,
+        testResults: [],
+        executionTime
+      })
+    } finally {
+      // console.logを復元
+      console.log = originalLog
+    }
+  })
+}
+
+// テストケース実行機能
+async function runTestCases(code: string, testCases: any[]): Promise<TestResult[]> {
+  const results: TestResult[] = []
+
+  for (const testCase of testCases) {
+    try {
+      // コードを実行して変数を取得
+      const context: any = {}
+      const wrappedCode = `
+        ${code}
+        // テスト用の変数をcontextオブジェクトに保存
+        if (typeof myName !== 'undefined') context.myName = myName;
+        if (typeof myAge !== 'undefined') context.myAge = myAge;
+        if (typeof myHobby !== 'undefined') context.myHobby = myHobby;
+        if (typeof introduction !== 'undefined') context.introduction = introduction;
+        if (typeof score !== 'undefined') context.score = score;
+        if (typeof grade !== 'undefined') context.grade = grade;
+        if (typeof numbers !== 'undefined') context.numbers = numbers;
+        if (typeof doubledNumbers !== 'undefined') context.doubledNumbers = doubledNumbers;
+        if (typeof calculateAverage !== 'undefined') context.calculateAverage = calculateAverage;
+        if (typeof countCharacters !== 'undefined') context.countCharacters = countCharacters;
+        if (typeof product !== 'undefined') context.product = product;
+        if (typeof incrementCounter !== 'undefined') context.incrementCounter = incrementCounter;
+        if (typeof addTask !== 'undefined') context.addTask = addTask;
+      `
+      
+      eval(wrappedCode)
+      
+      // テスト関数を実行
+      const testFunction = new Function(
+        'myName', 'myAge', 'myHobby', 'introduction', 'score', 'grade', 
+        'numbers', 'doubledNumbers', 'calculateAverage', 'countCharacters',
+        'product', 'incrementCounter', 'addTask',
+        `return ${testCase.testFunction}`
+      )
+      
+      const testResult = testFunction(
+        context.myName, context.myAge, context.myHobby, context.introduction,
+        context.score, context.grade, context.numbers, context.doubledNumbers,
+        context.calculateAverage, context.countCharacters, context.product,
+        context.incrementCounter, context.addTask
+      )
+
+      results.push({
+        testId: testCase.id,
+        description: testCase.description,
+        passed: Boolean(testResult),
+        actualOutput: testResult,
+        expectedOutput: true
+      })
+    } catch (error) {
+      results.push({
+        testId: testCase.id,
+        description: testCase.description,
+        passed: false,
+        errorMessage: error instanceof Error ? error.message : String(error)
+      })
+    }
+  }
+
+  return results
+}
+
+// ESCキーでフルスクリーンを終了
+function handleKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape' && isFullscreen.value) {
+    toggleFullscreen()
+  }
+}
+
+// ライフサイクルフック
+onMounted(() => {
+  document.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown)
+  // コンポーネント破棄時にbodyのスタイルを復元
+  document.body.style.overflow = ''
+})
 </script>
 
 <style scoped>
 .exercise-panel {
-  margin-top: 24px;
-  border: 2px solid #9C27B0;
+  background: #ffffff;
   border-radius: 12px;
   overflow: hidden;
-  background: white;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
+.mode-toggle {
+  display: flex;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.mode-button {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: all 0.2s;
+  border-bottom: 3px solid transparent;
+}
+
+.mode-button:hover {
+  background: #f1f5f9;
+}
+
+.mode-button.active {
+  background: #ffffff;
+  border-bottom-color: #667eea;
+  color: #667eea;
+}
+
+.learn-content,
+.exercise-content {
+  padding: 2rem;
+}
+
+.content-header,
 .exercise-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  background: linear-gradient(135deg, #9C27B0 0%, #E91E63 100%);
-  color: white;
+  margin-bottom: 1.5rem;
+}
+
+.content-header h3,
+.exercise-header h3 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
 .exercise-title {
@@ -387,57 +530,56 @@ const runTests = async () => {
   font-size: 1.1rem;
 }
 
-.exercise-content {
-  padding: 20px;
-}
-
-.exercise-description {
-  margin-bottom: 20px;
-  padding: 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border-left: 4px solid #9C27B0;
-}
-
-.hints-section {
-  margin-bottom: 20px;
-}
-
-.hints-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 12px 16px;
-  background: #fff3e0;
-  border: 1px solid #ffb74d;
-  border-radius: 8px;
-  cursor: pointer;
+.difficulty-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
   font-weight: 500;
-  transition: all 0.2s ease;
 }
 
-.hints-list {
-  margin-top: 12px;
-  padding: 16px;
-  background: #fff8e1;
+.difficulty-badge.beginner,
+.difficulty-badge.easy {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.difficulty-badge.intermediate,
+.difficulty-badge.medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.difficulty-badge.advanced,
+.difficulty-badge.hard {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.goal-section {
+  background: #f8fafc;
+  padding: 1rem;
   border-radius: 8px;
-  border: 1px solid #ffb74d;
+  margin-bottom: 1.5rem;
 }
 
-.hint-item {
+.goal-section p {
+  margin: 0.5rem 0;
+}
+
+.exercise-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+.editor-area {
   display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-  padding: 8px 12px;
-  background: white;
-  border-radius: 6px;
-  border-left: 3px solid #ffb74d;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .exercise-editor {
-  margin-bottom: 20px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   overflow: hidden;
 }
@@ -446,111 +588,365 @@ const runTests = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, #9C27B0 0%, #E91E63 100%);
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
   color: white;
 }
 
 .editor-controls {
   display: flex;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .control-btn {
-  padding: 6px 12px;
+  padding: 0.5rem 1rem;
   border: 1px solid rgba(255,255,255,0.3);
   border-radius: 6px;
   background: rgba(255,255,255,0.1);
   color: white;
   cursor: pointer;
   font-size: 0.85rem;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
+}
+
+.control-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.2);
+}
+
+.control-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.exercise-result {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.exercise-result h4 {
+  margin: 0 0 1rem 0;
+  color: #1e293b;
+}
+
+.output-section {
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 0.9rem;
+}
+
+.output-line {
+  color: #059669;
+  margin: 0.25rem 0;
+}
+
+.error-line {
+  color: #dc2626;
+  margin: 0.25rem 0;
 }
 
 .test-results {
-  margin-bottom: 20px;
-}
-
-.results-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  background: #f8f9fa;
-  border-radius: 8px 8px 0 0;
-  border: 1px solid #e0e0e0;
-  font-weight: 600;
-}
-
-.test-cases {
-  border: 1px solid #e0e0e0;
-  border-top: none;
-  border-radius: 0 0 8px 8px;
-}
-
-.test-case {
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.test-case.passed {
-  background: #f1f8e9;
-}
-
-.test-case.failed {
-  background: #fff5f5;
-}
-
-.test-case-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  font-weight: 500;
-}
-
-.solution-section {
-  border-top: 2px solid #e0e0e0;
-  padding-top: 20px;
-}
-
-.solution-code {
-  background: #2d3748;
-  color: #e2e8f0;
-  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  font-family: 'Consolas', 'Monaco', monospace;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.test-results h4 {
+  margin: 0 0 1rem 0;
+  color: #1e293b;
+}
+
+.test-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.test-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.test-item.passed {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.test-item.failed {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.test-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.test-description {
+  flex: 1;
   font-size: 0.9rem;
-  line-height: 1.6;
-  overflow-x: auto;
+  color: #374151;
+}
+
+.test-error {
+  font-size: 0.8rem;
+  color: #dc2626;
+  margin-top: 0.25rem;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+}
+
+.success-message {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
+  margin-top: 1rem;
+}
+
+.sidebar {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.explanation {
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.explanation h4 {
+  margin: 0 0 1rem 0;
+  color: #1e293b;
+}
+
+.explanation p {
   margin: 0;
+  line-height: 1.6;
+  color: #475569;
 }
 
-/* アニメーション */
-.slide-down-enter-active {
-  transition: all 0.3s ease-out;
+.no-exercise {
+  padding: 2rem;
+  text-align: center;
 }
 
-.slide-down-leave-active {
-  transition: all 0.3s ease-in;
+.no-exercise-content {
+  background: #f8fafc;
+  padding: 2rem;
+  border-radius: 12px;
+  border: 2px dashed #cbd5e1;
 }
 
-.slide-down-enter-from {
-  opacity: 0;
-  max-height: 0;
+.no-exercise-content h3 {
+  margin: 0 0 1rem 0;
+  color: #64748b;
 }
 
-.slide-down-leave-to {
-  opacity: 0;
-  max-height: 0;
+.no-exercise-content p {
+  margin: 0.5rem 0;
+  color: #64748b;
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
+.back-to-learn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-top: 1rem;
+  transition: all 0.2s;
 }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+.back-to-learn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+@media (max-width: 1024px) {
+  .exercise-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .sidebar {
+    order: -1;
+  }
+}
+
+/* フルスクリーンモード用スタイル */
+.editor-area.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: white;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.exercise-editor.fullscreen-editor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border: none;
+  border-radius: 0;
+}
+
+.fullscreen-editor .editor-header {
+  border-radius: 0;
+}
+
+.fullscreen-results {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 400px;
+  height: 100vh;
+  background: white;
+  border-left: 2px solid #e2e8f0;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.fullscreen-results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.fullscreen-results-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.close-fullscreen-btn {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.close-fullscreen-btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.fullscreen-results-content {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.fullscreen-exercise-result,
+.fullscreen-test-results,
+.fullscreen-hints {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.fullscreen-exercise-result h4,
+.fullscreen-test-results h4,
+.fullscreen-hints h4 {
+  margin: 0 0 1rem 0;
+  color: #1e293b;
+  font-size: 1rem;
+}
+
+.fullscreen-btn {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+.fullscreen-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.3);
+}
+
+/* フルスクリーンモード時のエディタ調整 */
+.editor-area.fullscreen .exercise-editor {
+  margin-right: 400px; /* 結果パネルの幅分 */
+}
+
+@media (max-width: 1200px) {
+  .fullscreen-results {
+    width: 300px;
+  }
+  
+  .editor-area.fullscreen .exercise-editor {
+    margin-right: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .learn-content,
+  .exercise-content {
+    padding: 1rem;
+  }
+  
+  .content-header,
+  .exercise-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .editor-controls {
+    flex-direction: column;
+  }
+  
+  /* モバイルでは結果パネルを下部に配置 */
+  .fullscreen-results {
+    top: auto;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    height: 50vh;
+    border-left: none;
+    border-top: 2px solid #e2e8f0;
+  }
+  
+  .editor-area.fullscreen .exercise-editor {
+    margin-right: 0;
+    margin-bottom: 50vh;
+  }
+  
+  .fullscreen-results-content {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+  
+  .fullscreen-exercise-result,
+  .fullscreen-test-results,
+  .fullscreen-hints {
+    min-width: 250px;
+    flex-shrink: 0;
+  }
 }
 </style>

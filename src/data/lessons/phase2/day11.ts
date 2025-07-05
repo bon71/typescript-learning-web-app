@@ -111,5 +111,131 @@ const users = [
 const adults = filterUsers(users, 18);
 const names = mapUserNames(adults);
 console.log(names); // ["田中", "鈴木"]`,
-  explanation: "関数に型をつけることで、引数の型チェックと戻り値の型保証が行われます。引数には「引数名: 型」、戻り値には「: 戻り値の型」を指定します。オプション引数（?）やデフォルト値も使用でき、アロー関数でも同様に型を指定できます。関数型の変数を定義することで、関数を値として扱う際の型安全性も確保できます。"
+  explanation: "関数に型をつけることで、引数の型チェックと戻り値の型保証が行われます。引数には「引数名: 型」、戻り値には「: 戻り値の型」を指定します。オプション引数（?）やデフォルト値も使用でき、アロー関数でも同様に型を指定できます。関数型の変数を定義することで、関数を値として扱う際の型安全性も確保できます。",
+
+  // 演習機能追加
+  exerciseCode: `// 演習: 型安全な計算機能を作成しよう
+// 関数の引数と戻り値に型をつけて計算機能を実装してください
+
+// TODO: 1. 基本的な四則演算関数を作成してください
+function add(a, b) {
+  // 2つの数を足す関数
+  return 0; // ここを実装してください
+}
+
+function subtract(a, b) {
+  // 2つの数を引く関数
+  return 0; // ここを実装してください
+}
+
+function multiply(a, b) {
+  // 2つの数をかける関数
+  return 0; // ここを実装してください
+}
+
+// TODO: 2. より複雑な関数を作成してください
+function calculateAverage(numbers) {
+  // 数値配列の平均を計算する関数
+  // TypeScriptでは: function calculateAverage(numbers: number[]): number
+  
+  if (numbers.length === 0) {
+    return 0;
+  }
+  
+  let sum = 0;
+  for (let num of numbers) {
+    sum += num;
+  }
+  
+  return sum / numbers.length;
+}
+
+// TODO: 3. オプション引数を持つ関数を作成してください
+function greetUser(name, title) {
+  // nameは必須、titleはオプション
+  // TypeScriptでは: function greetUser(name: string, title?: string): string
+  
+  if (title) {
+    return title + " " + name + "さん、こんにちは！";
+  } else {
+    return name + "さん、こんにちは！";
+  }
+}
+
+// TODO: 4. 戻り値がない関数を作成してください
+function logCalculation(operation, num1, num2, result) {
+  // 計算結果をログ出力する関数
+  // TypeScriptでは: function logCalculation(operation: string, num1: number, num2: number, result: number): void
+  
+  console.log(operation + ": " + num1 + " と " + num2 + " の結果は " + result + " です");
+}
+
+// TODO: 5. 実装をテストしてください
+let x = 10;
+let y = 5;
+
+// 基本演算のテスト
+let addResult = add(x, y);
+let subResult = subtract(x, y);
+let mulResult = multiply(x, y);
+
+console.log("=== 基本演算テスト ===");
+logCalculation("加算", x, y, addResult);
+logCalculation("減算", x, y, subResult);
+logCalculation("乗算", x, y, mulResult);
+
+// 平均計算のテスト
+let scores = [85, 92, 78, 96, 88];
+let average = calculateAverage(scores);
+console.log("\\n=== 平均計算テスト ===");
+console.log("点数:", scores);
+console.log("平均点:", average);
+
+// 挨拶関数のテスト
+console.log("\\n=== 挨拶テスト ===");
+console.log(greetUser("田中"));
+console.log(greetUser("佐藤", "部長"));`,
+
+  exerciseHints: [
+    "関数の引数は (引数名: 型) の形式で型を指定します",
+    "戻り値の型は関数名の後に : 型 で指定します",
+    "オプション引数は 引数名?: 型 で定義します",
+    "戻り値がない関数は : void を使います",
+    "配列の型は number[] または Array<number> で表現します"
+  ],
+
+  testCases: [
+    {
+      id: "test1",
+      description: "add関数が正しく動作する",
+      testFunction: "() => { let result = add(5, 3); return result === 8; }"
+    },
+    {
+      id: "test2",
+      description: "subtract関数が正しく動作する",
+      testFunction: "() => { let result = subtract(10, 4); return result === 6; }"
+    },
+    {
+      id: "test3",
+      description: "multiply関数が正しく動作する",
+      testFunction: "() => { let result = multiply(6, 7); return result === 42; }"
+    },
+    {
+      id: "test4",
+      description: "calculateAverage関数が正しく動作する",
+      testFunction: "() => { let result = calculateAverage([10, 20, 30]); return result === 20; }"
+    },
+    {
+      id: "test5",
+      description: "greetUser関数がオプション引数なしで動作する",
+      testFunction: "() => { let result = greetUser('テスト'); return typeof result === 'string' && result.includes('テスト'); }"
+    },
+    {
+      id: "test6",
+      description: "greetUser関数がオプション引数ありで動作する",
+      testFunction: "() => { let result = greetUser('テスト', '課長'); return typeof result === 'string' && result.includes('課長') && result.includes('テスト'); }"
+    }
+  ],
+
+  exerciseDifficulty: 'medium'
 } as const
